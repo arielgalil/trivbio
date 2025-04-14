@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@400;700&display=swap" rel="stylesheet">
     <style>
+      /* --- Previous styles remain the same --- */
       body {
         font-family: "Noto Sans Hebrew", sans-serif;
         background-color: #f5f7fa;
@@ -16,8 +17,9 @@
         padding: 0;
         transition: background-color 0.3s, color 0.3s;
         display: grid;
-        grid-template-rows: 1fr auto;
+        grid-template-rows: auto 1fr auto; /* Adjusted for header */
         min-height: 100svh;
+        position: relative; /* Needed for score popup positioning */
       }
       .dark-mode {
         background-color: #1a202c;
@@ -30,13 +32,17 @@
         text-align: center;
         width: 100%;
         box-sizing: border-box;
+        grid-row: 2 / 3; /* Place container in the main grid area */
       }
       header {
         display: flex;
         justify-content: center;
         align-items: center;
         position: relative;
-        margin-bottom: 10px;
+        margin-bottom: 5px; /* Reduced margin */
+        padding: 10px 0; /* Add padding */
+        grid-row: 1 / 2; /* Place header in the top grid area */
+        width: 100%; /* Ensure header takes full width */
       }
       h1 {
         font-size: 2rem;
@@ -44,7 +50,7 @@
       }
       .switch {
         position: absolute;
-        right: 0;
+        right: 15px; /* Position relative to header edge */
         top: 50%;
         transform: translateY(-50%);
         display: inline-block;
@@ -101,12 +107,26 @@
       input:checked + .slider .sun { opacity: 0; }
       input:checked + .slider .moon { opacity: 1; }
 
+      /* --- Score Display near Header --- */
+      #cumulative-score-display {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.9rem;
+        font-weight: bold;
+        color: #4a5568;
+      }
+      .dark-mode #cumulative-score-display {
+        color: #a0aec0;
+      }
+
       #start-screen {
         background: linear-gradient(135deg, #a3bffa, #e2e8f0);
         padding: 30px;
         border-radius: 15px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin: 20px 0;
+        margin: 10px 0; /* Adjusted margin */
       }
       .dark-mode #start-screen {
         background: linear-gradient(135deg, #2d3748, #1a202c);
@@ -133,10 +153,10 @@
       .dark-mode .topic-btn:hover { background-color: #2d3748; }
       .question-count { font-size: 0.8rem; opacity: 0.8; }
 
-      #game-screen, #result-screen { margin-top: 20px; }
+      #game-screen, #result-screen { margin-top: 10px; } /* Adjusted margin */
       #status-row {
         display: flex; justify-content: space-between; align-items: center;
-        margin: 20px 0; height: 60px;
+        margin: 15px 0; /* Adjusted margin */ height: 60px;
       }
       .status-circle-container { position: relative; width: 54px; height: 54px; }
       .status-circle-text {
@@ -166,7 +186,7 @@
       .answer-btn {
         padding: 15px; text-align: center; font-size: 1rem; background-color: #e2e8f0;
         border: none; border-radius: 15px; cursor: pointer;
-        transition: background-color 0.3s, transform 0.1s;
+        transition: background-color 0.3s, transform 0.1s, visibility 0s, opacity 0.3s; /* Added opacity/visibility transition */
         display: flex; align-items: center; justify-content: center;
         -webkit-tap-highlight-color: transparent;
       }
@@ -201,7 +221,7 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
       .dark-mode .result-card { background-color: #2d3748; border: 1px solid #4a5568; }
-      .progress-circle { position: relative; display: inline-block; width: 60px; height: 60px; }
+      .progress-circle { position: relative; display: inline-block; width: 60px; height: 60px; margin-left: 15px; vertical-align: middle;}
       #percentage-text-result { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; }
       .highlight { color: #7f9cf5; font-weight: bold; }
       .dark-mode .highlight { color: #63b3ed; }
@@ -214,7 +234,7 @@
       .toast.show { opacity: 1; }
       .dark-mode .toast { background-color: #e2e8f0; color: #2d3748; }
 
-      footer { margin-top: 20px; padding-bottom: 20px; font-size: 0.9rem; text-align: center; }
+      footer { margin-top: 20px; padding-bottom: 20px; font-size: 0.9rem; text-align: center; grid-row: 3 / 4; } /* Place footer */
       footer a { color: #5a67d8; text-decoration: none; margin: 0 2px; }
       .dark-mode footer a { color: #63b3ed; }
 
@@ -267,6 +287,47 @@
       #result-progress-circle.yellow { stroke: #ecc94b; }
       #result-progress-circle.red { stroke: #f56565; }
       #result-progress-circle { transition: stroke-dashoffset 0.5s linear, stroke 0.5s linear; }
+
+      /* --- Ranking List Style --- */
+      #ranking ul, #overall-ranking ul {
+        list-style: none; padding: 0; margin: 10px 0 0 0; text-align: right;
+      }
+       #ranking li, #overall-ranking li {
+        padding: 5px 0; border-bottom: 1px dashed #e2e8f0; font-size: 0.9rem;
+        display: flex; justify-content: space-between; align-items: center;
+      }
+       #ranking li:last-child, #overall-ranking li:last-child { border-bottom: none; }
+      .dark-mode #ranking li, .dark-mode #overall-ranking li { border-bottom-color: #4a5568; }
+       #ranking li.current-player, #overall-ranking li.current-player { font-weight: bold; color: #7f9cf5; }
+       .dark-mode #ranking li.current-player, .dark-mode #overall-ranking li.current-player { color: #63b3ed; }
+       #ranking .rank-score, #overall-ranking .rank-score { font-weight: bold; direction: ltr; margin-left: 10px; } /* Ensure score is LTR */
+       #ranking .rank-number, #overall-ranking .rank-number { margin-right: 10px; color: #a0aec0; min-width: 25px; text-align: center;}
+       .dark-mode #ranking .rank-number, .dark-mode #overall-ranking .rank-number { color: #718096; }
+
+      /* --- Score Popup Style --- */
+      .score-popup {
+        position: fixed;
+        top: 40%; /* Adjust as needed */
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(72, 187, 120, 0.9); /* Green background */
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 1.4rem;
+        font-weight: bold;
+        z-index: 1001;
+        opacity: 0;
+        transition: opacity 0.5s ease-out, transform 0.6s ease-out;
+        pointer-events: none; /* Prevent interaction */
+      }
+      .score-popup.show {
+        opacity: 1;
+        transform: translate(-50%, -50px); /* Move up */
+      }
+      .dark-mode .score-popup {
+          background-color: rgba(104, 211, 145, 0.9); /* Lighter green for dark mode */
+      }
     </style>
   </head>
   <body>
@@ -276,9 +337,10 @@
         document.body.classList.add("dark-mode");
       }
     </script>
-    <div class="container">
-      <header>
+    <!-- Moved container to wrap main content only -->
+    <header>
         <h1>טריווBIO</h1>
+        <div id="cumulative-score-display">טוען ניקוד...</div> <!-- Score Display Added -->
         <label class="switch">
           <input type="checkbox" id="theme-toggle" />
           <span class="slider">
@@ -294,7 +356,8 @@
             />
           </span>
         </label>
-      </header>
+    </header>
+    <div class="container">
       <main>
         <div id="start-screen">
           <h2>מוכן לבחור נושא?</h2>
@@ -374,41 +437,50 @@
         </div>
         <div id="result-screen" style="display: none">
           <div class="result-card">
-            <h3>🏆 תוצאות</h3>
-            <div class="progress-circle">
-              <svg width="60" height="60" viewBox="0 0 60 60">
-                <circle
-                  cx="30"
-                  cy="30"
-                  r="28"
-                  stroke="#e2e8f0"
-                  stroke-width="4"
-                  fill="none"
-                  class="status-circle-bg"
-                />
-                 <circle
-                  cx="30"
-                  cy="30"
-                  r="28"
-                  stroke-width="4"
-                  fill="none"
-                  stroke-dasharray="175.9"
-                  stroke-dashoffset="175.9"
-                  id="result-progress-circle"
-                  class="status-circle-progress"
-                />
-              </svg>
-              <span id="percentage-text-result">%</span>
+            <h3>🏆 תוצאות המשחק</h3>
+             <div style="display: flex; align-items: center; justify-content: space-around;">
+                <div>
+                    <p id="score"></p> <!-- Score text here -->
+                    <p id="accuracy-stats"></p> <!-- Accuracy stats here -->
+                </div>
+                <div class="progress-circle">
+                  <svg width="60" height="60" viewBox="0 0 60 60">
+                    <circle
+                      cx="30"
+                      cy="30"
+                      r="28"
+                      stroke="#e2e8f0"
+                      stroke-width="4"
+                      fill="none"
+                      class="status-circle-bg"
+                    />
+                     <circle
+                      cx="30"
+                      cy="30"
+                      r="28"
+                      stroke-width="4"
+                      fill="none"
+                      stroke-dasharray="175.9"
+                      stroke-dashoffset="175.9"
+                      id="result-progress-circle"
+                      class="status-circle-progress"
+                    />
+                  </svg>
+                  <span id="percentage-text-result">%</span>
+                </div>
             </div>
-            <p id="score"></p>
           </div>
           <div class="result-card">
             <h3>⚙️ כלים בשימוש</h3>
             <p id="tools-used"></p>
           </div>
           <div class="result-card">
-            <h3>📊 דירוג יומי</h3>
-            <div id="ranking"></div>
+            <h3>📊 דירוג יומי (לפי נכונות)</h3>
+            <div id="ranking">טוען דירוג יומי...</div>
+          </div>
+           <div class="result-card"> <!-- New Card for Overall Ranking -->
+            <h3>💎 היכל התהילה (Top 10 לפי ניקוד)</h3>
+            <div id="overall-ranking">טוען דירוג כללי...</div>
           </div>
           <div class="result-card">
             <h3>📚 טעית? למדת!</h3>
@@ -424,7 +496,7 @@
           </div>
         </div>
       </main>
-    </div>
+    </div> <!-- End of .container -->
     <footer>
       פותח על ידי אריאל מ<a
         href="https://galilbio.wordpress.com"
@@ -455,7 +527,7 @@
 
       // --- Firebase Config ---
       const firebaseConfig = {
-        apiKey: "AIzaSyAGFC_TB8iEMvS2PyxeASj1HH4i66AW4UA",
+        apiKey: "AIzaSyAGFC_TB8iEMvS2PyxeASj1HH4i66AW4UA", // Keep your actual key secure
         authDomain: "trivbio.firebaseapp.com",
         projectId: "trivbio",
         storageBucket: "trivbio.firebasestorage.app",
@@ -501,7 +573,11 @@
       const percentageTextResultElement = document.getElementById(
         "percentage-text-result"
       );
-      const rankingElement = document.getElementById("ranking");
+      const scoreElement = document.getElementById("score"); // Score display on results
+      const accuracyStatsElement = document.getElementById("accuracy-stats"); // Accuracy display on results
+      const cumulativeScoreDisplayElement = document.getElementById("cumulative-score-display"); // Display near header
+      const rankingElement = document.getElementById("ranking"); // Daily ranking
+      const overallRankingElement = document.getElementById("overall-ranking"); // Overall ranking
       const shareButton = document.getElementById("share-result");
 
       let currentTopic = "";
@@ -525,11 +601,16 @@
       let currentStreak = 0;
       let longestStreak = 0;
       let playerId = null;
-      let timerExpired = false; // Flag for new timer logic
-      let gameActive = false; // Flag to know if game is running
+      let timerExpired = false;
+      let gameActive = false;
+      let currentGameScore = 0; // <<< New: Score for the current game
+      let cumulativePlayerScore = 0; // <<< New: Player's total score
+      let playerNickname = "אנונימי"; // <<< New: Placeholder for nickname
 
       const CIRCLE_CIRCUMFERENCE = 159.84;
       const RESULT_CIRCLE_CIRCUMFERENCE = 175.9;
+      const BASE_SCORE_PER_QUESTION = 10; // <<< New: Base score value
+      const STREAK_BONUS_MULTIPLIER = 2; // <<< New: Score multiplier for streak
 
       // --- Initialization Functions ---
 
@@ -558,64 +639,64 @@
       }
 
       (async function initializeQuestionCounts() {
-        let cachedCounts = {};
-        let cachedTimestamp = null;
-        const defaultCounts = { "human-body": 0, cell: 0, ecology: 0, mix: 0 }; // Default to 0
+         let cachedCounts = {};
+         let cachedTimestamp = null;
+         const defaultCounts = { "human-body": 0, cell: 0, ecology: 0, mix: 0 }; // Default to 0
 
-        try {
-          cachedCounts = JSON.parse(localStorage.getItem("questionCounts") || "{}");
-          Object.keys(defaultCounts).forEach(key => {
-             if (typeof cachedCounts[key] !== 'number') {
-                 cachedCounts[key] = 0;
+         try {
+           cachedCounts = JSON.parse(localStorage.getItem("questionCounts") || "{}");
+           Object.keys(defaultCounts).forEach(key => {
+              if (typeof cachedCounts[key] !== 'number') {
+                  cachedCounts[key] = 0;
+              }
+           });
+           cachedTimestamp = localStorage.getItem("questionCountsTimestamp");
+         } catch (e) {
+           console.error("Error reading question counts from localStorage", e);
+           cachedCounts = defaultCounts; // Use defaults on error
+           localStorage.removeItem("questionCounts");
+           localStorage.removeItem("questionCountsTimestamp");
+         }
+
+         const currentTime = Date.now();
+         const oneDay = 24 * 60 * 60 * 1000;
+         const isCacheStale = !cachedTimestamp || currentTime - parseInt(cachedTimestamp) >= oneDay;
+
+         console.log("Populating buttons with initial counts:", cachedCounts);
+         populateTopicButtons(cachedCounts); // Populate immediately with cached/default counts
+
+         if (isCacheStale) {
+           console.log("Cache is stale or data missing. Fetching new question counts from Firebase...");
+           try {
+             const snapshot = await database.ref("questions").once("value");
+             const allQsData = snapshot.val();
+             const freshCounts = { "human-body": 0, cell: 0, ecology: 0, mix: 0 };
+             let totalFetched = 0;
+             if (allQsData) {
+               Object.values(allQsData).forEach((q) => {
+                 if (q && q.topic && freshCounts.hasOwnProperty(q.topic)) {
+                    freshCounts[q.topic]++;
+                    freshCounts["mix"]++;
+                    totalFetched++;
+                 }
+               });
              }
-          });
-          cachedTimestamp = localStorage.getItem("questionCountsTimestamp");
-        } catch (e) {
-          console.error("Error reading question counts from localStorage", e);
-          cachedCounts = defaultCounts; // Use defaults on error
-          localStorage.removeItem("questionCounts");
-          localStorage.removeItem("questionCountsTimestamp");
-        }
 
-        const currentTime = Date.now();
-        const oneDay = 24 * 60 * 60 * 1000;
-        const isCacheStale = !cachedTimestamp || currentTime - parseInt(cachedTimestamp) >= oneDay;
+             if (totalFetched > 0) { // Only update if we actually got data
+                 localStorage.setItem("questionCounts", JSON.stringify(freshCounts));
+                 localStorage.setItem("questionCountsTimestamp", currentTime.toString());
+                 console.log("Repopulating buttons with fresh counts:", freshCounts);
+                 populateTopicButtons(freshCounts); // Update immediately
+             } else {
+                 console.warn("No valid questions found during Firebase fetch, keeping initial counts.");
+             }
 
-        console.log("Populating buttons with initial counts:", cachedCounts);
-        populateTopicButtons(cachedCounts); // Populate immediately with cached/default counts
-
-        if (isCacheStale) {
-          console.log("Cache is stale or data missing. Fetching new question counts from Firebase...");
-          try {
-            const snapshot = await database.ref("questions").once("value");
-            const allQsData = snapshot.val();
-            const freshCounts = { "human-body": 0, cell: 0, ecology: 0, mix: 0 };
-            let totalFetched = 0;
-            if (allQsData) {
-              Object.values(allQsData).forEach((q) => {
-                if (q && q.topic && freshCounts.hasOwnProperty(q.topic)) {
-                   freshCounts[q.topic]++;
-                   freshCounts["mix"]++;
-                   totalFetched++;
-                }
-              });
-            }
-
-            if (totalFetched > 0) { // Only update if we actually got data
-                localStorage.setItem("questionCounts", JSON.stringify(freshCounts));
-                localStorage.setItem("questionCountsTimestamp", currentTime.toString());
-                console.log("Repopulating buttons with fresh counts:", freshCounts);
-                populateTopicButtons(freshCounts); // Update immediately
-            } else {
-                console.warn("No valid questions found during Firebase fetch, keeping initial counts.");
-            }
-
-          } catch (error) {
-            console.error("Error fetching question counts during background update:", error);
-          }
-        } else {
-          console.log("Using fresh cached question counts.");
-        }
+           } catch (error) {
+             console.error("Error fetching question counts during background update:", error);
+           }
+         } else {
+           console.log("Using fresh cached question counts.");
+         }
       })();
 
 
@@ -625,7 +706,7 @@
         toast.classList.add("toast");
         toast.textContent = message;
         document.body.appendChild(toast);
-        toast.offsetHeight;
+        toast.offsetHeight; // Trigger reflow to enable transition
         toast.classList.add("show");
         if (duration > 0) {
           setTimeout(() => {
@@ -647,56 +728,88 @@
         .catch((error) => {
           console.error("Anonymous auth failed:", error);
           showToast("חלה שגיאה בהתחברות אנונימית...");
+          // Maybe disable features requiring player ID if auth fails
+          cumulativeScoreDisplayElement.textContent = "שגיאת התחברות";
         });
 
       function initializePlayerState() {
+        if (!playerId) return; // Don't proceed if auth failed
+
+        // Theme
         const savedDarkMode = localStorage.getItem("darkMode") === "true";
         setTheme(savedDarkMode);
         themeToggle.checked = savedDarkMode;
+
+        // Last Topic Hint
         const localLastTopic = localStorage.getItem("lastTopic");
         if (localLastTopic && topicNames[localLastTopic]) {
-          document.querySelector(
-            "#start-screen h2"
-          ).textContent = `בפעם שעברה בחרת ${topicNames[localLastTopic]}, מה הפעם?`;
+          updateStartScreenHint(localLastTopic);
         }
-        firebase.auth().onAuthStateChanged((user) => {
-          if (user && user.uid === playerId) {
-            database
-              .ref(`players/${playerId}`)
-              .once("value")
-              .then((snapshot) => {
-                const playerData = snapshot.val();
-                if (playerData) {
-                  if (
-                    playerData.lastTopic &&
-                    topicNames[playerData.lastTopic] &&
-                    playerData.lastTopic !== localLastTopic
-                  ) {
-                    document.querySelector(
-                      "#start-screen h2"
-                    ).textContent = `בפעם שעברה בחרת ${
-                      topicNames[playerData.lastTopic]
-                    }, מה הפעם?`;
-                    localStorage.setItem("lastTopic", playerData.lastTopic);
-                  }
-                  if (
-                    typeof playerData.darkMode === "boolean" &&
-                    playerData.darkMode !== savedDarkMode
-                  ) {
-                    setTheme(playerData.darkMode);
-                    themeToggle.checked = playerData.darkMode;
-                    localStorage.setItem("darkMode", playerData.darkMode);
-                  }
-                } else {
-                  saveThemePreference(savedDarkMode);
-                }
-              })
-              .catch((error) =>
-                console.error("Error fetching player data:", error)
-              );
-          }
-        });
+
+        // Fetch Player Data from Firebase
+        database.ref(`players/${playerId}`).once("value")
+          .then((snapshot) => {
+            const playerData = snapshot.val() || {}; // Default to empty object if no data
+
+            // Load Cumulative Score
+            cumulativePlayerScore = playerData.cumulativeScore || 0;
+            playerNickname = playerData.nickname || `שחקן...${playerId.substring(playerId.length - 4)}`; // Use nickname or part of ID
+            updateCumulativeScoreDisplay();
+
+            // Load Last Topic (override local if Firebase is different)
+            if (playerData.lastTopic && topicNames[playerData.lastTopic] && playerData.lastTopic !== localLastTopic) {
+                updateStartScreenHint(playerData.lastTopic);
+                localStorage.setItem("lastTopic", playerData.lastTopic);
+            }
+
+            // Load Theme Preference (override local if Firebase is different)
+            if (typeof playerData.darkMode === "boolean" && playerData.darkMode !== savedDarkMode) {
+                setTheme(playerData.darkMode);
+                themeToggle.checked = playerData.darkMode;
+                localStorage.setItem("darkMode", playerData.darkMode.toString());
+            }
+
+            // If player is new, save initial state (score 0 and current theme)
+            if (!snapshot.exists()) {
+                 savePlayerInitialData(savedDarkMode);
+            }
+
+          })
+          .catch((error) => {
+                console.error("Error fetching player data:", error);
+                cumulativeScoreDisplayElement.textContent = "שגיאה בטעינת ניקוד";
+                // Attempt to use local storage values if Firebase fails
+                cumulativePlayerScore = parseInt(localStorage.getItem("cumulativeScoreBackup") || "0");
+                 updateCumulativeScoreDisplay();
+          });
       }
+
+      function savePlayerInitialData(isDarkMode) {
+          if (!playerId) return;
+           database.ref(`players/${playerId}`).set({
+               cumulativeScore: 0,
+               nickname: playerNickname, // Save default nickname
+               darkMode: isDarkMode,
+               createdAt: firebase.database.ServerValue.TIMESTAMP
+           }).then(() => {
+               console.log("Initial player data saved for new player.");
+           }).catch(error => console.error("Failed to save initial player data:", error));
+      }
+
+
+      function updateStartScreenHint(topicId) {
+          const hintElement = document.querySelector("#start-screen h2");
+          if (hintElement && topicNames[topicId]) {
+             hintElement.textContent = `בפעם שעברה בחרת ${topicNames[topicId]}, מה הפעם?`;
+          } else if (hintElement) {
+              hintElement.textContent = `מוכן לבחור נושא?`; // Default if topic invalid
+          }
+      }
+
+      function updateCumulativeScoreDisplay() {
+          cumulativeScoreDisplayElement.textContent = `ניקוד כולל: ${cumulativePlayerScore.toLocaleString()}`;
+      }
+
 
       // --- Theme Management ---
       function setTheme(isDarkMode) {
@@ -781,7 +894,7 @@
                 Array.isArray(q.answers) &&
                 typeof q.correct !== "undefined"
               ) {
-                q.id = key;
+                q.id = key; // Ensure ID is attached
                 fetchedQuestions.push(q);
               } else {
                 console.warn(
@@ -801,47 +914,54 @@
             return fetchedQuestions;
           } else {
             console.warn("No valid questions found in Firebase!");
-            return [];
+            return []; // Return empty array if fetch fails
           }
         } catch (error) {
           console.error("Error fetching questions from Firebase:", error);
           showToast("שגיאה חמורה בטעינת שאלות!");
-          return [];
+          return []; // Return empty array on error
         }
       }
 
       async function loadQuestionsForTopic(topic) {
         try {
-          showToast("טוען שאלות...", 0);
-          saveLastTopic(topic);
-          allQuestions = await loadQuestions();
-          document.querySelectorAll(".toast").forEach((t) => t.remove());
+          showToast("טוען שאלות...", 0); // Show indefinite toast
+          saveLastTopic(topic); // Save topic preference
+          allQuestions = await loadQuestions(); // Load (potentially from cache or Firebase)
+          document.querySelectorAll(".toast").forEach((t) => t.remove()); // Remove loading toast
+
           if (allQuestions.length === 0) {
-            showToast("לא נטענו שאלות. נסה לרענן את הדף.");
-            return;
+             showToast("לא נטענו שאלות. נסה לרענן את הדף.");
+             return; // Stop if no questions loaded
           }
 
+          // Filter questions by topic
           if (topic === "mix") {
             questions = [...allQuestions];
           } else {
             questions = allQuestions.filter((q) => q && q.topic === topic);
           }
+
+          // Ensure questions are valid before starting
           questions = questions.filter(
             (q) =>
               q &&
               q.id &&
               q.question &&
               Array.isArray(q.answers) &&
-              typeof q.correct !== "undefined"
+              typeof q.correct !== "undefined" &&
+              q.answers.length >= 2 // Need at least 2 answers
           );
+
           if (questions.length === 0) {
             showToast(`אין שאלות זמינות לנושא "${topicNames[topic]}"!`);
-            return;
+            return; // Stop if no questions for this topic
           }
-          startGame();
+
+          startGame(); // Start the game if questions are ready
         } catch (error) {
           console.error("Error loading questions for topic:", error);
-          document.querySelectorAll(".toast").forEach((t) => t.remove());
+          document.querySelectorAll(".toast").forEach((t) => t.remove()); // Ensure loading toast is removed on error
           showToast("חלה שגיאה בטעינת השאלות!");
         }
       }
@@ -859,14 +979,16 @@
       }
 
       // --- Game Logic ---
-      function vibrate(duration) {
+       function vibrate(duration) {
         if ("vibrate" in navigator) {
-          try { navigator.vibrate(duration); } catch (e) { /* Ignore */ }
+          try { navigator.vibrate(duration); } catch (e) { /* Ignore if fails, e.g., permissions */ }
         }
-      }
-      function resetGame() {
+       }
+
+       function resetGame() {
         correctCount = 0;
         wrongCount = 0;
+        currentGameScore = 0; // <<< Reset game score
         currentQuestionIndex = 0;
         currentQuestion = null;
         fiftyFiftyUsed = false;
@@ -881,15 +1003,15 @@
         longestStreak = 0;
         timerValue = 120;
         totalTime = 120;
-        timerExpired = false; // Reset timer expired flag
-        gameActive = false; // Reset game active flag
+        timerExpired = false;
+        gameActive = false;
 
         fiftyFiftyButton.classList.remove("disabled");
         addTimeButton.classList.remove("disabled");
-        skipButton.classList.remove("disabled"); // Ensure skip is enabled at start
+        skipButton.classList.remove("disabled");
         fiftyFiftyButton.disabled = false;
         addTimeButton.disabled = false;
-        skipButton.disabled = false; // Ensure skip is enabled at start
+        skipButton.disabled = false;
 
         percentageTextIngameElement.textContent = "0%";
         percentageProgressElement.style.strokeDashoffset = CIRCLE_CIRCUMFERENCE;
@@ -900,22 +1022,25 @@
         clearInterval(timerInterval);
         console.log("Game reset complete.");
       }
+
       function startGame() {
         startScreen.style.display = "none";
         resultScreen.style.display = "none";
         gameScreen.style.display = "block";
         resetGame();
         gameActive = true; // Set game active flag
-        questions = [...questions].sort(() => Math.random() - 0.5);
+        questions = [...questions].sort(() => Math.random() - 0.5); // Shuffle selected questions
         initSequence();
-        updatePercentage();
-        loadQuestion();
-        startTimer();
+        updatePercentage(); // Initialize percentage display
+        loadQuestion(); // Load the first question
+        startTimer(); // Start the countdown
         console.log(`Game started with ${questions.length} questions for topic: ${currentTopic}`);
       }
+
       function initSequence() {
         sequenceContainer.innerHTML = "";
-        for (let i = 1; i <= 5; i++) {
+        const numCircles = Math.min(5, questions.length); // Show max 5 or total questions if fewer
+        for (let i = 1; i <= numCircles; i++) {
           const circle = document.createElement("div");
           circle.classList.add("sequence-circle");
           circle.textContent = i;
@@ -923,268 +1048,417 @@
           sequenceContainer.appendChild(circle);
         }
       }
+
       function shuffleAnswers(answers, correctIndex) {
-        if (!Array.isArray(answers)) return [];
-        const answersCopy = [...answers];
-        const shuffled = answersCopy.map((answer, idx) => ({ text: answer, isCorrect: idx === correctIndex }));
-        for (let i = shuffled.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        return shuffled;
+         if (!Array.isArray(answers)) {
+             console.error("Invalid answers array passed to shuffleAnswers:", answers);
+             return []; // Return empty array if input is invalid
+         }
+         // Map to objects with original index/correctness, then shuffle
+         const answersCopy = answers.map((answer, idx) => ({
+             text: answer,
+             isCorrect: idx === correctIndex,
+         }));
+
+         // Fisher-Yates Shuffle
+         for (let i = answersCopy.length - 1; i > 0; i--) {
+             const j = Math.floor(Math.random() * (i + 1));
+             [answersCopy[i], answersCopy[j]] = [answersCopy[j], answersCopy[i]];
+         }
+         return answersCopy;
       }
 
+
       function loadQuestion() {
-        if (!gameActive || (timerExpired && currentQuestion)) {
+        if (!gameActive || (timerExpired && currentQuestion)) { // Stop loading if game ended or timer ran out *while* showing a question
           console.log("Timer expired or game inactive, preventing next question load.");
-          if (gameActive) endGame();
+           if (gameActive && !currentQuestion) endGame(); // If timer ended between questions, end immediately
           return;
         }
 
+        // --- Mistake Handling Logic ---
         const readyMistakes = [];
         mistakenQuestions = mistakenQuestions.filter((mq) => {
-          if (!mq || !mq.question) return false;
-          if (mq.delay > 0) { mq.delay--; return true; }
-          else { readyMistakes.push(mq.question); return false; }
+            if (!mq || !mq.question) return false; // Skip invalid entries
+            if (mq.delay > 0) {
+                mq.delay--;
+                return true; // Keep in pool, decrement delay
+            } else {
+                readyMistakes.push(mq.question); // Ready to be asked again
+                return false; // Remove from waiting pool
+            }
         });
 
+        // --- Filter available questions ---
         let availableRegularQuestions = questions.filter(
-          (q) => q && q.id && q.question &&
-                 !answeredCorrectly.some((aq) => aq && aq.id === q.id) &&
-                 !mistakenQuestions.some((mq) => mq && mq.question.id === q.id) &&
-                 !readyMistakes.some((rm) => rm && rm.id === q.id)
+            (q) => q && q.id && q.question && // Basic validity
+                   !answeredCorrectly.some((aq) => aq && aq.id === q.id) && // Not already answered correctly
+                   !mistakenQuestions.some((mq) => mq && mq.question.id === q.id) && // Not waiting in the mistake pool
+                   !readyMistakes.some((rm) => rm && rm.id === q.id) // Not just moved to ready mistakes
         );
 
         console.log(`Available regular: ${availableRegularQuestions.length}, Ready mistakes: ${readyMistakes.length}, Waiting mistakes: ${mistakenQuestions.length}`);
-        if (availableRegularQuestions.length === 0 && readyMistakes.length === 0) {
-          console.log("No more questions or ready mistakes. Ending game.");
-          if (gameActive) endGame();
-          return;
+
+        // --- Check if game should end ---
+        if (availableRegularQuestions.length === 0 && readyMistakes.length === 0 && mistakenQuestions.length === 0) {
+            console.log("No more questions or mistakes. Ending game.");
+            if (gameActive) endGame(); // End the game if truly out of questions
+            return;
         }
 
+        // --- Select the next question ---
         let nextQuestion = null;
-        const showMistakeChance = 0.4;
+        const showMistakeChance = 0.4; // 40% chance to show a ready mistake if available
+
         if (readyMistakes.length > 0 && (availableRegularQuestions.length === 0 || Math.random() < showMistakeChance)) {
-          const randomIndex = Math.floor(Math.random() * readyMistakes.length);
-          nextQuestion = readyMistakes.splice(randomIndex, 1)[0];
-          console.log("Loading a mistake question:", nextQuestion.id, nextQuestion.question);
+            // Prioritize mistakes if available (or if no regular questions left)
+            const randomIndex = Math.floor(Math.random() * readyMistakes.length);
+            nextQuestion = readyMistakes.splice(randomIndex, 1)[0]; // Get and remove from ready list
+             console.log("Loading a mistake question:", nextQuestion.id);
         } else if (availableRegularQuestions.length > 0) {
-          if (currentQuestionIndex >= availableRegularQuestions.length) currentQuestionIndex = 0;
-          nextQuestion = availableRegularQuestions[currentQuestionIndex];
-          currentQuestionIndex++;
-          console.log(`Loading regular question #${currentQuestionIndex}:`, nextQuestion.id, nextQuestion.question);
+            // Load a regular question
+            if (currentQuestionIndex >= availableRegularQuestions.length) {
+                currentQuestionIndex = 0; // Loop back if needed (though ideally we shuffle once)
+            }
+            nextQuestion = availableRegularQuestions[currentQuestionIndex];
+            currentQuestionIndex++; // Increment for next time
+            console.log(`Loading regular question #${currentQuestionIndex}:`, nextQuestion.id);
+        } else if (readyMistakes.length > 0) {
+             // Fallback: if random chance didn't pick mistake, but it's the only option left
+             const randomIndex = Math.floor(Math.random() * readyMistakes.length);
+             nextQuestion = readyMistakes.splice(randomIndex, 1)[0];
+             console.log("Loading a fallback mistake question:", nextQuestion.id);
         } else {
-          console.warn("Question selection fallback. Ending game.");
-          if (gameActive) endGame();
-          return;
+             console.warn("Question selection logic failed - should have ended or found a question. Ending game.");
+             if (gameActive) endGame();
+             return;
         }
 
+        // Put remaining ready mistakes back into the waiting pool (with delay 0, essentially ready for next cycle)
         readyMistakes.forEach((m) => {
-          if (!mistakenQuestions.some((mq) => mq && mq.question.id === m.id)) {
-            mistakenQuestions.push({ question: m, delay: 0 });
-          }
+            if (!mistakenQuestions.some((mq) => mq && mq.question.id === m.id)) {
+                mistakenQuestions.push({ question: m, delay: 0 });
+            }
         });
 
+        // --- Validate the selected question ---
         if (!nextQuestion || !nextQuestion.id || !nextQuestion.question || !Array.isArray(nextQuestion.answers) || typeof nextQuestion.correct === "undefined" || nextQuestion.answers.length < 2) {
-          console.error("Invalid question data selected:", nextQuestion, "Skipping...");
-          questions = questions.filter((q) => q !== nextQuestion);
-          mistakenQuestions = mistakenQuestions.filter((mq) => mq.question !== nextQuestion);
-          loadQuestion(); // Try loading another one
-          return;
+            console.error("Invalid question data selected:", nextQuestion, "Attempting to skip and load another...");
+            // Remove the problematic question from the main 'questions' list to prevent re-selection
+            questions = questions.filter(q => q !== nextQuestion);
+             // Also remove from mistake pools if it was there
+            mistakenQuestions = mistakenQuestions.filter(mq => mq.question !== nextQuestion);
+            // Immediately try to load the *next* available question
+            loadQuestion();
+            return;
         }
 
         currentQuestion = nextQuestion;
-        currentQuestion.shuffledAnswers = shuffleAnswers(currentQuestion.answers, currentQuestion.correct);
-        if (!Array.isArray(currentQuestion.shuffledAnswers) || currentQuestion.shuffledAnswers.length === 0) {
-          console.error("Failed to shuffle answers for:", currentQuestion.id, currentQuestion.question, "Skipping...");
-          questions = questions.filter((q) => q !== currentQuestion);
-          mistakenQuestions = mistakenQuestions.filter((mq) => mq.question !== currentQuestion);
-          loadQuestion(); // Try loading another one
-          return;
+        currentQuestion.startTime = Date.now(); // Record when question was shown for potential time bonus calculation
+
+        // Shuffle answers *safely*
+        currentQuestion.shuffledAnswers = shuffleAnswers([...currentQuestion.answers], currentQuestion.correct); // Use spread to avoid modifying original
+        if (!Array.isArray(currentQuestion.shuffledAnswers) || currentQuestion.shuffledAnswers.length < 2) {
+           console.error("Failed to shuffle answers or not enough answers for:", currentQuestion.id, "Skipping...");
+           questions = questions.filter(q => q !== currentQuestion);
+           mistakenQuestions = mistakenQuestions.filter(mq => mq.question !== currentQuestion);
+           loadQuestion(); // Try loading another one
+           return;
         }
 
-        // Display Question
-        questionElement.innerHTML = "";
+        // --- Display Question and Answers ---
+        questionElement.innerHTML = ""; // Clear previous question
         const questionTextNode = document.createTextNode(currentQuestion.question);
         questionElement.appendChild(questionTextNode);
-        const infoSpan = document.createElement("span");
-        infoSpan.className = "question-id-display";
-        infoSpan.style.opacity = '0';
-        infoSpan.style.userSelect = 'none';
-        infoSpan.textContent = '(בגרות תשפ"ג)'; // Placeholder for spacing
-        questionElement.appendChild(document.createTextNode("\u00A0"));
-        questionElement.appendChild(infoSpan);
 
-        // Display Answers
-        answersElement.innerHTML = "";
+        // Optional: Add debug/info span (initially hidden)
+        // const infoSpan = document.createElement("span");
+        // infoSpan.className = "question-id-display";
+        // infoSpan.textContent = ` (ID: ${currentQuestion.id})`; // Show ID for debugging
+        // questionElement.appendChild(infoSpan);
+
+        answersElement.innerHTML = ""; // Clear previous answers
         currentQuestion.shuffledAnswers.forEach((answer, index) => {
-          const button = document.createElement("button");
-          button.classList.add("answer-btn");
-          button.textContent = answer.text;
-          button.addEventListener("click", () => {
-            vibrate(50);
-            checkAnswer(index);
-          });
-          answersElement.appendChild(button);
+            const button = document.createElement("button");
+            button.classList.add("answer-btn");
+            button.textContent = answer.text;
+            button.style.visibility = 'visible'; // Ensure button is visible initially
+            button.disabled = false; // Ensure button is enabled
+            button.addEventListener("click", () => {
+                vibrate(50);
+                checkAnswer(index);
+            });
+            answersElement.appendChild(button);
         });
 
-        // Enable buttons only if timer hasn't expired
+        // Re-enable action buttons if they were disabled by skip/timer
         fiftyFiftyButton.disabled = fiftyFiftyUsed || timerExpired;
         addTimeButton.disabled = addTimeUsed || timerExpired;
-        skipButton.disabled = timerExpired; // Disable skip if timer is up
+        skipButton.disabled = timerExpired; // Allow skip unless timer is up
 
-
-        updateSequence();
+        updateSequence(); // Update the progress circles
       }
 
-      async function updatePlayerStats(playerId, question, isCorrect) {
+      // --- Scoring Popup ---
+      function createScorePopup(score) {
+        const popup = document.createElement("div");
+        popup.classList.add("score-popup");
+        popup.textContent = `+${score}`;
+        document.body.appendChild(popup);
+
+        // Trigger the animation
+        requestAnimationFrame(() => {
+            popup.classList.add("show");
+        });
+
+        // Remove after animation
+        setTimeout(() => {
+            popup.classList.remove("show");
+            setTimeout(() => {
+                if (popup.parentNode) {
+                    popup.parentNode.removeChild(popup);
+                }
+            }, 600); // Match transition duration
+        }, 1000); // How long the popup stays visible before fading
+      }
+
+       // --- Update Player Stats in Firebase ---
+      async function updatePlayerStatsFirebase(playerId, question, isCorrect, scoreGained = 0) {
         if (!playerId || !question) return;
+
         const updates = {};
         const topic = question.topic || "unknown";
-        const tags = question.tags || [];
+        const tags = Array.isArray(question.tags) ? question.tags.filter(t => t) : []; // Ensure tags is a clean array
+
+        // Use Firebase Transactions for score and counts to prevent race conditions
+        const playerRef = database.ref(`players/${playerId}`);
+
         try {
-          const playerSnap = await database.ref(`players/${playerId}`).once("value");
-          const playerData = playerSnap.val() || { correctCount: 0, wrongCount: 0 };
-          updates[`players/${playerId}/correctCount`] = (playerData.correctCount || 0) + (isCorrect ? 1 : 0);
-          updates[`players/${playerId}/wrongCount`] = (playerData.wrongCount || 0) + (isCorrect ? 0 : 1);
-        } catch (error) { console.error("Error fetching player overall stats:", error); }
-        try {
-          const topicSnapshot = await database.ref(`players/${playerId}/topicStats/${topic}`).once("value");
-          const topicData = topicSnapshot.val() || { correctCount: 0, wrongCount: 0 };
-          updates[`players/${playerId}/topicStats/${topic}/correctCount`] = (topicData.correctCount || 0) + (isCorrect ? 1 : 0);
-          updates[`players/${playerId}/topicStats/${topic}/wrongCount`] = (topicData.wrongCount || 0) + (isCorrect ? 0 : 1);
-        } catch (error) { console.error(`Error updating topic stats for ${topic}:`, error); }
-        for (const tag of tags) {
-          if (!tag) continue;
-          try {
-            const tagSnapshot = await database.ref(`players/${playerId}/tagStats/${tag}`).once("value");
-            const tagData = tagSnapshot.val() || { correctCount: 0, wrongCount: 0 };
-            updates[`players/${playerId}/tagStats/${tag}/correctCount`] = (tagData.correctCount || 0) + (isCorrect ? 1 : 0);
-            updates[`players/${playerId}/tagStats/${tag}/wrongCount`] = (tagData.wrongCount || 0) + (isCorrect ? 0 : 1);
-          } catch (error) { console.error(`Error updating tag stats for ${tag}:`, error); }
-        }
-        if (Object.keys(updates).length > 0) {
-          try { await database.ref().update(updates); }
-          catch (error) { console.error("Failed to update player stats:", error); }
+          await playerRef.transaction((playerData) => {
+            if (playerData === null) {
+              // Initialize if player data doesn't exist (shouldn't happen often after initial save)
+              playerData = {
+                cumulativeScore: 0,
+                correctCount: 0,
+                wrongCount: 0,
+                nickname: playerNickname, // Use current nickname
+                topicStats: {},
+                tagStats: {}
+              };
+            }
+
+            // Overall stats
+            playerData.cumulativeScore = (playerData.cumulativeScore || 0) + scoreGained;
+            playerData.correctCount = (playerData.correctCount || 0) + (isCorrect ? 1 : 0);
+            playerData.wrongCount = (playerData.wrongCount || 0) + (isCorrect ? 0 : 1);
+
+            // Topic stats
+            if (!playerData.topicStats) playerData.topicStats = {};
+            if (!playerData.topicStats[topic]) playerData.topicStats[topic] = { correctCount: 0, wrongCount: 0 };
+            playerData.topicStats[topic].correctCount = (playerData.topicStats[topic].correctCount || 0) + (isCorrect ? 1 : 0);
+            playerData.topicStats[topic].wrongCount = (playerData.topicStats[topic].wrongCount || 0) + (isCorrect ? 0 : 1);
+
+            // Tag stats
+            if (!playerData.tagStats) playerData.tagStats = {};
+            tags.forEach(tag => {
+                if (!playerData.tagStats[tag]) playerData.tagStats[tag] = { correctCount: 0, wrongCount: 0 };
+                playerData.tagStats[tag].correctCount = (playerData.tagStats[tag].correctCount || 0) + (isCorrect ? 1 : 0);
+                playerData.tagStats[tag].wrongCount = (playerData.tagStats[tag].wrongCount || 0) + (isCorrect ? 0 : 1);
+            });
+
+            return playerData; // Return the modified data for Firebase to save
+          });
+          console.log("Player stats updated via transaction.");
+
+          // Update local cumulative score *after* successful transaction
+          cumulativePlayerScore += scoreGained;
+          localStorage.setItem("cumulativeScoreBackup", cumulativePlayerScore.toString()); // Backup locally
+          updateCumulativeScoreDisplay(); // Update UI immediately
+
+        } catch (error) {
+          console.error("Firebase transaction failed: ", error);
+          // Handle error - maybe retry or notify user
         }
       }
 
+
       function checkAnswer(selectedIndex) {
-        if (!gameActive || !currentQuestion || !currentQuestion.shuffledAnswers) return; // Check gameActive
+        if (!gameActive || !currentQuestion || !currentQuestion.shuffledAnswers) return; // Ensure game/question are valid
+
+        const answerTime = Date.now();
+        const timeTakenMs = answerTime - (currentQuestion.startTime || answerTime); // Calculate time taken for this question
+        const timeTakenSec = Math.max(0, Math.floor(timeTakenMs / 1000)); // Time in seconds
 
         const buttons = answersElement.querySelectorAll(".answer-btn");
-        buttons.forEach(btn => btn.disabled = true); // Disable all answer buttons immediately
+        buttons.forEach(btn => btn.disabled = true); // Disable buttons immediately
 
-        const correctAnswerText = currentQuestion.shuffledAnswers.find(a => a.isCorrect)?.text;
-        const selectedAnswerText = currentQuestion.shuffledAnswers[selectedIndex]?.text;
-        if (typeof selectedAnswerText === "undefined") return;
+        const correctAnswerObject = currentQuestion.shuffledAnswers.find(a => a.isCorrect);
+        const selectedAnswerObject = currentQuestion.shuffledAnswers[selectedIndex];
 
-        const isCorrect = currentQuestion.shuffledAnswers[selectedIndex].isCorrect;
+        // Extra safety checks
+        if (!selectedAnswerObject || typeof selectedAnswerObject.isCorrect === 'undefined' || !correctAnswerObject) {
+            console.error("Error identifying selected or correct answer object.");
+            // Maybe skip to next question without penalty?
+            setTimeout(loadQuestion, 1200);
+            return;
+        }
+
+        const isCorrect = selectedAnswerObject.isCorrect;
         const questionNumber = correctCount + wrongCount + 1;
+        let questionScore = 0; // Initialize score for this question
 
         // Visual feedback
         buttons.forEach((btn, idx) => {
-          if (currentQuestion.shuffledAnswers[idx].isCorrect) btn.classList.add("correct");
-          else if (idx === selectedIndex) btn.classList.add("wrong");
-          else btn.style.opacity = "0.6";
+            if (currentQuestion.shuffledAnswers[idx]?.isCorrect) {
+                btn.classList.add("correct");
+            } else if (idx === selectedIndex) {
+                btn.classList.add("wrong");
+            } else {
+                // Fade out non-selected, incorrect answers slightly more
+                 if (btn.style.visibility !== 'hidden') { // Don't change opacity if hidden by 50:50
+                    btn.style.opacity = "0.5";
+                 }
+            }
         });
 
-        // Update stats
+        // Update stats & score
         if (isCorrect) {
-          correctCount++;
-          currentStreak++;
-          longestStreak = Math.max(longestStreak, currentStreak);
-          answerSequence.push({ number: questionNumber, correct: true });
-          if (!answeredCorrectly.some((aq) => aq && aq.id === currentQuestion.id)) {
-            answeredCorrectly.push(currentQuestion);
-          }
-          const mistakeIndex = mistakenQuestions.findIndex((mq) => mq && mq.question.id === currentQuestion.id);
-          if (mistakeIndex > -1) {
-            mistakenQuestions.splice(mistakeIndex, 1);
-            console.log("Corrected a mistake, removed from pool.");
-          }
+            correctCount++;
+            currentStreak++;
+            longestStreak = Math.max(longestStreak, currentStreak);
+            answerSequence.push({ number: questionNumber, correct: true });
+
+            // --- Calculate Score ---
+            const timeBonus = Math.max(0, Math.floor((15 - timeTakenSec) / 2)); // Bonus for answering within 15s, max ~7 points
+            const streakBonus = (currentStreak > 1) ? (currentStreak -1) * STREAK_BONUS_MULTIPLIER : 0; // Bonus starts from 2nd correct answer
+            questionScore = BASE_SCORE_PER_QUESTION + timeBonus + streakBonus;
+            currentGameScore += questionScore;
+            createScorePopup(questionScore); // Show visual feedback
+
+            // Remove from mistake pool if it was there
+            const mistakeIndex = mistakenQuestions.findIndex((mq) => mq && mq.question.id === currentQuestion.id);
+            if (mistakeIndex > -1) {
+                mistakenQuestions.splice(mistakeIndex, 1);
+                console.log("Corrected a mistake, removed from pool.");
+            }
+            // Add to correctly answered list (only if not already there)
+            if (!answeredCorrectly.some((aq) => aq && aq.id === currentQuestion.id)) {
+                 answeredCorrectly.push(currentQuestion);
+            }
+
         } else {
-          wrongCount++;
-          currentStreak = 0;
-          answerSequence.push({ number: questionNumber, correct: false });
-          if (correctAnswerText && selectedAnswerText) {
+            wrongCount++;
+            currentStreak = 0; // Reset streak
+            questionScore = 0; // No score for wrong answer
+            answerSequence.push({ number: questionNumber, correct: false });
+
+            // Add to mistake details for review
             mistakeDetails.push({
-              question: currentQuestion.question, selected: selectedAnswerText,
-              correct: correctAnswerText, tags: currentQuestion.tags || []
+                question: currentQuestion.question,
+                selected: selectedAnswerObject.text,
+                correct: correctAnswerObject.text,
+                tags: currentQuestion.tags || []
             });
-          }
-          const mistakeIndex = mistakenQuestions.findIndex((mq) => mq && mq.question.id === currentQuestion.id);
-          const delay = Math.floor(Math.random() * 3) + 2;
-          if (mistakeIndex === -1) {
-            mistakenQuestions.push({ question: currentQuestion, delay: delay });
-            console.log(`Added mistake ${currentQuestion.id} to pool with delay ${delay}. Pool size: ${mistakenQuestions.length}`);
-          } else {
-            mistakenQuestions[mistakeIndex].delay = delay;
-            console.log(`Mistake ${currentQuestion.id} answered wrong again, resetting delay to ${delay}.`);
-          }
+
+            // Add/update in mistake pool for re-asking
+            const mistakeIndex = mistakenQuestions.findIndex((mq) => mq && mq.question.id === currentQuestion.id);
+            const delay = Math.floor(Math.random() * 3) + 2; // Delay 2-4 questions
+            if (mistakeIndex === -1) {
+                 // Only add if not already answered correctly in this session
+                 if (!answeredCorrectly.some(aq => aq && aq.id === currentQuestion.id)) {
+                    mistakenQuestions.push({ question: currentQuestion, delay: delay });
+                    console.log(`Added mistake ${currentQuestion.id} to pool with delay ${delay}. Pool size: ${mistakenQuestions.length}`);
+                 } else {
+                    console.log(`Mistake ${currentQuestion.id} answered wrong, but already answered correctly earlier. Not adding back.`);
+                 }
+            } else {
+                mistakenQuestions[mistakeIndex].delay = delay; // Reset delay if answered wrong again
+                console.log(`Mistake ${currentQuestion.id} answered wrong again, resetting delay to ${delay}.`);
+            }
         }
 
-        // Update tag stats
-        const questionTags = currentQuestion.tags || [];
+        // --- Update Tag Stats (Local for this game) ---
+        const questionTags = Array.isArray(currentQuestion.tags) ? currentQuestion.tags.filter(t => t) : [];
         questionTags.forEach((tag) => {
-          if (!tag) return;
-          if (!gameTagStats[tag]) gameTagStats[tag] = { correct: 0, wrong: 0 };
-          gameTagStats[tag][isCorrect ? "correct" : "wrong"]++;
+            if (!gameTagStats[tag]) gameTagStats[tag] = { correct: 0, wrong: 0 };
+            gameTagStats[tag][isCorrect ? "correct" : "wrong"]++;
         });
 
+        // --- Update Player Stats in Firebase ---
         if (playerId) {
-          updatePlayerStats(playerId, currentQuestion, isCorrect);
+            updatePlayerStatsFirebase(playerId, currentQuestion, isCorrect, questionScore);
         }
 
-        updatePercentage();
-        currentQuestion = null; // Mark current question as answered
+        updatePercentage(); // Update the accuracy circle
+        currentQuestion = null; // Mark question as processed
 
-        if (timerExpired) {
-          console.log("Timer expired, ending game after answering last question.");
-          setTimeout(endGame, 1200); // End game after feedback delay
+        // --- Load Next Question or End Game ---
+        if (timerExpired) { // If timer ran out *while* answering this question
+            console.log("Timer expired, ending game after answering last question.");
+            setTimeout(endGame, 1200); // End game after feedback delay
         } else {
-          setTimeout(loadQuestion, 1200); // Load next question after feedback delay
+            setTimeout(loadQuestion, 1200); // Load next question after feedback delay
         }
       }
 
 
       function updateSequence() {
-        sequenceContainer.innerHTML = "";
+        sequenceContainer.innerHTML = ""; // Clear existing circles
         const totalAnswered = answerSequence.length;
-        const currentQNum = totalAnswered + 1;
-        let startNum = Math.max(1, currentQNum - 2);
-        for (let i = 0; i < 5; i++) {
-          const displayNum = startNum + i;
-          const circle = document.createElement("div");
-          circle.classList.add("sequence-circle");
-          circle.textContent = displayNum;
-          const answer = answerSequence.find((a) => a.number === displayNum);
-          if (displayNum === currentQNum) circle.classList.add("current");
-          else if (answer) circle.classList.add(answer.correct ? "correct" : "wrong");
-          sequenceContainer.appendChild(circle);
+        const currentQNumInGame = totalAnswered + 1;
+        const displayCount = sequenceContainer.children.length > 0 ? sequenceContainer.children.length : 5; // Use existing count or default 5
+
+        // Determine the first number to display (centers the current number if possible)
+        let startNum = Math.max(1, currentQNumInGame - Math.floor(displayCount / 2));
+
+        for (let i = 0; i < displayCount; i++) {
+            const displayNum = startNum + i;
+            const circle = document.createElement("div");
+            circle.classList.add("sequence-circle");
+            circle.textContent = displayNum;
+
+            // Find the corresponding answer in the sequence
+            const answer = answerSequence.find((a) => a.number === displayNum);
+
+            if (displayNum === currentQNumInGame) {
+                circle.classList.add("current"); // Highlight the upcoming question number
+            } else if (answer) {
+                // Style based on past answer
+                circle.classList.add(answer.correct ? "correct" : "wrong");
+            } else {
+                // Future questions remain default style
+            }
+            sequenceContainer.appendChild(circle);
         }
       }
+
       function updatePercentage() {
         const total = correctCount + wrongCount;
         const percentage = total === 0 ? 0 : Math.round((correctCount / total) * 100);
         percentageTextIngameElement.textContent = `${percentage}%`;
+
+        // Update progress circle
         const offset = CIRCLE_CIRCUMFERENCE * (1 - percentage / 100);
         percentageProgressElement.style.strokeDashoffset = Math.max(0, Math.min(CIRCLE_CIRCUMFERENCE, offset));
+
+        // Update progress circle color
         let colorClass = "red";
         if (percentage >= 75) colorClass = "green";
         else if (percentage >= 55) colorClass = "yellow";
+        // Ensure base class is always present
         percentageProgressElement.className.baseVal = `status-circle-progress ${colorClass}`;
       }
+
       function startTimer() {
-        timerValue = 120;
-        totalTime = 120;
-        timerExpired = false; // Ensure flag is reset
+        timerValue = 120; // Reset timer value
+        totalTime = 120; // Reset total time (in case AddTime was used previously)
+        timerExpired = false; // Reset expired flag
         timerTextElement.textContent = timerValue;
-        updateTimerCircle();
-        clearInterval(timerInterval);
+        updateTimerCircle(); // Set initial circle state
+        clearInterval(timerInterval); // Clear any existing interval
 
         timerInterval = setInterval(() => {
-          if (!gameActive) { // Stop timer if game ended prematurely
+          if (!gameActive) { // Stop timer if game ended prematurely (e.g., error, manual stop)
               clearInterval(timerInterval);
               return;
           }
@@ -1194,54 +1468,87 @@
              timerTextElement.textContent = timerValue;
              updateTimerCircle();
 
+             // Visual/Haptic Feedback for low time
              if (timerValue <= 30 && timerValue > 0) {
-               timerProgressElement.style.stroke = "#f56565";
+               timerProgressElement.style.stroke = "#f56565"; // Change color to red
                if (timerValue === 30 || timerValue === 20 || timerValue === 10) vibrate(300);
-               else if (timerValue < 10 && timerValue > 0 && timerValue % 3 === 0) vibrate(150);
+               else if (timerValue < 10 && timerValue > 0 && timerValue % 2 === 0) vibrate(150); // Vibrate every 2s under 10
              } else if (timerValue > 30) {
+               // Reset color if AddTime pushes it back above 30
                timerProgressElement.style.stroke = document.body.classList.contains("dark-mode") ? "#4299e1" : "#7F9CF5";
              }
           }
 
+          // Timer reaches zero
           if (timerValue <= 0 && !timerExpired) {
-            timerExpired = true; // Set the flag
+            timerExpired = true; // Set the flag **once**
             timerTextElement.textContent = "0"; // Ensure display shows 0
-            console.log("Timer reached 0. Flag set. Will end after current question.");
+            console.log("Timer reached 0. Flag set. Game will end after current/next action.");
+             vibrate([200, 100, 200]); // Longer vibration for time up
+
+            // Disable action buttons immediately when timer expires
             fiftyFiftyButton.disabled = true;
             addTimeButton.disabled = true;
             skipButton.disabled = true;
             fiftyFiftyButton.classList.add("disabled");
             addTimeButton.classList.add("disabled");
             skipButton.classList.add("disabled");
+
+            // If no question is currently displayed, end the game immediately
+             if (!currentQuestion) {
+                 console.log("Timer expired between questions. Ending game now.");
+                 endGame();
+             } else {
+                 console.log("Timer expired while question is shown. Waiting for answer/skip.");
+                 // Game will end in checkAnswer or skipButtonClickHandler after the user acts
+             }
           }
         }, 1000);
       }
 
+
       function updateTimerCircle() {
-        const clampedTime = Math.max(0, Math.min(timerValue, totalTime));
-        const offset = CIRCLE_CIRCUMFERENCE * (1 - clampedTime / totalTime);
+        // Ensure timerValue doesn't go below 0 for calculation
+        const clampedTime = Math.max(0, timerValue);
+        // Calculate the proportion of time remaining
+        const timeRatio = totalTime > 0 ? clampedTime / totalTime : 0;
+        // Calculate the stroke offset
+        const offset = CIRCLE_CIRCUMFERENCE * (1 - timeRatio);
+        // Apply the offset, ensuring it's within bounds [0, CIRCLE_CIRCUMFERENCE]
         timerProgressElement.style.strokeDashoffset = Math.max(0, Math.min(CIRCLE_CIRCUMFERENCE, offset));
       }
+
+      // --- Action Buttons ---
       function fiftyFiftyButtonClickHandler() {
-        if (!fiftyFiftyUsed && currentQuestion && currentQuestion.shuffledAnswers && !timerExpired) {
+        // Check conditions: not used, question loaded, timer running, game active
+        if (!fiftyFiftyUsed && currentQuestion && currentQuestion.shuffledAnswers && !timerExpired && gameActive) {
           vibrate(50);
           fiftyFiftyUsed = true;
           fiftyFiftyButton.classList.add("disabled");
           fiftyFiftyButton.disabled = true;
-          const buttons = answersElement.querySelectorAll(".answer-btn:not([disabled])");
-          const incorrectButtons = [];
-          buttons.forEach((btn) => {
-              const answerObj = currentQuestion.shuffledAnswers.find(a => a.text === btn.textContent);
-              if (answerObj && !answerObj.isCorrect && btn.style.visibility !== 'hidden') {
-                  incorrectButtons.push(btn);
-              }
+
+          const buttons = answersElement.querySelectorAll(".answer-btn");
+          const incorrectButtonsIndices = [];
+
+          // Find indices of incorrect, visible buttons
+          currentQuestion.shuffledAnswers.forEach((answer, index) => {
+             if (!answer.isCorrect && buttons[index] && buttons[index].style.visibility !== 'hidden') {
+                 incorrectButtonsIndices.push(index);
+             }
           });
-          incorrectButtons.sort(() => Math.random() - 0.5);
+
+          // Shuffle the indices of incorrect buttons
+          incorrectButtonsIndices.sort(() => Math.random() - 0.5);
+
+          // Hide two of them
           let hiddenCount = 0;
-          for (let i = 0; i < incorrectButtons.length && hiddenCount < 2; i++) {
-              incorrectButtons[i].style.visibility = "hidden";
-              incorrectButtons[i].disabled = true;
-              hiddenCount++;
+          for (let i = 0; i < incorrectButtonsIndices.length && hiddenCount < 2; i++) {
+              const btnIndex = incorrectButtonsIndices[i];
+              if (buttons[btnIndex]) {
+                  buttons[btnIndex].style.visibility = "hidden";
+                  buttons[btnIndex].disabled = true; // Also disable interaction
+                  hiddenCount++;
+              }
           }
           console.log("50:50 used, hid " + hiddenCount + " incorrect answers.");
         }
@@ -1249,51 +1556,72 @@
       fiftyFiftyButton.addEventListener("click", fiftyFiftyButtonClickHandler);
 
       function addTimeButtonClickHandler() {
-        if (!addTimeUsed && !timerExpired) {
+        // Check conditions: not used, timer running, game active
+        if (!addTimeUsed && !timerExpired && gameActive) {
           vibrate(50);
           addTimeUsed = true;
           addTimeButton.classList.add("disabled");
           addTimeButton.disabled = true;
+
           timerValue += 30;
-          totalTime += 30;
-          timerTextElement.textContent = timerValue;
-          updateTimerCircle();
+          totalTime += 30; // Increase total time as well for percentage calculation
+          timerTextElement.textContent = timerValue; // Update display
+          updateTimerCircle(); // Update progress circle
+
+          // Check if the added time pushed the timer back above the 'warning' threshold
           if (timerValue > 30) {
             timerProgressElement.style.stroke = document.body.classList.contains("dark-mode") ? "#4299e1" : "#7F9CF5";
-          } else if (timerValue > 0) {
-              timerProgressElement.style.stroke = "#f56565";
           }
-          console.log("+30 seconds used.");
+           console.log("+30 seconds used. New time:", timerValue, "New total:", totalTime);
         }
       }
       addTimeButton.addEventListener("click", addTimeButtonClickHandler);
 
+
       function skipButtonClickHandler() {
-        if (currentQuestion && currentQuestion.shuffledAnswers && !timerExpired) {
+        // Check conditions: question loaded, timer running, game active
+        if (currentQuestion && currentQuestion.shuffledAnswers && !timerExpired && gameActive) {
           vibrate(50);
           skipUsed++;
-          console.log("Skip used.");
+          console.log("Skip used. Count:", skipUsed);
 
+          // Disable answer buttons and show the correct one
           const answerBtns = answersElement.querySelectorAll(".answer-btn");
           answerBtns.forEach((btn) => {
-              btn.disabled = true;
+              btn.disabled = true; // Disable all answer buttons
               const answerObj = currentQuestion.shuffledAnswers.find(a => a.text === btn.textContent);
               if (answerObj?.isCorrect) {
-                  btn.classList.add("correct");
+                  btn.classList.add("correct"); // Highlight the correct answer
               } else {
-                  btn.style.opacity = "0.5";
+                   if (btn.style.visibility !== 'hidden') { // Only fade if not hidden by 50:50
+                       btn.style.opacity = "0.5"; // Fade out incorrect answers
+                   }
               }
           });
-          skipButton.disabled = true;
-          skipButton.classList.add("disabled");
-          currentQuestion = null; // Mark question as skipped/done
 
-           if (timerExpired) {
-                console.log("Timer expired, ending game after skipping last question.");
-                setTimeout(endGame, 1000); // End game after feedback delay
-           } else {
-                setTimeout(loadQuestion, 1000); // Load next question after feedback delay
-           }
+          // Disable the skip button itself temporarily to prevent double-clicks
+          skipButton.disabled = true;
+          // skipButton.classList.add("disabled"); // Optionally add visual disabled state
+
+          const skippedQuestion = currentQuestion; // Keep reference
+          currentQuestion = null; // Mark question as processed (skipped)
+
+           // Add the skipped question to the mistake pool with a short delay
+          const mistakeIndex = mistakenQuestions.findIndex((mq) => mq && mq.question.id === skippedQuestion.id);
+          if (mistakeIndex === -1 && !answeredCorrectly.some(aq => aq && aq.id === skippedQuestion.id)) {
+               mistakenQuestions.push({ question: skippedQuestion, delay: 1 }); // Add with short delay (1)
+               console.log(`Added skipped question ${skippedQuestion.id} to mistake pool.`);
+          }
+
+          // Load the next question after a short delay for feedback
+          setTimeout(() => {
+               // Re-enable skip button for the next question (if timer allows)
+               if (!timerExpired) {
+                   skipButton.disabled = false;
+                   // skipButton.classList.remove("disabled");
+               }
+               loadQuestion();
+           }, 1000); // 1 second delay
         }
       }
       skipButton.addEventListener("click", skipButtonClickHandler);
@@ -1301,12 +1629,19 @@
 
       // --- End Game & Results ---
       function launchConfetti() {
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        // Use the existing confetti function, maybe add score-based intensity?
         const totalQuestions = correctCount + wrongCount;
         const percentage = totalQuestions === 0 ? 0 : Math.round((correctCount / totalQuestions) * 100);
+        let particleCount = 100;
+        if (percentage >= 90) particleCount = 150;
+        if (percentage < 50) particleCount = 50;
+
+        confetti({ particleCount: particleCount, spread: 70, origin: { y: 0.6 } });
+
+        // Extra burst for high scores or perfect scores
         if (percentage >= 80) {
           const end = Date.now() + 1.5 * 1000;
-          const colors = ["#a3bffa", "#7f9cf5", "#ffffff", "#48bb78"];
+          const colors = ["#a3bffa", "#7f9cf5", "#ffffff", "#48bb78"]; // Example colors
           (function frame() {
             confetti({ particleCount: 2, angle: 60, spread: 55, origin: { x: 0, y: 0.7 }, colors: colors });
             confetti({ particleCount: 2, angle: 120, spread: 55, origin: { x: 1, y: 0.7 }, colors: colors });
@@ -1314,70 +1649,207 @@
           })();
         }
       }
-      function saveGameResult() {
+
+       function saveGameResult() {
+        // Saves daily best based on CORRECT COUNT primarily
         if (!playerId) return;
-        const now = new Date(), dateStr = now.toISOString().split("T")[0], timestamp = now.toISOString();
+        const now = new Date();
+        const dateStr = now.toISOString().split("T")[0];
+        const timestamp = now.toISOString();
         const totalQuestions = correctCount + wrongCount;
-        if (totalQuestions === 0) return; // Don't save empty games
+
+        if (totalQuestions === 0 && currentGameScore === 0) {
+             console.log("Skipping save for empty game.");
+             return; // Don't save games with no answers/score
+        }
+
         const result = {
-          correctCount, totalQuestions, longestStreak, timestamp, topic: currentTopic || "unknown",
+          correctCount: correctCount,
+          totalQuestions: totalQuestions,
+          longestStreak: longestStreak,
+          score: currentGameScore, // <<< Include game score
+          timestamp: timestamp,
+          topic: currentTopic || "unknown",
           tools: { fiftyFifty: fiftyFiftyUsed, addTime: addTimeUsed, skips: skipUsed },
+          // Consider adding nickname here if needed for display, but ranking uses playerID
+          nickname: playerNickname // Add nickname for easier display in results if needed later
         };
+
         const resultRef = database.ref(`gameResults/${dateStr}/${playerId}`);
+
         resultRef.once("value").then((snapshot) => {
             const existingResult = snapshot.val();
             let shouldUpdate = true;
+
+            // Update if new result is better (more correct answers, tie-break with score/streak)
             if (existingResult) {
-              if (result.correctCount < existingResult.correctCount) shouldUpdate = false;
-              else if (result.correctCount === existingResult.correctCount) {
-                if (result.totalQuestions < existingResult.totalQuestions) shouldUpdate = false;
-                else if (result.totalQuestions === existingResult.totalQuestions && result.longestStreak <= existingResult.longestStreak) shouldUpdate = false;
+              if (result.correctCount < existingResult.correctCount) {
+                shouldUpdate = false;
+              } else if (result.correctCount === existingResult.correctCount) {
+                 // Tie-break 1: Higher score is better
+                 if ((result.score || 0) < (existingResult.score || 0)) {
+                     shouldUpdate = false;
+                 } else if ((result.score || 0) === (existingResult.score || 0)) {
+                     // Tie-break 2: Longer streak is better
+                     if ((result.longestStreak || 0) <= (existingResult.longestStreak || 0)) {
+                         shouldUpdate = false;
+                     }
+                 }
               }
             }
-            if (shouldUpdate) resultRef.set(result).then(() => console.log("Game result saved/updated.")).catch((err) => console.error("Error saving game result:", err));
-            else console.log("Existing daily result is better, not updating.");
+
+            if (shouldUpdate) {
+              resultRef.set(result)
+                .then(() => console.log("Daily best game result saved/updated."))
+                .catch((err) => console.error("Error saving game result:", err));
+            } else {
+              console.log("Existing daily result is better or equal, not updating.");
+            }
         }).catch((err) => console.error("Error fetching existing game result:", err));
+
+        // Update cumulative score in player profile (already handled by updatePlayerStatsFirebase)
+        // We only need to ensure the final state is saved if the game ends abruptly,
+        // but transactions should handle consistency during the game.
+        // Let's add a final check/update here just in case.
+         database.ref(`players/${playerId}/cumulativeScore`).set(cumulativePlayerScore)
+             .then(() => console.log("Final cumulative score confirmed in DB."))
+             .catch(err => console.error("Error confirming final cumulative score:", err));
+         localStorage.setItem("cumulativeScoreBackup", cumulativePlayerScore.toString()); // Ensure local backup is current
       }
-      async function getDailyRankings() {
-        if (!playerId) return { rankCorrect: "N/A", topCorrect: 0, topStreak: 0, totalPlayers: 0 };
-        const dateStr = new Date().toISOString().split("T")[0];
-        try {
-          const snapshot = await database.ref(`gameResults/${dateStr}`).orderByChild("correctCount").once("value");
-          const results = snapshot.val() || {};
-          const resultArray = Object.entries(results).map(([pid, data]) => ({
-            playerId: pid, correctCount: data.correctCount || 0,
-            totalQuestions: data.totalQuestions || 0, longestStreak: data.longestStreak || 0,
-          }));
-          resultArray.sort((a, b) => b.correctCount - a.correctCount || b.totalQuestions - a.totalQuestions || b.longestStreak - a.longestStreak);
-          const rankCorrect = resultArray.findIndex((r) => r.playerId === playerId) + 1;
-          const topCorrect = resultArray[0]?.correctCount || 0;
-          const topStreak = resultArray.reduce((max, r) => Math.max(max, r.longestStreak || 0), 0);
-          return { rankCorrect: rankCorrect > 0 ? rankCorrect : "לא דורג", topCorrect, topStreak, totalPlayers: resultArray.length };
-        } catch (error) {
-          console.error("Error fetching daily rankings:", error);
-          return { rankCorrect: "שגיאה", topCorrect: 0, topStreak: 0, totalPlayers: 0 };
+
+
+       async function getDailyRankings() {
+            if (!playerId) return { rankings: [], currentPlayerRank: -1 };
+            const dateStr = new Date().toISOString().split("T")[0];
+            try {
+                const snapshot = await database.ref(`gameResults/${dateStr}`)
+                                        .orderByChild("correctCount") // Primary sort: correct answers (desc)
+                                        .limitToLast(100) // Get top 100 players for the day by correct answers
+                                        .once("value");
+                const results = snapshot.val() || {};
+
+                const resultArray = Object.entries(results).map(([pid, data]) => ({
+                    playerId: pid,
+                    correctCount: data.correctCount || 0,
+                    score: data.score || 0, // Include score
+                    longestStreak: data.longestStreak || 0,
+                    nickname: data.nickname || `שחקן...${pid.substring(pid.length - 4)}` // Use saved nickname or generate one
+                }));
+
+                // Secondary sort: score (desc), then streak (desc)
+                resultArray.sort((a, b) =>
+                    b.correctCount - a.correctCount || // Sort by correct count (desc)
+                    b.score - a.score || // Then by score (desc)
+                    b.longestStreak - a.longestStreak // Then by streak (desc)
+                );
+
+                const currentPlayerRank = resultArray.findIndex((r) => r.playerId === playerId) + 1; // Find rank (1-based)
+
+                return { rankings: resultArray, currentPlayerRank: currentPlayerRank > 0 ? currentPlayerRank : -1 };
+            } catch (error) {
+                console.error("Error fetching daily rankings:", error);
+                return { rankings: [], currentPlayerRank: -1 }; // Return empty on error
+            }
         }
-      }
+
+        async function getOverallRankings(limit = 10) {
+            if (!playerId) return { rankings: [], currentPlayerRank: -1 };
+            try {
+                const snapshot = await database.ref('players')
+                                        .orderByChild('cumulativeScore') // Order by cumulative score
+                                        .limitToLast(limit) // Get the top 'limit' players
+                                        .once('value');
+                const results = snapshot.val() || {};
+
+                 const resultArray = Object.entries(results).map(([pid, data]) => ({
+                    playerId: pid,
+                    cumulativeScore: data.cumulativeScore || 0,
+                    nickname: data.nickname || `שחקן...${pid.substring(pid.length - 4)}` // Use nickname or generate one
+                 }));
+
+                // Sort descending by score (Firebase returns ascending with limitToLast)
+                resultArray.sort((a, b) => b.cumulativeScore - a.cumulativeScore);
+
+                 // Find current player's rank *within this top list*
+                const currentPlayerRank = resultArray.findIndex(r => r.playerId === playerId) + 1;
+
+                return { rankings: resultArray, currentPlayerRank: currentPlayerRank > 0 ? currentPlayerRank : -1 };
+
+            } catch (error) {
+                console.error("Error fetching overall rankings:", error);
+                 return { rankings: [], currentPlayerRank: -1 }; // Return empty on error
+            }
+        }
+
+
+        function displayRankings(element, rankings, currentPlayerRank, scoreField, rankLabelPrefix = "") {
+             element.innerHTML = ""; // Clear previous content
+             if (!rankings || rankings.length === 0) {
+                 element.innerHTML = "<p>אין נתוני דירוג זמינים כרגע.</p>";
+                 return;
+             }
+
+             const list = document.createElement("ul");
+             rankings.forEach((player, index) => {
+                 const rank = index + 1;
+                 const li = document.createElement("li");
+                 if (player.playerId === playerId) {
+                     li.classList.add("current-player");
+                 }
+
+                 const rankSpan = document.createElement("span");
+                 rankSpan.className = "rank-number";
+                 rankSpan.textContent = `#${rank}`;
+
+                 const nameSpan = document.createElement("span");
+                 nameSpan.className = "rank-name";
+                 nameSpan.textContent = player.nickname; // Display nickname
+
+                 const scoreSpan = document.createElement("span");
+                 scoreSpan.className = "rank-score";
+                 scoreSpan.textContent = (player[scoreField] || 0).toLocaleString(); // Display the relevant score
+
+                 li.appendChild(rankSpan);
+                 li.appendChild(nameSpan);
+                 li.appendChild(scoreSpan);
+                 list.appendChild(li);
+             });
+
+             element.appendChild(list);
+
+             // Add a note if the current player is not in the displayed top list
+             if (currentPlayerRank === -1 && rankings.some(p => p.playerId === playerId)) {
+                 // This case shouldn't happen with findIndex logic, but as a fallback:
+                 element.innerHTML += `<p style="font-size: 0.8rem; margin-top: 5px;">אתה ברשימה, אך הדירוג המדויק לא חושב.</p>`;
+             } else if (currentPlayerRank === -1 && totalQuestions > 0) { // Only show if they played
+                  // Fetch the player's *actual* rank if they aren't in the top list (more complex, skip for now)
+                  // For simplicity, just show their score if they aren't top N
+                  const playerScore = scoreField === 'cumulativeScore' ? cumulativePlayerScore : currentGameScore;
+                  element.innerHTML += `<p style="font-size: 0.8rem; margin-top: 5px;">הדירוג שלך מחוץ ל-${rankings.length} הראשונים (${rankLabelPrefix}${playerScore.toLocaleString()}).</p>`;
+             }
+        }
+
 
       async function endGame() {
-        // --- Ensure endGame runs only once ---
-        if (!gameActive) return;
-        gameActive = false; // Mark game as inactive
+        if (!gameActive) return; // Prevent double execution
+        gameActive = false;
         console.log("Game ended. Displaying results.");
 
-        clearInterval(timerInterval); // Stop the timer definitively
+        clearInterval(timerInterval);
         gameScreen.style.display = "none";
         resultScreen.style.display = "block";
 
-        saveGameResult(); // Save result async
+        saveGameResult(); // Save game result and update cumulative score
 
         const totalQuestions = correctCount + wrongCount;
         const percentage = totalQuestions === 0 ? 0 : Math.round((correctCount / totalQuestions) * 100);
         const endTimeValue = timerExpired ? 0 : timerValue;
-        const timeSpent = totalTime - endTimeValue;
+        const timeSpent = totalTime - endTimeValue; // Use totalTime which includes added time
         const avgTimePerQuestion = totalQuestions === 0 ? 0 : Math.round(timeSpent / totalQuestions);
 
-        document.getElementById("score").innerHTML = `תשובות נכונות: <span class="highlight">${correctCount}</span> | תשובות שגויות: ${wrongCount}<br>זמן ממוצע לשאלה: ${avgTimePerQuestion} שניות | רצף שיא: ${longestStreak}`;
+        // --- Update Score Display ---
+        scoreElement.innerHTML = `ניקוד במשחק: <span class="highlight">${currentGameScore.toLocaleString()}</span><br>ניקוד מצטבר: ${cumulativePlayerScore.toLocaleString()}`;
+        accuracyStatsElement.innerHTML = `נכונות: ${correctCount}/${totalQuestions} | רצף שיא: ${longestStreak} | זמן ממוצע: ${avgTimePerQuestion} שנ'`;
 
         // Result Circle Animation
         const resultOffset = RESULT_CIRCLE_CIRCUMFERENCE * (1 - percentage / 100);
@@ -1386,13 +1858,16 @@
         if (percentage >= 75) resultColorClass = "green";
         else if (percentage >= 55) resultColorClass = "yellow";
         resultProgressCircleElement.setAttribute("class", `status-circle-progress ${resultColorClass}`);
-        percentageTextResultElement.textContent = "0%";
+        percentageTextResultElement.textContent = "0%"; // Start from 0
         let count = 0;
         const percentageAnim = setInterval(() => {
-          count++;
-          if (count <= percentage) percentageTextResultElement.textContent = `${count}%`;
-          else clearInterval(percentageAnim);
-        }, 20);
+            count++;
+            if (count <= percentage) {
+                percentageTextResultElement.textContent = `${count}%`;
+            } else {
+                clearInterval(percentageAnim);
+            }
+        }, 20); // Animation speed
 
         // Tools Used
         let toolsText = "";
@@ -1402,64 +1877,89 @@
         toolsText = toolsText.endsWith(", ") ? toolsText.slice(0, -2) : toolsText;
         toolsUsedElement.textContent = toolsText || "לא נעשה שימוש בכלים";
 
-        // Rankings
-        rankingElement.textContent = "טוען דירוג...";
-        const rankings = await getDailyRankings(); // Fetch rankings async
-        rankingElement.innerHTML = `<p>מקום ${rankings.rankCorrect} מתוך ${rankings.totalPlayers} שחקנים היום</p><p>תשובות נכונות: ${correctCount} (שיא יומי: ${rankings.topCorrect})</p><p>רצף שיא במשחק: ${longestStreak} (שיא יומי: ${rankings.topStreak})</p>`;
+        // --- Display Rankings ---
+        rankingElement.innerHTML = "טוען דירוג יומי..."; // Placeholder
+        overallRankingElement.innerHTML = "טוען דירוג כללי..."; // Placeholder
+
+        try {
+             const [dailyData, overallData] = await Promise.all([
+                 getDailyRankings(),
+                 getOverallRankings(10) // Get Top 10 overall
+             ]);
+             // Display Daily Ranking (Top 100 sorted by correct, then score, then streak)
+             displayRankings(rankingElement, dailyData.rankings.slice(0, 10), dailyData.currentPlayerRank, 'correctCount', 'תשובות: ');
+             // Display Overall Ranking (Top 10 sorted by cumulative score)
+             displayRankings(overallRankingElement, overallData.rankings, overallData.currentPlayerRank, 'cumulativeScore', 'ניקוד: ');
+        } catch (error) {
+             console.error("Error fetching or displaying rankings:", error);
+             rankingElement.textContent = "שגיאה בטעינת דירוג יומי.";
+             overallRankingElement.textContent = "שגיאה בטעינת דירוג כללי.";
+        }
+
 
         // Mistakes Review
-        mistakesElement.innerHTML = "";
+        mistakesElement.innerHTML = ""; // Clear previous
         if (mistakeDetails.length > 0) {
           const uniqueMistakes = new Map();
-          mistakeDetails.forEach((mistake) => uniqueMistakes.set(mistake.question, mistake));
+          // Show only the *first* instance of each question missed
+          mistakeDetails.forEach((mistake) => {
+             if (!uniqueMistakes.has(mistake.question)) {
+                 uniqueMistakes.set(mistake.question, mistake);
+             }
+          });
           uniqueMistakes.forEach((mistake) => {
-            mistakesElement.innerHTML += `<div class="mistake-block"><div class="mistake-question">${mistake.question}</div><div class="wrong-answer">❌ ${mistake.selected}</div><div class="correct-answer">✅ ${mistake.correct}</div></div>`;
+            mistakesElement.innerHTML += `<div class="mistake-block"><div class="mistake-question">${mistake.question}</div><div class="wrong-answer">❌ תשובתך: ${mistake.selected}</div><div class="correct-answer">✅ התשובה הנכונה: ${mistake.correct}</div></div>`;
           });
         } else {
-          mistakesElement.innerHTML = totalQuestions > 0 ? '<p class="perfect">💯 מושלם! כל התשובות נכונות!</p>' : "<p>לא ענית על אף שאלה במשחק זה.</p>";
+          mistakesElement.innerHTML = totalQuestions > 0 ? '<p class="perfect">💯 מושלם! כל התשובות נכונות!</p>' : "<p>לא ענית על שאלות במשחק זה.</p>";
         }
 
         // Tag Analysis (Clickable Links)
         tagAnalysisElement.innerHTML = "";
         const isDarkMode = document.body.classList.contains("dark-mode");
-        const colorSchemes = {
+        const colorSchemes = { /* ... (keep existing color schemes) ... */
             light: { success: { background: "#e6fffa", text: "#2c7a7b", border: "#9ae6b4" }, moderate: { background: "#fffbeb", text: "#b7791f", border: "#f6e05e" }, failure: { background: "#fff5f5", text: "#c53030", border: "#feb2b2" }, },
             dark: { success: { background: "#2f855a", text: "#f0fff4", border: "#68d391" }, moderate: { background: "#b7791f", text: "#fffbeb", border: "#f6e05e" }, failure: { background: "#c53030", text: "#fff5f5", border: "#fc8181" }, },
         };
         const currentScheme = isDarkMode ? colorSchemes.dark : colorSchemes.light;
         const successThreshold = 75, failureThreshold = 50;
+
         const tagCloudData = Object.entries(gameTagStats).map(([tag, stats]) => {
-            if (!tag) return null;
+            if (!tag || typeof stats !== 'object' || stats === null) return null; // Basic validation
             const total = (stats.correct || 0) + (stats.wrong || 0);
-            if (total === 0) return null;
+            if (total === 0) return null; // Skip tags with no answers
             const accuracy = Math.round(((stats.correct || 0) / total) * 100);
+
             let colors, sortOrder;
-            if (accuracy >= successThreshold) { colors = currentScheme.success; sortOrder = 1; }
-            else if (accuracy < failureThreshold) { colors = currentScheme.failure; sortOrder = 3; }
-            else { colors = currentScheme.moderate; sortOrder = 2; }
-            let fontWeight = (stats.wrong || 0) > (stats.correct || 0) ? "bold" : "normal";
+            if (accuracy >= successThreshold) { colors = currentScheme.success; sortOrder = 1; } // High accuracy first
+            else if (accuracy < failureThreshold) { colors = currentScheme.failure; sortOrder = 3; } // Low accuracy last
+            else { colors = currentScheme.moderate; sortOrder = 2; } // Moderate in middle
+
+            let fontWeight = (stats.wrong || 0) > (stats.correct || 0) ? "bold" : "normal"; // Bold if more wrong than right
+
             return { tag, colors, fontWeight, accuracy, correct: stats.correct || 0, total, sortOrder };
-        }).filter(item => item !== null);
+        }).filter(item => item !== null); // Remove nulls
+
+        // Sort by accuracy group, then alphabetically within group
         tagCloudData.sort((a, b) => {
             if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
-            return a.tag.localeCompare(b.tag, "he");
+            return a.tag.localeCompare(b.tag, "he"); // Alphabetical within group
         });
+
         if (tagCloudData.length > 0) {
           tagCloudData.forEach((item) => {
             const linkElement = document.createElement("a");
             linkElement.classList.add("tag-cloud-item");
-            // --- MODIFICATION: Change search query ---
             const searchTerm = encodeURIComponent(`${item.tag} ביולוגיה`);
             linkElement.href = `https://www.google.com/search?q=${searchTerm}`;
             linkElement.target = "_blank";
-            linkElement.rel = "noopener noreferrer";
+            linkElement.rel = "noopener noreferrer"; // Security best practice
             linkElement.style.backgroundColor = item.colors.background;
             linkElement.style.color = item.colors.text;
             linkElement.style.borderColor = item.colors.border;
             linkElement.style.fontWeight = item.fontWeight;
             linkElement.textContent = `#${item.tag}`;
-            // --- MODIFICATION: Update title ---
-            linkElement.title = `דיוק: ${item.accuracy}% (${item.correct}/${item.total}) - לחץ כדי ללמוד על '${item.tag}' בגוגל`;
+            linkElement.title = `דיוק: ${item.accuracy}% (${item.correct}/${item.total}) - חפש '${item.tag}' בגוגל`; // Tooltip
             tagAnalysisElement.appendChild(linkElement);
           });
         } else {
@@ -1469,27 +1969,36 @@
         // Result Buttons
         shareButton.onclick = () => {
             vibrate(50);
-            const shareText = `שיחקתי טריווBIO בנושא ${topicNames[currentTopic] || 'מעורב'} והשגתי ${correctCount} תשובות נכונות (${percentage}%) עם רצף שיא של ${longestStreak}! 🎉 בואו לשחק גם!`;
-            // --- MODIFICATION: Remove trailing slash from URL ---
+            // Updated share text to include score
+            const shareText = `שיחקתי טריווBIO בנושא ${topicNames[currentTopic] || 'מעורב'} והשגתי ${currentGameScore.toLocaleString()} נקודות (${percentage}% דיוק) עם רצף שיא של ${longestStreak}! 🎉 סה"כ צברתי ${cumulativePlayerScore.toLocaleString()} נקודות. בואו לשחק גם!`;
             let currentUrl = window.location.href;
             if (currentUrl.endsWith('/')) {
-                currentUrl = currentUrl.slice(0, -1);
+                currentUrl = currentUrl.slice(0, -1); // Remove trailing slash if present
             }
             const shareData = { title: "טריווBIO - תוצאת משחק", text: shareText, url: currentUrl };
+
             if (navigator.share) {
-                navigator.share(shareData).then(() => console.log("Successful share")).catch((error) => console.log("Error sharing", error));
+                navigator.share(shareData)
+                    .then(() => console.log("Successful share"))
+                    .catch((error) => console.log("Error sharing", error));
             } else {
-                navigator.clipboard.writeText(shareText + " " + currentUrl).then(() => showToast("התוצאה והקישור הועתקו!")).catch((err) => { console.error("Failed to copy text: ", err); showToast("שגיאה בהעתקת התוצאה."); });
+                // Fallback for browsers without navigator.share
+                navigator.clipboard.writeText(shareText + " " + currentUrl)
+                    .then(() => showToast("התוצאה והקישור הועתקו!"))
+                    .catch((err) => {
+                        console.error("Failed to copy text: ", err);
+                        showToast("שגיאה בהעתקת התוצאה.");
+                    });
             }
         };
         restartButton.onclick = () => {
           vibrate(50);
           resultScreen.style.display = "none";
           startScreen.style.display = "block";
-          resetGame();
+          // resetGame() is implicitly called when a new game starts via topic button
         };
 
-        launchConfetti();
+        launchConfetti(); // Fire confetti!
       }
 
     </script>
