@@ -1,0 +1,23 @@
+{
+  "rules": {
+    "gameResults": {
+      "$date": {
+        ".read": "auth != null",  // Allow reading all results for a specific date
+        "$playerId": {
+          ".read": "auth != null",  // Keep this for consistency (optional)
+          ".write": "auth != null && auth.uid === $playerId"  // Only the player can write their own result
+        }
+      }
+    },
+    "players": {
+      "$playerId": {
+        ".read": "auth != null && auth.uid === $playerId",
+        ".write": "auth != null && auth.uid === $playerId"
+      }
+    },
+    "questions": {
+      ".read": "auth != null",
+      ".write": false
+    }
+  }
+}

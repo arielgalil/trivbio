@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>טריווBIO - משחק טריוויה בביולוגיה</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Rubik", sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f7fa;
+        color: #2d3748;
+        transition: background-color 0.5s ease, color 0.5s ease;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2px 0;
+        position: relative;
+      }
+      h1 {
+        margin: 0;
+        font-size: 2em;
+        color: #4a5568;
+        text-align: center;
+      }
+      .switch {
+        position: absolute;
+        right: 20px;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #4a5568;
+        transition: 0.4s;
+        border-radius: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 5px;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: #718096;
+      }
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+      .theme-icon {
+        width: 20px;
+        height: 20px;
+        transition: opacity 0.3s ease;
+      }
+      .sun {
+        opacity: 1;
+      }
+      .moon {
+        opacity: 0;
+      }
+      input:checked + .slider .sun {
+        opacity: 0;
+      }
+      input:checked + .slider .moon {
+        opacity: 1;
+      }
+      .dark-mode .slider {
+        background-color: #718096;
+      }
+      .dark-mode input:checked + .slider {
+        background-color: #4a5568;
+      }
+      main {
+        text-align: center;
+      }
+      #start-screen {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        margin-top: 10px;
+      }
+      #start-screen h2 {
+        color: #fff;
+        font-size: 1.5em;
+        margin-bottom: 15px;
+      }
+      #start-screen p {
+        color: #fff;
+        font-size: 18px;
+        margin-bottom: 15px;
+        line-height: 1.5;
+      }
+      .topic-btn {
+        background-color: #fff;
+        color: #4a5568;
+        border: none;
+        padding: 15px 30px;
+        font-size: 18px;
+        font-weight: 700;
+        margin: 10px;
+        cursor: pointer;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease, background-color 0.3s ease;
+        display: block;
+        text-align: center;
+      }
+      .question-count {
+        font-size: 0.8em;
+        color: #718096;
+      }
+      .topic-btn:hover {
+        background-color: #edf2f7;
+        transform: translateY(-2px);
+      }
+      .answer-btn {
+        background-color: #e2e8f0;
+        color: #2d3748;
+        border: none;
+        padding: 15px;
+        font-size: 16px;
+        font-weight: 700;
+        margin: 0;
+        cursor: pointer;
+        border-radius: 12px;
+        width: 100%;
+        transition: background-color 0.3s ease;
+      }
+      .answer-btn.correct {
+        background-color: #48bb78;
+        color: #fff;
+      }
+      .answer-btn.wrong {
+        background-color: #f56565;
+        color: #fff;
+      }
+      #answers {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        max-width: 600px;
+        margin: 0 auto 20px;
+      }
+      #status-row {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        margin: 20px auto;
+        max-width: 600px;
+      }
+      #timer-container {
+        position: relative;
+        width: 55px;
+        height: 55px;
+      }
+      #timer-circle {
+        width: 100%;
+        height: 100%;
+      }
+      #timer-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 16px;
+        font-weight: bold;
+        color: #2d3748;
+      }
+      #sequence-container {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .sequence-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: bold;
+        color: #2d3748;
+        border: 2px solid #2d3748;
+        background-color: #e2e8f0;
+        transition: border-width 0.3s ease;
+        box-sizing: border-box;
+      }
+      .sequence-circle.current {
+        border-width: 4px;
+        background-color: #e2e8f0;
+      }
+      .sequence-circle.correct {
+        background-color: #f6e05e;
+      }
+      .sequence-circle.wrong {
+        background-color: #feb2b2;
+      }
+      #percentage-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: bold;
+        color: #2d3748;
+        border: 2px solid #2d3748;
+        background-color: #b8e0b8;
+      }
+      #game-buttons {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 0px;
+      }
+      #fifty-fifty,
+      #add-time,
+      #skip {
+        background-color: #e2e8f0;
+        color: #2d3748;
+        border: none;
+        border-radius: 50%;
+        width: 53.2px;
+        height: 53.2px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.3s ease;
+      }
+      #fifty-fifty:hover,
+      #add-time:hover,
+      #skip:hover {
+        background-color: #cbd5e0;
+      }
+      #fifty-fifty.disabled,
+      #add-time.disabled,
+      #skip.disabled {
+        background-color: #a0aec0;
+        color: #2d3748;
+        cursor: not-allowed;
+      }
+      #restart {
+        background-color: #4299e1;
+        color: #fff;
+        border: none;
+        padding: 15px 30px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        border-radius: 12px;
+        transition: background-color 0.3s ease;
+      }
+      #restart:hover {
+        background-color: #3182ce;
+      }
+      #question {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 30px;
+        color: #2d3748;
+      }
+      #result-screen {
+        text-align: center;
+      }
+      #mistakes {
+        margin-top: 20px;
+        text-align: right;
+      }
+      .mistake-block {
+        background-color: #eaeaea;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 0px;
+      }
+      .mistake-question {
+        font-weight: 700;
+        font-size: 18px;
+        color: #2d3748;
+        margin-bottom: 10px;
+      }
+      .wrong-answer {
+        color: #ff0000;
+        margin-bottom: 8px;
+      }
+      .correct-answer {
+        color: #008000;
+      }
+      .dark-mode {
+        background-color: #1a202c;
+        color: #e2e8f0;
+      }
+      .dark-mode #start-screen {
+        background: linear-gradient(135deg, #2b6cb0, #4a5568);
+      }
+      .dark-mode #start-screen p {
+        color: #e2e8f0;
+      }
+      .dark-mode .topic-btn {
+        background-color: #2d3748;
+        color: #e2e8f0;
+      }
+      .dark-mode .topic-btn:hover {
+        background-color: #4a5568;
+      }
+      .dark-mode .answer-btn {
+        background-color: #4a5568;
+        color: #e2e8f0;
+      }
+      .dark-mode .answer-btn.correct {
+        background-color: #38a169;
+      }
+      .dark-mode .answer-btn.wrong {
+        background-color: #e53e3e;
+      }
+      .dark-mode #fifty-fifty,
+      .dark-mode #add-time,
+      .dark-mode #skip {
+        background-color: #4a5568;
+        color: #e2e8f0;
+      }
+      .dark-mode #fifty-fifty:hover,
+      .dark-mode #add-time:hover,
+      .dark-mode #skip:hover {
+        background-color: #718096;
+      }
+      .dark-mode #fifty-fifty.disabled,
+      .dark-mode #add-time.disabled,
+      .dark-mode #skip.disabled {
+        background-color: #718096;
+        color: #e2e8f0;
+      }
+      .dark-mode #restart {
+        background-color: #2b6cb0;
+      }
+      .dark-mode h1,
+      .dark-mode #timer-text,
+      .dark-mode #question {
+        color: #e2e8f0;
+      }
+      .dark-mode .sequence-circle {
+        border-color: #e2e8f0;
+        color: #e2e8f0;
+        background-color: #4a5568;
+      }
+      .dark-mode .sequence-circle.current {
+        background-color: #4a5568;
+      }
+      .dark-mode .sequence-circle.correct {
+        background-color: #d69e2e;
+      }
+      .dark-mode .sequence-circle.wrong {
+        background-color: #9b2c2c;
+      }
+      .dark-mode #percentage-circle {
+        border-color: #e2e8f0;
+        color: #e2e8f0;
+        background-color: #68b368;
+      }
+      .dark-mode .mistake-block {
+        background-color: #2b3341;
+        border: 1px solid #4a5568;
+      }
+      .dark-mode .mistake-question {
+        color: #e2e8f0;
+      }
+      .dark-mode .wrong-answer {
+        color: #ff6666;
+      }
+      .dark-mode .correct-answer {
+        color: #66cc66;
+      }
+      @media (max-width: 600px) {
+        .answer-btn {
+          width: 100%;
+        }
+        #answers {
+          grid-template-columns: 1fr;
+          gap: 15px;
+        }
+        #start-screen {
+          padding: 20px;
+        }
+        .topic-btn {
+          width: 80%;
+          margin: 10px auto;
+          display: block;
+        }
+        #status-row {
+          gap: 8px;
+        }
+        .sequence-circle {
+          width: 35px;
+          height: 35px;
+          font-size: 14px;
+        }
+      }
+      @media (min-width: 601px) {
+        #start-screen-buttons {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0px;
+        }
+      }
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #4a5568;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        z-index: 1000;
+      }
+      .toast.show {
+        opacity: 1;
+      }
+      .dark-mode .toast {
+        background-color: #e2e8f0;
+        color: #1a202c;
+      }
+      footer {
+        padding: 0px;
+        text-align: center;
+      }
+      footer a {
+        color: #4299e1;
+        text-decoration: none;
+        font-weight: 700;
+        transition: color 0.3s ease, text-decoration 0.3s ease;
+      }
+      footer a:hover {
+        color: #3182ce;
+        text-decoration: underline;
+      }
+      .dark-mode footer a {
+        color: #63b3ed;
+      }
+      .dark-mode footer a:hover {
+        color: #4299e1;
+      }
+      #result-screen h3 {
+        font-size: 1.5em;
+        margin: 0 0 10px 0;
+        color: #2d3748;
+      }
+      #result-screen p {
+        font-size: 16px;
+        margin: 5px 0;
+        color: #4a5568;
+      }
+      .dark-mode #result-screen h3 {
+        color: #e2e8f0;
+      }
+      .dark-mode #result-screen p {
+        color: #e2e8f0;
+      }
+      .result-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 15px;
+        margin: 10px 0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      .progress-circle {
+        position: relative;
+        display: inline-block;
+        margin: 10px 0;
+      }
+      .progress-circle svg {
+        transform: rotate(-90deg);
+      }
+      #percentage-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-weight: bold;
+        color: #2d3748;
+      }
+      .highlight {
+        color: #4299e1;
+        font-weight: bold;
+      }
+      .perfect {
+        color: #48bb78;
+        font-weight: bold;
+        font-size: 18px;
+      }
+      .tip {
+        color: #667eea;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+      .result-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+      }
+      #share-result,
+      #restart {
+        background-color: #4299e1;
+        color: #fff;
+        border: none;
+        padding: 12px 25px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        border-radius: 12px;
+        transition: transform 0.2s ease, background-color 0.3s ease;
+      }
+      #share-result:hover,
+      #restart:hover {
+        background-color: #3182ce;
+        transform: scale(1.05);
+      }
+      .dark-mode .result-card {
+        background: #2d3748;
+        border: 1px solid #4a5568;
+      }
+      .dark-mode #percentage-text {
+        color: #e2e8f0;
+      }
+      .dark-mode .progress-circle circle {
+        stroke: #4a5568;
+      }
+      .dark-mode .progress-circle #progress-circle {
+        stroke: #2b6cb0;
+      }
+      .dark-mode #share-result,
+      .dark-mode #restart {
+        background-color: #2b6cb0;
+      }
+      .dark-mode #share-result:hover,
+      .dark-mode #restart:hover {
+        background-color: #2c5282;
+      }
+      #start-screen h2 {
+        min-height: 1.5em;
+        transition: all 0.3s ease;
+      }
+      .topic-btn .question-count {
+        display: inline-block;
+        min-width: 80px;
+        text-align: left;
+      }
+    </style>
+  </head>
+
+  <body>
+    <script>
+      if (localStorage.getItem("darkMode") === "true") {
+        document.body.classList.add("dark-mode");
+      }
+    </script>
+    <div class="container">
+      <header>
+        <h1>טריווBIO</h1>
+        <label class="switch">
+          <input type="checkbox" id="theme-toggle" />
+          <span class="slider">
+            <img
+              src="https://img.icons8.com/ios-glyphs/30/ffffff/sun.png"
+              alt="שמש"
+              class="theme-icon sun"
+            />
+            <img
+              src="https://img.icons8.com/ios-glyphs/30/ffffff/moon-symbol.png"
+              alt="ירח"
+              class="theme-icon moon"
+            />
+          </span>
+        </label>
+      </header>
+      <main>
+        <div id="start-screen">
+          <h2>מוכן לבחור נושא?</h2>
+          <p>
+            הדרך הכי טובה ללמוד לבגרות בביולוגיה? פשוט לשחק!
+            <br />ככל שתענו על יותר שאלות – תבינו, תזכרו ותנצחו את הבחינה.
+            <br />טריווBIO הוא הדרך הכי כיפית, חכמה וממוקדת להתכונן.
+          </p>
+          <div id="start-screen-buttons">
+            <button class="topic-btn" data-topic="human-body">
+              גוף האדם <span>🧍</span>
+            </button>
+            <button class="topic-btn" data-topic="cell">
+              התא <span>🧬</span>
+            </button>
+            <button class="topic-btn" data-topic="ecology">
+              אקולוגיה <span>🌍</span>
+            </button>
+            <button class="topic-btn" data-topic="mix">
+              ערבב אותי <span>🎲</span>
+            </button>
+          </div>
+        </div>
+        <div id="game-screen" style="display: none">
+          <div id="status-row">
+            <div id="timer-container">
+              <svg id="timer-circle">
+                <circle
+                  cx="26.8"
+                  cy="26.8"
+                  r="25.46"
+                  stroke="#e2e8f0"
+                  stroke-width="2.68"
+                  fill="none"
+                />
+                <circle
+                  cx="26.8"
+                  cy="26.8"
+                  r="25.46"
+                  stroke="#4299e1"
+                  stroke-width="2.68"
+                  fill="none"
+                  stroke-dasharray="159.84"
+                  stroke-dashoffset="0"
+                  id="timer-progress"
+                />
+              </svg>
+              <div id="timer-text">120</div>
+            </div>
+            <div id="sequence-container"></div>
+            <div id="percentage-circle">0%</div>
+          </div>
+          <div id="question"></div>
+          <div id="answers"></div>
+          <div id="game-buttons">
+            <button id="fifty-fifty">50:50</button>
+            <button id="add-time">30+</button>
+            <button id="skip">דלג</button>
+          </div>
+        </div>
+        <div id="result-screen" style="display: none">
+          <div class="result-card">
+            <h3>🏆 תוצאות</h3>
+            <div class="progress-circle">
+              <svg width="60" height="60">
+                <circle
+                  cx="30"
+                  cy="30"
+                  r="25"
+                  stroke="#e2e8f0"
+                  stroke-width="5"
+                  fill="none"
+                />
+                <circle
+                  cx="30"
+                  cy="30"
+                  r="25"
+                  stroke="#4299e1"
+                  stroke-width="5"
+                  fill="none"
+                  stroke-dasharray="157"
+                  stroke-dashoffset="0"
+                  id="progress-circle"
+                />
+              </svg>
+              <span id="percentage-text">0%</span>
+            </div>
+            <p id="score"></p>
+          </div>
+          <div class="result-card">
+            <h3>⚙️ כלים בשימוש</h3>
+            <p id="tools-used"></p>
+          </div>
+          <div class="result-card">
+            <h3>📊 דירוג יומי</h3>
+            <div id="ranking"></div>
+          </div>
+          <div class="result-card">
+            <h3>📚 טעית? למדת!</h3>
+            <div id="mistakes"></div>
+          </div>
+          <div class="result-buttons">
+            <button id="share-result">שתף תוצאה</button>
+            <button id="restart">שחק שוב</button>
+          </div>
+        </div>
+      </main>
+    </div>
+    <footer>
+      פותח על ידי אריאל מ<a
+        href="https://galilbio.wordpress.com"
+        target="_blank"
+        >הַבִּיּוֹלוֹגִים של גליל</a
+      >
+      בעזרת <a href="https://grok.com/" target="_blank">גרוק</a>,
+      <a href="https://chatgpt.com/" target="_blank">Chat GPT</a> ו-<a
+        href="https://gemini.google.com/app"
+        target="_blank"
+        >Gemini</a
+      >
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+      console.log("Script loaded and running");
+
+      const topicNames = {
+        "human-body": "גוף האדם",
+        cell: "התא",
+        ecology: "אקולוגיה",
+        mix: "ערבב אותי",
+      };
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyAGFC_TB8iEMvS2PyxeASj1HH4i66AW4UA",
+        authDomain: "trivbio.firebaseapp.com",
+        projectId: "trivbio",
+        storageBucket: "trivbio.firebasestorage.app",
+        messagingSenderId: "1097087574583",
+        appId: "1:1097087574583:web:b36c0441537a1f596215b2",
+        measurementId: "G-ZY245YB23E",
+      };
+
+      // Initialize Firebase early
+      firebase.initializeApp(firebaseConfig);
+      const database = firebase.database();
+      console.log("Firebase initialized successfully");
+
+      // Load and update question counts immediately
+      (async function initializeQuestionCounts() {
+        const topics = [
+          { id: "human-body", name: "גוף האדם", emoji: "🧍" },
+          { id: "cell", name: "התא", emoji: "🧬" },
+          { id: "ecology", name: "אקולוגיה", emoji: "🌍" },
+          { id: "mix", name: "ערבב אותי", emoji: "🎲" },
+        ];
+
+        // Load from local storage first
+        let cachedCounts = JSON.parse(
+          localStorage.getItem("questionCounts") || "{}"
+        );
+        const cachedTimestamp = localStorage.getItem("questionCountsTimestamp");
+        const currentTime = Date.now();
+        const oneDay = 24 * 60 * 60 * 1000;
+
+        // Set initial button content from cache
+        topics.forEach((topic) => {
+          const button = document.querySelector(
+            `.topic-btn[data-topic="${topic.id}"]`
+          );
+          if (button) {
+            const count = cachedCounts[topic.id] ?? "?";
+            button.innerHTML = `${topic.name} <span>${topic.emoji}</span> <span class="question-count">[${count} שאלות]</span>`;
+          }
+        });
+
+        // Only update from Firebase if cache is old or empty
+        if (
+          !cachedTimestamp ||
+          currentTime - cachedTimestamp >= oneDay ||
+          Object.keys(cachedCounts).length === 0
+        ) {
+          const questionCounts = {};
+
+          // Fetch counts from Firebase for non-mix topics
+          const countPromises = topics
+            .filter((t) => t.id !== "mix")
+            .map((t) =>
+              database
+                .ref(`questions/${t.id}`)
+                .once("value")
+                .then((snapshot) => {
+                  questionCounts[t.id] = snapshot.val()
+                    ? Object.keys(snapshot.val()).length
+                    : 0;
+                })
+            );
+
+          await Promise.all(countPromises);
+
+          // Calculate mix count
+          questionCounts["mix"] = topics
+            .filter((t) => t.id !== "mix")
+            .reduce((sum, t) => sum + (questionCounts[t.id] || 0), 0);
+
+          // Compare with cached counts and update if different
+          const hasChanges = Object.keys(questionCounts).some(
+            (key) => questionCounts[key] !== cachedCounts[key]
+          );
+
+          if (hasChanges || Object.keys(cachedCounts).length === 0) {
+            localStorage.setItem(
+              "questionCounts",
+              JSON.stringify(questionCounts)
+            );
+            localStorage.setItem("questionCountsTimestamp", currentTime);
+            cachedCounts = questionCounts;
+
+            // Update buttons with new counts
+            topics.forEach((topic) => {
+              const button = document.querySelector(
+                `.topic-btn[data-topic="${topic.id}"]`
+              );
+              if (button) {
+                const count = questionCounts[topic.id] ?? "?";
+                button.innerHTML = `${topic.name} <span>${topic.emoji}</span> <span class="question-count">[${count} שאלות]</span>`;
+              }
+            });
+          }
+        }
+      })();
+
+      function showToast(message, duration = 3000) {
+        console.log("Showing toast:", message);
+        const toast = document.createElement("div");
+        toast.classList.add("toast");
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.classList.add("show"), 100);
+        if (duration > 0) {
+          setTimeout(() => {
+            toast.classList.remove("show");
+            setTimeout(() => toast.remove(), 500);
+          }, duration);
+        }
+      }
+
+      firebase
+        .auth()
+        .signInAnonymously()
+        .then((userCredential) => {
+          console.log(
+            "Signed in anonymously with UID:",
+            userCredential.user.uid
+          );
+          const playerId = userCredential.user.uid;
+          startGameLogic(playerId);
+          // Note: We removed updateTopicButtonCounts call from here as it's now handled above
+        })
+        .catch((error) => {
+          console.error("Anonymous auth failed:", error);
+          showToast("חלה שגיאה בהתחברות...");
+        });
+
+      async function updateTopicButtonCounts() {
+        const topics = [
+          { id: "human-body", name: "גוף האדם", emoji: "🧍" },
+          { id: "cell", name: "התא", emoji: "🧬" },
+          { id: "ecology", name: "אקולוגיה", emoji: "🌍" },
+          { id: "mix", name: "ערבב אותי", emoji: "🎲" },
+        ];
+
+        const cachedCounts = JSON.parse(
+          localStorage.getItem("questionCounts") || "{}"
+        );
+        topics.forEach((topic) => {
+          const button = document.querySelector(
+            `.topic-btn[data-topic="${topic.id}"]`
+          );
+          if (button) {
+            const count = cachedCounts[topic.id] ?? "?";
+            button.innerHTML = `${topic.name} <span>${topic.emoji}</span> <span class="question-count">[${count} שאלות]</span>`;
+          }
+        });
+
+        const cachedTimestamp = localStorage.getItem("questionCountsTimestamp");
+        const currentTime = Date.now();
+        const oneDay = 24 * 60 * 60 * 1000;
+
+        if (cachedTimestamp && currentTime - cachedTimestamp < oneDay) {
+          console.log("Using cached counts (fresh enough)");
+          return;
+        }
+
+        const questionCounts = {};
+        const countPromises = topics
+          .filter((t) => t.id !== "mix")
+          .map((t) =>
+            database
+              .ref(`questions/${t.id}`)
+              .once("value")
+              .then((snapshot) => {
+                questionCounts[t.id] = snapshot.val()
+                  ? Object.keys(snapshot.val()).length
+                  : 0;
+              })
+          );
+        await Promise.all(countPromises);
+
+        questionCounts["mix"] = topics
+          .filter((t) => t.id !== "mix")
+          .reduce((sum, t) => sum + (questionCounts[t.id] || 0), 0);
+
+        localStorage.setItem("questionCounts", JSON.stringify(questionCounts));
+        localStorage.setItem("questionCountsTimestamp", currentTime);
+
+        topics.forEach((topic) => {
+          const button = document.querySelector(
+            `.topic-btn[data-topic="${topic.id}"]`
+          );
+          if (button) {
+            const count = questionCounts[topic.id] ?? "?";
+            button.innerHTML = `${topic.name} <span>${topic.emoji}</span> <span class="question-count">[${count} שאלות]</span>`;
+          }
+        });
+      }
+
+      function startGameLogic(playerId) {
+        console.log("startGameLogic called with playerId:", playerId);
+
+        const savedDarkMode = localStorage.getItem("darkMode");
+        if (savedDarkMode === "true") {
+          document.body.classList.add("dark-mode");
+          document.getElementById("theme-toggle").checked = true;
+        } else {
+          document.body.classList.remove("dark-mode");
+          document.getElementById("theme-toggle").checked = false;
+        }
+
+        firebase.auth().onAuthStateChanged((user) => {
+          if (user && user.uid === playerId) {
+            console.log("User authenticated with UID:", user.uid);
+            const isDarkMode = savedDarkMode === "true";
+            database
+              .ref(`players/${playerId}`)
+              .update({
+                darkMode: isDarkMode,
+              })
+              .then(() => {
+                console.log("Theme preference updated in Firebase");
+              })
+              .catch((error) => {
+                console.error("Error updating theme preference:", error);
+              });
+
+            database
+              .ref(`players/${playerId}`)
+              .once("value")
+              .then((snapshot) => {
+                const playerData = snapshot.val();
+                if (
+                  playerData &&
+                  playerData.lastTopic &&
+                  topicNames[playerData.lastTopic]
+                ) {
+                  const startScreenH2 =
+                    document.querySelector("#start-screen h2");
+                  startScreenH2.textContent = `בפעם שעברה בחרת ${
+                    topicNames[playerData.lastTopic]
+                  }, מה הפעם?`;
+                  localStorage.setItem("lastTopic", playerData.lastTopic);
+                }
+              })
+              .catch((error) => {
+                console.error("שגיאה בשליפת נתוני שחקן:", error);
+                showToast("חלה שגיאה בטעינת נתוני השחקן.");
+              });
+          } else {
+            console.error(
+              "Authentication check failed: User not authenticated or UID mismatch"
+            );
+            showToast("אימות משתמש נכשל.");
+          }
+        });
+
+        const lastTopic = localStorage.getItem("lastTopic");
+        if (lastTopic && topicNames[lastTopic]) {
+          const h2 = document.querySelector("#start-screen h2");
+          h2.textContent = `בפעם שעברה בחרת ${topicNames[lastTopic]}, מה הפעם?`;
+        }
+
+        console.log("Registering event listeners for topic buttons");
+        const buttons = document.querySelectorAll(".topic-btn");
+        console.log("Found topic buttons:", buttons.length, buttons);
+        buttons.forEach((button) => {
+          button.addEventListener("click", () => {
+            console.log("Button clicked:", button.getAttribute("data-topic"));
+            vibrate(50);
+            currentTopic = button.getAttribute("data-topic");
+            loadQuestions(currentTopic);
+          });
+        });
+
+        const startScreen = document.getElementById("start-screen");
+        const gameScreen = document.getElementById("game-screen");
+        const resultScreen = document.getElementById("result-screen");
+        const timerText = document.getElementById("timer-text");
+        const timerProgress = document.getElementById("timer-progress");
+        const questionElement = document.getElementById("question");
+        const answersElement = document.getElementById("answers");
+        const fiftyFiftyButton = document.getElementById("fifty-fifty");
+        const addTimeButton = document.getElementById("add-time");
+        const skipButton = document.getElementById("skip");
+        const restartButton = document.getElementById("restart");
+        const themeToggle = document.getElementById("theme-toggle");
+        const toolsUsedElement = document.getElementById("tools-used");
+        const mistakesElement = document.getElementById("mistakes");
+        const sequenceContainer = document.getElementById("sequence-container");
+        const percentageCircle = document.getElementById("percentage-circle");
+
+        let currentTopic = "";
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let currentQuestion = null;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let timer = 120;
+        let totalTime = 120;
+        let timerInterval;
+        let fiftyFiftyUsed = false;
+        let addTimeUsed = false;
+        let skipUsed = 0;
+        let mistakes = [];
+        let mistakenQuestions = [];
+        let answerSequence = [];
+        let answeredCorrectly = [];
+        let lastVibrationTime = 0;
+        let currentStreak = 0;
+        let longestStreak = 0;
+
+        function saveLastTopic(topic) {
+          console.log("Saving last topic:", topic, "for player:", playerId);
+          localStorage.setItem("lastTopic", topic);
+          database
+            .ref(`players/${playerId}`)
+            .update({
+              lastTopic: topic,
+            })
+            .then(() => console.log("Last topic saved successfully"))
+            .catch((error) => console.error("Error saving last topic:", error));
+        }
+
+        function saveThemePreference(isDarkMode) {
+          localStorage.setItem("darkMode", isDarkMode);
+          database
+            .ref(`players/${playerId}`)
+            .update({
+              darkMode: isDarkMode,
+            })
+            .then(() => console.log("Theme preference saved successfully"))
+            .catch((error) =>
+              console.error("Error saving theme preference:", error)
+            );
+        }
+
+        function saveGameResult() {
+          console.log("Saving game result for player:", playerId);
+          const now = new Date();
+          const dateStr = now.toISOString().split("T")[0];
+          const timestamp = now.toISOString();
+          const totalQuestions = correctCount + wrongCount;
+
+          const result = {
+            correctCount,
+            totalQuestions,
+            longestStreak,
+            timestamp,
+            topic: currentTopic,
+          };
+
+          const resultRef = database.ref(`gameResults/${dateStr}/${playerId}`);
+          resultRef
+            .once("value")
+            .then((snapshot) => {
+              const existingResult = snapshot.val();
+              console.log("Existing result:", existingResult);
+              console.log("New result:", result);
+              if (
+                !existingResult ||
+                result.correctCount > existingResult.correctCount ||
+                (result.correctCount === existingResult.correctCount &&
+                  result.totalQuestions > existingResult.totalQuestions) ||
+                (result.correctCount === existingResult.correctCount &&
+                  result.totalQuestions === existingResult.totalQuestions &&
+                  result.longestStreak > existingResult.longestStreak)
+              ) {
+                console.log("Saving new result...");
+                resultRef
+                  .set(result)
+                  .then(() => console.log("Game result saved successfully"))
+                  .catch((error) =>
+                    console.error("Error saving game result:", error)
+                  );
+              } else {
+                console.log("Existing result is better or equal, not saving.");
+              }
+            })
+            .catch((error) => {
+              console.error("Error fetching existing result:", error);
+              showToast("שגיאה בשמירת התוצאה");
+            });
+        }
+
+        async function getDailyRankings() {
+          const now = new Date();
+          const dateStr = now.toISOString().split("T")[0];
+          const snapshot = await database
+            .ref(`gameResults/${dateStr}`)
+            .once("value");
+          const results = snapshot.val() || {};
+
+          const resultArray = Object.entries(results).map(([pid, data]) => ({
+            playerId: pid,
+            correctCount: data.correctCount,
+            totalQuestions: data.totalQuestions,
+            longestStreak: data.longestStreak,
+          }));
+
+          const sortedByCorrect = [...resultArray].sort(
+            (a, b) =>
+              b.correctCount - a.correctCount ||
+              b.totalQuestions - a.totalQuestions ||
+              b.longestStreak - a.longestStreak
+          );
+          const sortedByTotal = [...resultArray].sort(
+            (a, b) =>
+              b.totalQuestions - a.totalQuestions ||
+              b.correctCount - a.correctCount ||
+              b.longestStreak - a.longestStreak
+          );
+          const sortedByStreak = [...resultArray].sort(
+            (a, b) =>
+              b.longestStreak - a.longestStreak ||
+              b.correctCount - a.correctCount ||
+              b.totalQuestions - a.totalQuestions
+          );
+
+          const rankCorrect =
+            sortedByCorrect.findIndex((r) => r.playerId === playerId) + 1;
+          const rankTotal =
+            sortedByTotal.findIndex((r) => r.playerId === playerId) + 1;
+          const rankStreak =
+            sortedByStreak.findIndex((r) => r.playerId === playerId) + 1;
+
+          const topCorrect = sortedByCorrect[0]?.correctCount || 0;
+          const topTotal = sortedByTotal[0]?.totalQuestions || 0;
+          const topStreak = sortedByStreak[0]?.longestStreak || 0;
+
+          return {
+            rankCorrect: rankCorrect || "לא מדורג",
+            rankTotal: rankTotal || "לא מדורג",
+            rankStreak: rankStreak || "לא מדורג",
+            topCorrect,
+            topTotal,
+            topStreak,
+            totalPlayers: resultArray.length,
+          };
+        }
+
+        async function loadQuestions(topic) {
+          console.log("Loading questions for topic:", topic);
+          try {
+            showToast("טוען שאלות...", 0);
+            saveLastTopic(topic);
+
+            const topics = ["human-body", "cell", "ecology"];
+            const cachedQuestions = localStorage.getItem(`questions_${topic}`);
+
+            if (cachedQuestions && topic !== "mix") {
+              questions = JSON.parse(cachedQuestions);
+              console.log("Loaded from cache:", questions);
+            } else {
+              if (topic === "mix") {
+                const questionPromises = topics.map((t) =>
+                  database
+                    .ref(`questions/${t}`)
+                    .once("value")
+                    .then((snapshot) => ({
+                      topic: t,
+                      questions: snapshot.val()
+                        ? Object.values(snapshot.val())
+                        : [],
+                    }))
+                );
+                const results = await Promise.all(questionPromises);
+
+                let allQuestions = [];
+                results.forEach((result) => {
+                  console.log(
+                    `Questions loaded for ${result.topic}:`,
+                    result.questions
+                  );
+                  allQuestions = allQuestions.concat(result.questions);
+                });
+
+                if (allQuestions.length === 0) {
+                  showToast("אין שאלות זמינות לנושאים כלשהם!");
+                  endGame();
+                  return;
+                }
+
+                const questionsPerTopic = Math.max(
+                  1,
+                  Math.floor(allQuestions.length / topics.length / 3)
+                );
+                questions = [];
+                results.forEach((result) => {
+                  let topicQuestions = result.questions;
+                  if (topicQuestions.length > 0) {
+                    topicQuestions = topicQuestions.sort(
+                      () => Math.random() - 0.5
+                    );
+                    const selectedQuestions = topicQuestions.slice(
+                      0,
+                      questionsPerTopic
+                    );
+                    questions = questions.concat(selectedQuestions);
+                  }
+                });
+                questions = questions.sort(() => Math.random() - 0.5);
+              } else {
+                const snapshot = await database
+                  .ref(`questions/${topic}`)
+                  .once("value");
+                questions = snapshot.val() ? Object.values(snapshot.val()) : [];
+                localStorage.setItem(
+                  `questions_${topic}`,
+                  JSON.stringify(questions)
+                );
+              }
+            }
+
+            if (questions.length === 0) {
+              showToast("אין שאלות זמינות לנושא זה!");
+              endGame();
+              return;
+            }
+
+            const toasts = document.querySelectorAll(".toast");
+            toasts.forEach((toast) => toast.remove());
+            startGame();
+          } catch (error) {
+            console.error("Error loading questions:", error);
+            showToast("חלה שגיאה בטעינת השאלות!");
+            endGame();
+          }
+        }
+
+        fiftyFiftyButton.addEventListener("click", () => {
+          if (!fiftyFiftyUsed) {
+            vibrate(50);
+            fiftyFiftyUsed = true;
+            const correctIndex = currentQuestion.shuffledAnswers.findIndex(
+              (a) => a.isCorrect
+            );
+            let removed = 0;
+            const buttons = answersElement.querySelectorAll(".answer-btn");
+            while (removed < 2) {
+              const randomIndex = Math.floor(Math.random() * 4);
+              if (
+                randomIndex !== correctIndex &&
+                buttons[randomIndex].style.display !== "none"
+              ) {
+                buttons[randomIndex].style.display = "none";
+                removed++;
+              }
+            }
+            fiftyFiftyButton.classList.add("disabled");
+            fiftyFiftyButton.disabled = true;
+          }
+        });
+
+        addTimeButton.addEventListener("click", () => {
+          if (!addTimeUsed) {
+            vibrate(50);
+            addTimeUsed = true;
+            timer += 30;
+            totalTime += 30;
+            timerText.textContent = timer;
+            updateTimerCircle();
+            addTimeButton.classList.add("disabled");
+            addTimeButton.disabled = true;
+          }
+        });
+
+        skipButton.addEventListener("click", () => {
+          vibrate(50);
+          const buttons = answersElement.querySelectorAll(".answer-btn");
+          buttons.forEach((btn, idx) => {
+            btn.disabled = true;
+            if (currentQuestion.shuffledAnswers[idx].isCorrect) {
+              btn.classList.add("correct");
+            }
+          });
+          skipUsed++;
+          setTimeout(() => {
+            currentQuestionIndex++;
+            loadQuestion();
+          }, 1000);
+        });
+
+        restartButton.addEventListener("click", () => {
+          vibrate(50);
+          resultScreen.style.display = "none";
+          startScreen.style.display = "block";
+          correctCount = 0;
+          wrongCount = 0;
+          currentQuestionIndex = 0;
+          currentQuestion = null;
+          fiftyFiftyUsed = false;
+          addTimeUsed = false;
+          skipUsed = 0;
+          mistakes = [];
+          mistakenQuestions = [];
+          answerSequence = [];
+          answeredCorrectly = [];
+          currentStreak = 0;
+          longestStreak = 0;
+          fiftyFiftyButton.classList.remove("disabled");
+          addTimeButton.classList.remove("disabled");
+          fiftyFiftyButton.disabled = false;
+          addTimeButton.disabled = false;
+        });
+
+        themeToggle.addEventListener("change", () => {
+          vibrate(50);
+          document.body.classList.toggle("dark-mode");
+          const isDarkMode = document.body.classList.contains("dark-mode");
+          saveThemePreference(isDarkMode);
+        });
+
+        function vibrate(duration) {
+          if ("vibrate" in navigator) {
+            navigator.vibrate(duration);
+          }
+        }
+
+        function startGame() {
+          console.log("startGame called with questions:", questions);
+          startScreen.style.display = "none";
+          gameScreen.style.display = "block";
+          currentQuestionIndex = 0;
+          currentQuestion = null;
+          correctCount = 0;
+          wrongCount = 0;
+          timer = 120;
+          totalTime = 120;
+          fiftyFiftyUsed = false;
+          addTimeUsed = false;
+          skipUsed = 0;
+          mistakes = [];
+          mistakenQuestions = [];
+          answerSequence = [];
+          answeredCorrectly = [];
+          currentStreak = 0;
+          longestStreak = 0;
+          questions = [...questions].sort(() => Math.random() - 0.5);
+          initSequence();
+          updatePercentage();
+          loadQuestion();
+          startTimer();
+        }
+
+        function initSequence() {
+          sequenceContainer.innerHTML = "";
+          for (let i = 1; i <= 5; i++) {
+            const circle = document.createElement("div");
+            circle.classList.add("sequence-circle");
+            circle.textContent = i;
+            if (i === 1) circle.classList.add("current");
+            sequenceContainer.appendChild(circle);
+          }
+        }
+
+        function shuffleAnswers(answers, correctIndex) {
+          const shuffled = answers.map((answer, idx) => ({
+            text: answer,
+            isCorrect: idx === correctIndex,
+          }));
+          for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+          }
+          return shuffled;
+        }
+
+        function loadQuestion() {
+          console.log("Loading next question");
+          try {
+            const readyMistakes = [];
+            mistakenQuestions = mistakenQuestions.filter((mq) => {
+              if (mq.delay > 0) {
+                mq.delay--;
+                return true;
+              } else {
+                readyMistakes.push(mq.question);
+                return false;
+              }
+            });
+
+            let availableQuestions = questions.filter(
+              (q) => !answeredCorrectly.some((aq) => aq.question === q.question)
+            );
+            if (availableQuestions.length === 0 && readyMistakes.length === 0) {
+              console.log("No more questions available, ending game");
+              endGame();
+              return;
+            }
+
+            let attempts = 0;
+            const maxAttempts =
+              availableQuestions.length + readyMistakes.length;
+
+            while (attempts < maxAttempts) {
+              if (readyMistakes.length > 0) {
+                const randomIndex = Math.floor(
+                  Math.random() * readyMistakes.length
+                );
+                currentQuestion = readyMistakes[randomIndex];
+                readyMistakes.splice(randomIndex, 1);
+              } else {
+                if (currentQuestionIndex >= availableQuestions.length) {
+                  currentQuestionIndex = 0;
+                }
+                currentQuestion = availableQuestions[currentQuestionIndex];
+                availableQuestions.splice(currentQuestionIndex, 1);
+                currentQuestionIndex++;
+              }
+
+              if (
+                currentQuestion &&
+                currentQuestion.question &&
+                currentQuestion.answers &&
+                currentQuestion.correct !== undefined
+              ) {
+                break;
+              } else {
+                console.warn("Skipping invalid question:", currentQuestion);
+                attempts++;
+                currentQuestion = null;
+              }
+            }
+
+            if (!currentQuestion) {
+              console.log("No valid questions left, ending game");
+              endGame();
+              return;
+            }
+
+            currentQuestion.shuffledAnswers = shuffleAnswers(
+              currentQuestion.answers,
+              currentQuestion.correct
+            );
+            questionElement.textContent = currentQuestion.question;
+            answersElement.innerHTML = "";
+            currentQuestion.shuffledAnswers.forEach((answer, index) => {
+              const button = document.createElement("button");
+              button.classList.add("answer-btn");
+              button.textContent = answer.text;
+              button.addEventListener("click", () => {
+                vibrate(50);
+                checkAnswer(index);
+              });
+              answersElement.appendChild(button);
+            });
+            updateSequence();
+          } catch (error) {
+            console.error("Unexpected error in loadQuestion:", error);
+            showToast("חלה שגיאה בלתי צפויה, מנסה שאלה חדשה...");
+            loadQuestion();
+          }
+        }
+
+        function checkAnswer(selectedIndex) {
+          console.log("Checking answer:", selectedIndex);
+          try {
+            const buttons = answersElement.querySelectorAll(".answer-btn");
+            buttons.forEach((btn, idx) => {
+              btn.disabled = true;
+              if (currentQuestion.shuffledAnswers[idx].isCorrect) {
+                btn.classList.add("correct");
+              } else if (
+                idx === selectedIndex &&
+                !currentQuestion.shuffledAnswers[idx].isCorrect
+              ) {
+                btn.classList.add("wrong");
+                mistakes.push({
+                  question: currentQuestion.question,
+                  selected: currentQuestion.shuffledAnswers[selectedIndex].text,
+                  correct: currentQuestion.shuffledAnswers.find(
+                    (a) => a.isCorrect
+                  ).text,
+                });
+                const delay = Math.floor(Math.random() * 3);
+                mistakenQuestions.push({ question: currentQuestion, delay });
+              }
+            });
+            const questionNumber = correctCount + wrongCount + 1;
+            if (currentQuestion.shuffledAnswers[selectedIndex].isCorrect) {
+              correctCount++;
+              currentStreak++;
+              longestStreak = Math.max(longestStreak, currentStreak);
+              answerSequence.push({ number: questionNumber, correct: true });
+              answeredCorrectly.push(currentQuestion);
+            } else {
+              wrongCount++;
+              currentStreak = 0;
+              answerSequence.push({ number: questionNumber, correct: false });
+            }
+            updatePercentage();
+            console.log("Scheduling next question load");
+            setTimeout(() => {
+              console.log("Executing next question load");
+              loadQuestion();
+            }, 1000);
+          } catch (error) {
+            console.error("Error in checkAnswer:", error);
+            showToast("חלה שגיאה בבדיקת התשובה!");
+            setTimeout(() => endGame(), 1000);
+          }
+        }
+
+        function updateSequence() {
+          sequenceContainer.innerHTML = "";
+          const recentAnswers = answerSequence.slice(-4);
+          const currentQuestionNumber = correctCount + wrongCount + 1;
+          const displayedQuestions = [];
+
+          recentAnswers.forEach((answer) => {
+            displayedQuestions.push({
+              number: answer.number,
+              correct: answer.correct,
+            });
+          });
+
+          displayedQuestions.push({
+            number: currentQuestionNumber,
+            correct: null,
+          });
+
+          while (displayedQuestions.length < 5) {
+            displayedQuestions.push({
+              number:
+                currentQuestionNumber +
+                (displayedQuestions.length - recentAnswers.length),
+              correct: null,
+            });
+          }
+
+          displayedQuestions.slice(0, 5).forEach((answer, index) => {
+            const circle = document.createElement("div");
+            circle.classList.add("sequence-circle");
+            circle.textContent = answer.number;
+            if (answer.number === currentQuestionNumber) {
+              circle.classList.add("current");
+            } else if (answer.correct === true) {
+              circle.classList.add("correct");
+            } else if (answer.correct === false) {
+              circle.classList.add("wrong");
+            }
+            sequenceContainer.appendChild(circle);
+          });
+        }
+
+        function updatePercentage() {
+          const total = correctCount + wrongCount;
+          const percentage =
+            total === 0 ? 0 : Math.round((correctCount / total) * 100);
+          percentageCircle.textContent = `${percentage}%`;
+        }
+
+        function startTimer() {
+          console.log("Starting timer");
+          timer = 120;
+          totalTime = 120;
+          timerText.textContent = timer;
+          updateTimerCircle();
+          clearInterval(timerInterval);
+          timerInterval = setInterval(() => {
+            timer--;
+            timerText.textContent = timer;
+            updateTimerCircle();
+            if (timer <= 30) {
+              timerProgress.style.stroke = "#ff0000";
+              if (timer % 3 === 0 && timer !== lastVibrationTime) {
+                vibrate(200);
+                lastVibrationTime = timer;
+              }
+            } else {
+              timerProgress.style.stroke = "#4299e1";
+            }
+            if (timer <= 0) {
+              endGame();
+            }
+          }, 1000);
+        }
+
+        function updateTimerCircle() {
+          const circumference = 159.84;
+          const offset = circumference * (1 - timer / totalTime);
+          timerProgress.style.strokeDashoffset = offset;
+        }
+
+        function launchConfetti() {
+          console.log("Launching confetti");
+          const duration = 3000;
+          const particleCount = Math.min(correctCount * 20, 200);
+          const origins = Math.min(
+            Math.floor((correctCount + wrongCount) / 5),
+            4
+          );
+
+          const defaults = {
+            startVelocity: 30,
+            spread: 360,
+            ticks: 60,
+            zIndex: 1000,
+          };
+          const config = { particleCount, duration };
+
+          if (origins >= 1)
+            confetti(
+              Object.assign({}, defaults, {
+                origin: { x: 0.2, y: 0.7 },
+                ...config,
+              })
+            );
+          if (origins >= 2)
+            confetti(
+              Object.assign({}, defaults, {
+                origin: { x: 0.8, y: 0.7 },
+                ...config,
+              })
+            );
+          if (origins >= 3)
+            confetti(
+              Object.assign({}, defaults, {
+                origin: { x: 0.4, y: 0.3 },
+                ...config,
+              })
+            );
+          if (origins >= 4)
+            confetti(
+              Object.assign({}, defaults, {
+                origin: { x: 0.6, y: 0.3 },
+                ...config,
+              })
+            );
+        }
+
+        async function endGame() {
+          console.log("Ending game");
+          clearInterval(timerInterval);
+          gameScreen.style.display = "none";
+          resultScreen.style.display = "block";
+
+          saveGameResult();
+
+          const totalQuestions = correctCount + wrongCount;
+          const percentage =
+            totalQuestions === 0
+              ? 0
+              : Math.round((correctCount / totalQuestions) * 100);
+          const avgTime =
+            totalQuestions === 0 ? 0 : Math.round(totalTime / totalQuestions);
+          document.getElementById("score").innerHTML = `
+                    תשובות נכונות: <span class="highlight">${correctCount}</span> | תשובות שגויות: ${wrongCount}<br>
+                    זמן ממוצע לשאלה: ${avgTime} שניות | רצף הכי ארוך: ${longestStreak}
+                `;
+
+          const progressCircle = document.getElementById("progress-circle");
+          const circumference = 157;
+          const offset = circumference * (1 - percentage / 100);
+          progressCircle.style.strokeDashoffset = offset;
+          let count = 0;
+          const percentageAnim = setInterval(() => {
+            if (count <= percentage) {
+              document.getElementById(
+                "percentage-text"
+              ).textContent = `${count}%`;
+              count++;
+            } else {
+              clearInterval(percentageAnim);
+            }
+          }, 20);
+
+          let toolsText = "כלים בשימוש: ";
+          toolsText += fiftyFiftyUsed ? "50:50, " : "";
+          toolsText += addTimeUsed ? "30+, " : "";
+          toolsText += skipUsed > 0 ? `דילגת ${skipUsed} פעמים, ` : "";
+          toolsText = toolsText.endsWith(", ")
+            ? toolsText.slice(0, -2)
+            : toolsText;
+          toolsText =
+            toolsText === "כלים בשימוש: " ? "לא נעשה שימוש בכלים" : toolsText;
+          document.getElementById("tools-used").textContent = toolsText;
+
+          const rankings = await getDailyRankings();
+          document.getElementById("ranking").innerHTML = `
+                    <p>מקום ${rankings.rankCorrect} מתוך ${rankings.totalPlayers} שחקנים</p>
+                    <p>תשובות נכונות: ${correctCount} (שיא יומי: ${rankings.topCorrect})</p>
+                    <p>רצף שיא: ${longestStreak} (שיא יומי: ${rankings.topStreak})</p>
+                `;
+
+          if (mistakes.length > 0) {
+            mistakesElement.innerHTML = "";
+            const uniqueMistakes = new Map();
+            mistakes.forEach((mistake) =>
+              uniqueMistakes.set(mistake.question, mistake)
+            );
+            uniqueMistakes.forEach((mistake) => {
+              mistakesElement.innerHTML += `
+                            <div class="mistake-block">
+                                <div class="mistake-question">${mistake.question}</div>
+                                <div class="wrong-answer">❌ ${mistake.selected}</div>
+                                <div class="correct-answer">✅ ${mistake.correct}</div>
+                                <div class="tip">💡 טיפ: בדוק את הנושא שוב לקראת הבגרות!</div>
+                            </div>
+                        `;
+            });
+          } else {
+            mistakesElement.innerHTML =
+              '<p class="perfect">מושלם! אתה מוכן לבגרות!</p>';
+          }
+
+          document
+            .getElementById("share-result")
+            .addEventListener("click", () => {
+              vibrate(50);
+              const shareText = `ניצחתי בטריווBIO עם ${correctCount} תשובות נכונות ורצף של ${longestStreak}! 🎉`;
+              if (navigator.share) {
+                navigator
+                  .share({
+                    title: "תוצאה בטריווBIO",
+                    text: shareText,
+                    url: window.location.href,
+                  })
+                  .catch((err) => console.error("שגיאה בשיתוף:", err));
+              } else {
+                navigator.clipboard
+                  .writeText(shareText)
+                  .then(() => showToast("התוצאה הועתקה ללוח!"));
+              }
+            });
+
+          launchConfetti();
+        }
+      }
+    </script>
+    <script>
+      (function () {
+        function c() {
+          var b = a.contentDocument || a.contentWindow.document;
+          if (b) {
+            var d = b.createElement("script");
+            d.innerHTML =
+              "window.__CF$cv$params={r:'92d947457d7053d3',t:'MTc0NDE5NDA5NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
+            b.getElementsByTagName("head")[0].appendChild(d);
+          }
+        }
+        if (document.body) {
+          var a = document.createElement("iframe");
+          a.height = 1;
+          a.width = 1;
+          a.style.position = "absolute";
+          a.style.top = 0;
+          a.style.left = 0;
+          a.style.border = "none";
+          a.style.visibility = "hidden";
+          document.body.appendChild(a);
+          if ("loading" !== document.readyState) c();
+          else if (window.addEventListener)
+            document.addEventListener("DOMContentLoaded", c);
+          else {
+            var e = document.onreadystatechange || function () {};
+            document.onreadystatechange = function (b) {
+              e(b);
+              "loading" !== document.readyState &&
+                ((document.onreadystatechange = e), c());
+            };
+          }
+        }
+      })();
+    </script>
+    <script>
+      (function () {
+        function c() {
+          var b = a.contentDocument || a.contentWindow.document;
+          if (b) {
+            var d = b.createElement("script");
+            d.innerHTML =
+              "window.__CF$cv$params={r:'92da30135a3d44f3',t:'MTc0NDIwMzYzMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
+            b.getElementsByTagName("head")[0].appendChild(d);
+          }
+        }
+        if (document.body) {
+          var a = document.createElement("iframe");
+          a.height = 1;
+          a.width = 1;
+          a.style.position = "absolute";
+          a.style.top = 0;
+          a.style.left = 0;
+          a.style.border = "none";
+          a.style.visibility = "hidden";
+          document.body.appendChild(a);
+          if ("loading" !== document.readyState) c();
+          else if (window.addEventListener)
+            document.addEventListener("DOMContentLoaded", c);
+          else {
+            var e = document.onreadystatechange || function () {};
+            document.onreadystatechange = function (b) {
+              e(b);
+              "loading" !== document.readyState &&
+                ((document.onreadystatechange = e), c());
+            };
+          }
+        }
+      })();
+    </script>
+    <script>
+      (function () {
+        function c() {
+          var b = a.contentDocument || a.contentWindow.document;
+          if (b) {
+            var d = b.createElement("script");
+            d.innerHTML =
+              "window.__CF$cv$params={r:'92dc359dd8b932ed',t:'MTc0NDIyNDgyOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
+            b.getElementsByTagName("head")[0].appendChild(d);
+          }
+        }
+        if (document.body) {
+          var a = document.createElement("iframe");
+          a.height = 1;
+          a.width = 1;
+          a.style.position = "absolute";
+          a.style.top = 0;
+          a.style.left = 0;
+          a.style.border = "none";
+          a.style.visibility = "hidden";
+          document.body.appendChild(a);
+          if ("loading" !== document.readyState) c();
+          else if (window.addEventListener)
+            document.addEventListener("DOMContentLoaded", c);
+          else {
+            var e = document.onreadystatechange || function () {};
+            document.onreadystatechange = function (b) {
+              e(b);
+              "loading" !== document.readyState &&
+                ((document.onreadystatechange = e), c());
+            };
+          }
+        }
+      })();
+    </script>
+  </body>
+</html>
