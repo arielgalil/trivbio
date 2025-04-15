@@ -25,6 +25,30 @@
           ".write": "auth != null && auth.uid === $playerId && data.exists()", // Allow update only
           ".validate": "newData.isString()"
         },
+        "cumulativeScore":{
+          ".write": "auth != null && auth.uid === $playerId",
+          ".validate": "newData.isNumber()"
+        },
+        "correctCount":{
+          ".write": "auth != null && auth.uid === $playerId",
+          ".validate": "newData.isNumber()"
+        },
+         "wrongCount":{
+          ".write": "auth != null && auth.uid === $playerId",
+          ".validate": "newData.isNumber()"
+        },
+        "topicStats":{
+           ".write": "auth != null && auth.uid === $playerId",
+            "$topic":{
+               ".validate": "newData.hasChildren(['correctCount', 'wrongCount']) && newData.child('correctCount').isNumber() && newData.child('wrongCount').isNumber()"
+            }
+        },
+        "tagStats":{
+           ".write": "auth != null && auth.uid === $playerId",
+           "$tag":{
+              ".validate": "newData.hasChildren(['correctCount', 'wrongCount']) && newData.child('correctCount').isNumber() && newData.child('wrongCount').isNumber()"
+           }
+        },
         "$other": {
           ".write": false
         }
