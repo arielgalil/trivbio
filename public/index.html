@@ -1738,7 +1738,7 @@
       function createScorePopup(score) {
         const popup = document.createElement("div");
         popup.classList.add("score-popup");
-        popup.textContent = `+${score}`;
+        popup.textContent = `\u200F+${score}`;
         document.body.appendChild(popup);
 
         requestAnimationFrame(() => {
@@ -1755,68 +1755,93 @@
         }, 1000);
       }
 
-      async function updatePlayerStatsFirebase(playerId, question, isCorrect, scoreGained = 0) {
-  if (!playerId || !question) return;
+      async function updatePlayerStatsFirebase(
+        playerId,
+        question,
+        isCorrect,
+        scoreGained = 0
+      ) {
+        if (!playerId || !question) return;
 
-  const topic = question.topic || "unknown";
-  const tags = Array.isArray(question.tags) ? question.tags.filter(t => t) : [];
-  const playerRef = database.ref(`players/${playerId}`);
-  let updatedPlayerData;
+        const topic = question.topic || "unknown";
+        const tags = Array.isArray(question.tags)
+          ? question.tags.filter((t) => t)
+          : [];
+        const playerRef = database.ref(`players/${playerId}`);
+        let updatedPlayerData;
 
-  try {
-    // עדכון נתוני השחקן ב-/players באמצעות טרנזקציה
-    const transactionResult = await playerRef.transaction((playerData) => {
-      if (playerData === null) {
-        playerData = {
-          cumulativeScore: 0,
-          correctCount: 0,
-          wrongCount: 0,
-          nickname: playerNickname,
-          topicStats: {},
-          tagStats: {}
-        };
-      }
+        try {
+          // עדכון נתוני השחקן ב-/players באמצעות טרנזקציה
+          const transactionResult = await playerRef.transaction(
+            (playerData) => {
+              if (playerData === null) {
+                playerData = {
+                  cumulativeScore: 0,
+                  correctCount: 0,
+                  wrongCount: 0,
+                  nickname: playerNickname,
+                  topicStats: {},
+                  tagStats: {},
+                };
+              }
 
-      // עדכון הציון והסטטיסטיקות
-      playerData.cumulativeScore = (playerData.cumulativeScore || 0) + scoreGained;
-      playerData.correctCount = (playerData.correctCount || 0) + (isCorrect ? 1 : 0);
-      playerData.wrongCount = (playerData.wrongCount || 0) + (isCorrect ? 0 : 1);
+              // עדכון הציון והסטטיסטיקות
+              playerData.cumulativeScore =
+                (playerData.cumulativeScore || 0) + scoreGained;
+              playerData.correctCount =
+                (playerData.correctCount || 0) + (isCorrect ? 1 : 0);
+              playerData.wrongCount =
+                (playerData.wrongCount || 0) + (isCorrect ? 0 : 1);
 
-      // עדכון סטטיסטיקות לפי נושא
-      if (!playerData.topicStats) playerData.topicStats = {};
-      if (!playerData.topicStats[topic]) {
-        playerData.topicStats[topic] = { correctCount: 0, wrongCount: 0 };
-      }
-      playerData.topicStats[topic].correctCount = (playerData.topicStats[topic].correctCount || 0) + (isCorrect ? 1 : 0);
-      playerData.topicStats[topic].wrongCount = (playerData.topicStats[topic].wrongCount || 0) + (isCorrect ? 0 : 1);
+              // עדכון סטטיסטיקות לפי נושא
+              if (!playerData.topicStats) playerData.topicStats = {};
+              if (!playerData.topicStats[topic]) {
+                playerData.topicStats[topic] = {
+                  correctCount: 0,
+                  wrongCount: 0,
+                };
+              }
+              playerData.topicStats[topic].correctCount =
+                (playerData.topicStats[topic].correctCount || 0) +
+                (isCorrect ? 1 : 0);
+              playerData.topicStats[topic].wrongCount =
+                (playerData.topicStats[topic].wrongCount || 0) +
+                (isCorrect ? 0 : 1);
 
-      // עדכון סטטיסטיקות לפי תגיות
-      if (!playerData.tagStats) playerData.tagStats = {};
-      tags.forEach(tag => {
-        if (!playerData.tagStats[tag]) {
-          playerData.tagStats[tag] = { correctCount: 0, wrongCount: 0 };
+              // עדכון סטטיסטיקות לפי תגיות
+              if (!playerData.tagStats) playerData.tagStats = {};
+              tags.forEach((tag) => {
+                if (!playerData.tagStats[tag]) {
+                  playerData.tagStats[tag] = { correctCount: 0, wrongCount: 0 };
+                }
+                playerData.tagStats[tag].correctCount =
+                  (playerData.tagStats[tag].correctCount || 0) +
+                  (isCorrect ? 1 : 0);
+                playerData.tagStats[tag].wrongCount =
+                  (playerData.tagStats[tag].wrongCount || 0) +
+                  (isCorrect ? 0 : 1);
+              });
+
+              return playerData;
+            }
+          );
+
+          // אם טרנזקציית העדכון עברה בהצלחה, נעדכן גם את ה-/leaderboard
+          if (
+            transactionResult.committed &&
+            transactionResult.snapshot.exists()
+          ) {
+            updatedPlayerData = transactionResult.snapshot.val();
+            await database.ref(`leaderboard/${playerId}`).set({
+              nickname: updatedPlayerData.nickname,
+              cumulativeScore: updatedPlayerData.cumulativeScore,
+            });
+          }
+        } catch (error) {
+          console.error("Error updating player stats:", error);
+          throw error;
         }
-        playerData.tagStats[tag].correctCount = (playerData.tagStats[tag].correctCount || 0) + (isCorrect ? 1 : 0);
-        playerData.tagStats[tag].wrongCount = (playerData.tagStats[tag].wrongCount || 0) + (isCorrect ? 0 : 1);
-      });
-
-      return playerData;
-    });
-
-    // אם טרנזקציית העדכון עברה בהצלחה, נעדכן גם את ה-/leaderboard
-    if (transactionResult.committed && transactionResult.snapshot.exists()) {
-      updatedPlayerData = transactionResult.snapshot.val();
-      await database.ref(`leaderboard/${playerId}`).set({
-        nickname: updatedPlayerData.nickname,
-        cumulativeScore: updatedPlayerData.cumulativeScore
-      });
-    }
-  } catch (error) {
-    console.error("Error updating player stats:", error);
-    throw error;
-  }
-}
-
+      }
 
       function checkAnswer(selectedIndex) {
         if (!gameActive || !currentQuestion || !currentQuestion.shuffledAnswers)
