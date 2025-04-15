@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>טריווBIO - משחק טריוויה בביולוגיה</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* --- General Styles --- */
+      :root {
+        --bg-color: #f5f7fa;
+        --text-color: #2d3748;
+        --card-bg: #ffffff;
+        --card-border: #e2e8f0;
+        --button-bg: #a3bffa;
+        --button-hover-bg: #7f9cf5;
+        --button-text: white;
+        --input-bg: #e2e8f0;
+        --input-border: #cbd5e0;
+        --accent-color: #7f9cf5;
+        --success-color: #48bb78;
+        --danger-color: #f56565;
+        --link-color: #5a67d8;
+        --disabled-bg: #cbd5e0;
+        --disabled-text: #a0aec0;
+        --toast-light-bg: #2d3748;
+        --toast-light-text: white;
+        --toast-dark-bg: #e2e8f0;
+        --toast-dark-text: #2d3748;
+        --lifeline-counter-bg: #5a67d8;
+        --lifeline-counter-text: white;
+      }
+
+      body.dark-mode {
+        --bg-color: #1a202c;
+        --text-color: #e2e8f0;
+        --card-bg: #2d3748;
+        --card-border: #4a5568;
+        --button-bg: #4a5568;
+        --button-hover-bg: #2d3748;
+        --button-text: #e2e8f0;
+        --input-bg: #4a5568;
+        --input-border: #718096;
+        --accent-color: #63b3ed;
+        --success-color: #68d391;
+        --danger-color: #fc8181;
+        --link-color: #63b3ed;
+        --disabled-bg: #4a5568;
+        --disabled-text: #718096;
+        --toast-light-bg: #e2e8f0;
+        --toast-light-text: #2d3748;
+        --toast-dark-bg: #2d3748;
+        --toast-dark-text: white;
+        --lifeline-counter-bg: #4299e1;
+        --lifeline-counter-text: #1a202c;
+      }
+
+      body {
+        font-family: "Noto Sans Hebrew", sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 0;
+        transition: background-color 0.3s, color 0.3s;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        min-height: 100svh;
+        position: relative;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 10px auto;
+        padding: 10px;
+        text-align: center;
+        width: 100%;
+        box-sizing: border-box;
+        grid-row: 2 / 3;
+      }
+      header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        margin-bottom: 5px;
+        padding: 10px 0;
+        grid-row: 1 / 2;
+        width: 100%;
+      }
+      h1 {
+        font-size: 2rem;
+        margin: 0;
+      }
+      .switch {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 5px;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: var(--accent-color);
+      }
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+      .theme-icon {
+        width: 20px;
+        height: 20px;
+        transition: opacity 0.4s;
+      }
+      .sun {
+        opacity: 1;
+      }
+      .moon {
+        opacity: 0;
+      }
+      input:checked + .slider .sun {
+        opacity: 0;
+      }
+      input:checked + .slider .moon {
+        opacity: 1;
+      }
+      #cumulative-score-container {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        text-align: left;
+      }
+      #nickname-display {
+        font-size: 0.9rem;
+        font-weight: bold;
+        color: #4a5568;
+        cursor: pointer;
+        transition: color 0.3s;
+      }
+      #nickname-display:hover {
+        color: var(--accent-color);
+      }
+      .dark-mode #nickname-display {
+        color: #a0aec0;
+      }
+      .dark-mode #nickname-display:hover {
+        color: var(--link-color);
+      }
+      #cumulative-score-display {
+        font-size: 0.8rem;
+        color: #4a5568;
+      }
+      .dark-mode #cumulative-score-display {
+        color: #a0aec0;
+      }
+      #start-screen {
+        background: linear-gradient(135deg, #a3bffa, #e2e8f0);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin: 10px 0;
+      }
+      .dark-mode #start-screen {
+        background: linear-gradient(135deg, #2d3748, #1a202c);
+      }
+      #start-screen h2 {
+        color: #2d3748;
+        font-size: 1.5rem;
+        margin: 10px 0;
+      }
+      .dark-mode #start-screen h2 {
+        color: #e2e8f0;
+      }
+      #start-screen p {
+        font-size: 1.1rem;
+        line-height: 1.5;
+        margin: 20px 0;
+        color: #2d3748;
+      }
+      .dark-mode #start-screen p {
+        color: #e2e8f0;
+      }
+      #start-screen-buttons {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      @media (max-width: 600px) {
+        #start-screen-buttons {
+          grid-template-columns: 1fr;
+        }
+      }
+      .topic-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        background-color: var(--button-bg);
+        color: var(--button-text);
+        border: none;
+        padding: 10px 20px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.3s;
+      }
+      .topic-btn:hover {
+        background-color: var(--button-hover-bg);
+      }
+      .question-count {
+        font-size: 0.8rem;
+        opacity: 0.8;
+      }
+      #game-screen,
+      #result-screen {
+        margin-top: 10px;
+      }
+      #status-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 15px 0;
+        height: 60px;
+      }
+      .status-circle-container {
+        position: relative;
+        width: 54px;
+        height: 54px;
+      }
+      .status-circle-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-weight: bold;
+        font-size: 1rem;
+      }
+      .status-circle-bg {
+        stroke: var(--input-bg);
+        transition: stroke 0.3s;
+      }
+      .status-circle-progress {
+        transition: stroke-dashoffset 0.5s linear, stroke 0.5s linear;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+      }
+      #timer-progress {
+        stroke: var(--accent-color);
+      }
+      #percentage-progress.green {
+        stroke: var(--success-color);
+      }
+      #percentage-progress.yellow {
+        stroke: #ecc94b;
+      }
+      #percentage-progress.red {
+        stroke: var(--danger-color);
+      }
+      #question {
+        font-size: 1.25rem;
+        margin: 20px 0;
+        line-height: 1.4;
+      }
+      .question-id-display {
+        display: inline-block;
+        font-size: 0.7rem;
+        color: var(--disabled-text);
+        margin-right: 8px;
+        opacity: 0.8;
+        user-select: text;
+        direction: ltr;
+      }
+
+      #answers {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .answer-btn {
+        padding: 15px;
+        text-align: center;
+        font-size: 1rem;
+        background-color: var(--input-bg);
+        color: var(--text-color);
+        border: none;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.1s, visibility 0s,
+          opacity 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .answer-btn:hover {
+        background-color: var(--input-border);
+      }
+      .answer-btn:active {
+        transform: scale(0.95);
+      }
+      .correct {
+        background-color: var(--success-color) !important;
+        color: white !important;
+      }
+      .wrong {
+        background-color: var(--danger-color) !important;
+        color: white !important;
+      }
+      .answer-btn:focus {
+        outline: none;
+      }
+
+      /* --- Lifeline Button Container --- */
+      .lifeline-container {
+          position: relative;
+          display: inline-block;
+          margin: 0 5px;
+      }
+
+      #game-buttons {
+        margin: 25px 0;
+      }
+
+      /* --- Lifeline Button Styling --- */
+      #game-buttons button.lifeline-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        background-color: var(--button-bg);
+        color: var(--button-text);
+        transition: background-color 0.3s, opacity 0.3s, transform 0.1s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      #game-buttons button.lifeline-btn:hover:not(:disabled) {
+        background-color: var(--button-hover-bg);
+        transform: translateY(-1px);
+      }
+      #game-buttons button.lifeline-btn:active:not(:disabled) {
+        transform: scale(0.95);
+        box-shadow: none;
+      }
+      #game-buttons button.lifeline-btn:disabled {
+         background-color: var(--disabled-bg) !important;
+         color: var(--disabled-text) !important;
+         cursor: not-allowed;
+         opacity: 0.7;
+         box-shadow: none !important;
+         transform: none !important;
+      }
+
+      /* --- Lifeline Counter Badge --- */
+      .lifeline-counter {
+          position: absolute;
+          bottom: -5px;
+          left: -5px;
+          background-color: var(--lifeline-counter-bg);
+          color: var(--lifeline-counter-text);
+          border-radius: 50%;
+          width: 20px;
+          height: 20px;
+          font-size: 0.75rem;
+          font-weight: bold;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          line-height: 1;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          z-index: 1;
+          transition: background-color 0.3s, color 0.3s, opacity 0.3s;
+      }
+      .lifeline-counter.hidden {
+          opacity: 0;
+          pointer-events: none;
+      }
+
+
+      .result-card {
+        background-color: var(--card-bg);
+        padding: 12px 20px;
+        margin: 10px 0;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--card-border);
+      }
+      .progress-circle {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 60px;
+        margin: 0 10px 10px 30px;
+        vertical-align: middle;
+      }
+      #percentage-text-result {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-weight: bold;
+      }
+      .highlight {
+        color: var(--accent-color);
+        font-weight: bold;
+      }
+
+      /* --- Toast Styling (Uses Variables) --- */
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: var(--toast-light-bg);
+        color: var(--toast-light-text);
+        padding: 10px 20px;
+        border-radius: 5px;
+        opacity: 0;
+        transition: opacity 0.5s;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+      .toast.show {
+        opacity: 1;
+      }
+      .dark-mode .toast {
+        background-color: var(--toast-dark-bg);
+        color: var(--toast-dark-text);
+      }
+
+      footer {
+        margin-top: 20px;
+        padding-bottom: 20px;
+        font-size: 0.9rem;
+        text-align: center;
+        grid-row: 3 / 4;
+      }
+      footer a {
+        color: var(--link-color);
+        text-decoration: none;
+        margin: 0 2px;
+      }
+      .sequence-circle {
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        border-radius: 50%;
+        background-color: var(--input-bg);
+        border: 1px solid var(--input-border);
+        margin: 0 5px;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 0.9rem;
+        transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        color: var(--text-color);
+      }
+      .sequence-circle.correct {
+        background-color: var(--success-color);
+        color: white;
+        border-color: var(--success-color);
+      }
+      .sequence-circle.wrong {
+        background-color: var(--danger-color);
+        color: white;
+        border-color: var(--danger-color);
+      }
+      .sequence-circle.current {
+        background-color: #ecc94b;
+        color: #744210;
+        font-weight: bold;
+        border-color: #d69e2e;
+      }
+      .mistake-block {
+        text-align: right;
+        margin: 15px 0;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--card-border);
+      }
+      .mistake-block:last-child {
+        border-bottom: none;
+      }
+      .mistake-question {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .wrong-answer {
+        color: var(--danger-color);
+        margin-bottom: 3px;
+      }
+      .correct-answer {
+        color: var(--success-color);
+      }
+      .perfect {
+        color: var(--success-color);
+        font-weight: bold;
+        font-size: 1.1rem;
+      }
+      #tag-analysis {
+        margin-top: 15px;
+        line-height: 2;
+        text-align: right;
+      }
+      .tag-cloud-item {
+        display: inline-block;
+        margin: 3px 4px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        border: 1px solid;
+        cursor: pointer;
+        transition: transform 0.2s;
+        white-space: nowrap;
+        text-decoration: none;
+      }
+      .tag-cloud-item:hover {
+        transform: translateY(-1px);
+        text-decoration: none;
+      }
+      .tag-cloud-item:visited {
+        color: inherit;
+      }
+      .result-buttons {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+      }
+      .result-buttons button {
+        padding: 10px 25px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.3s;
+      }
+      #share-result {
+        background-color: var(--success-color);
+        color: white;
+      }
+      #share-result:hover {
+        background-color: #38a169;
+      }
+      #restart {
+        background-color: var(--accent-color);
+        color: white;
+      }
+      #restart:hover {
+        background-color: var(--button-hover-bg);
+      }
+      #result-progress-circle.green {
+        stroke: var(--success-color);
+      }
+      #result-progress-circle.yellow {
+        stroke: #ecc94b;
+      }
+      #result-progress-circle.red {
+        stroke: var(--danger-color);
+      }
+      #result-progress-circle {
+        transition: stroke-dashoffset 0.5s linear, stroke 0.5s linear;
+      }
+      #ranking ul,
+      #overall-ranking ul {
+        list-style: none;
+        padding: 0;
+        margin: 10px 0 0 0;
+        text-align: right;
+      }
+      #ranking li,
+      #overall-ranking li {
+        padding: 5px 0;
+        border-bottom: 1px dashed var(--card-border);
+        font-size: 0.9rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      #ranking li:last-child,
+      #overall-ranking li:last-child {
+        border-bottom: none;
+      }
+      #ranking li.current-player,
+      #overall-ranking li.current-player {
+        font-weight: bold;
+        color: var(--accent-color);
+      }
+      #ranking .rank-score,
+      #overall-ranking .rank-score {
+        font-weight: bold;
+        direction: ltr;
+        margin-left: 10px;
+      }
+      #ranking .rank-number,
+      #overall-ranking .rank-number {
+        margin-right: 10px;
+        color: var(--disabled-text);
+        min-width: 25px;
+        text-align: center;
+      }
+
+      /* --- Score Popup Styling --- */
+      .score-popup {
+        position: fixed;
+        top: 40%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(72, 187, 120, 0.9);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 1.4rem;
+        font-weight: bold;
+        z-index: 1001;
+        opacity: 0;
+        transition: opacity 0.5s ease-out, transform 0.6s ease-out;
+        pointer-events: none;
+        white-space: pre-line;
+        text-align: center;
+      }
+      .score-popup.show {
+        opacity: 1;
+        transform: translate(-50%, -50px);
+      }
+      .dark-mode .score-popup {
+        background-color: rgba(104, 211, 145, 0.9);
+      }
+      .score-popup .bonus-text {
+          display: block;
+          font-size: 0.9rem;
+          font-weight: normal;
+          margin-top: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      // Set theme ASAP to prevent flash
+      try {
+          const savedDarkMode = localStorage.getItem("darkMode") === "true";
+          if (savedDarkMode) {
+              document.body.classList.add("dark-mode");
+          }
+      } catch (e) {
+          console.error("Error accessing localStorage for theme:", e);
+      }
+    </script>
+    <header>
+      <h1>טריווBIO</h1>
+      <div id="cumulative-score-container">
+        <div id="nickname-display">טוען שם...</div>
+        <div id="cumulative-score-display">טוען ניקוד...</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="theme-toggle" />
+        <span class="slider">
+          <img
+            src="https://img.icons8.com/ios-glyphs/30/ffffff/sun.png"
+            alt="שמש"
+            class="theme-icon sun"
+          />
+          <img
+            src="https://img.icons8.com/ios-glyphs/30/ffffff/moon-symbol.png"
+            alt="ירח"
+            class="theme-icon moon"
+          />
+        </span>
+      </label>
+    </header>
+    <div class="container">
+      <main>
+        <div id="start-screen">
+          <h2>מוכן לבחור נושא?</h2>
+          <p>
+            הדרך הכי טובה ללמוד לבגרות בביולוגיה? פשוט לשחק!
+            <br />ככל שתענו על יותר שאלות – תבינו, תזכרו ותנצחו את הבחינה.
+            <br />טריווBIO הוא הדרך הכי כיפית, חכמה וממוקדת להתכונן.
+          </p>
+          <div id="start-screen-buttons"></div>
+        </div>
+        <div id="game-screen" style="display: none">
+          <div id="status-row">
+            <div class="status-circle-container">
+              <svg width="53.6" height="53.6" viewBox="0 0 53.6 53.6">
+                <circle
+                  class="status-circle-bg"
+                  cx="26.8"
+                  cy="26.8"
+                  r="25.46"
+                  stroke-width="2.68"
+                  fill="none"
+                />
+                <circle
+                  class="status-circle-progress"
+                  id="timer-progress"
+                  cx="26.8"
+                  cy="26.8"
+                  r="25.46"
+                  stroke-width="2.68"
+                  fill="none"
+                  stroke-dasharray="159.84"
+                  stroke-dashoffset="0"
+                />
+              </svg>
+              <div class="status-circle-text" id="timer-text">120</div>
+            </div>
+            <div id="sequence-container"></div>
+            <div class="status-circle-container">
+              <svg width="53.6" height="53.6" viewBox="0 0 53.6 53.6">
+                <circle
+                  class="status-circle-bg"
+                  cx="26.8"
+                  cy="26.8"
+                  r="25.46"
+                  stroke-width="2.68"
+                  fill="none"
+                />
+                <circle
+                  class="status-circle-progress"
+                  id="percentage-progress"
+                  cx="26.8"
+                  cy="26.8"
+                  r="25.46"
+                  stroke-width="2.68"
+                  fill="none"
+                  stroke-dasharray="159.84"
+                  stroke-dashoffset="159.84"
+                />
+              </svg>
+              <div class="status-circle-text" id="percentage-text-ingame">
+                0%
+              </div>
+            </div>
+          </div>
+          <div id="question"></div>
+          <div id="answers"></div>
+          <div id="game-buttons">
+            <div class="lifeline-container">
+               <button id="fifty-fifty" class="lifeline-btn">50:50</button>
+               <span id="fifty-fifty-counter" class="lifeline-counter">0</span>
+            </div>
+            <div class="lifeline-container">
+               <button id="add-time" class="lifeline-btn">30+</button>
+               </div>
+             <div class="lifeline-container">
+               <button id="skip" class="lifeline-btn">דלג</button>
+               <span id="skip-counter" class="lifeline-counter">0</span>
+            </div>
+          </div>
+        </div>
+        <div id="result-screen" style="display: none">
+          <div class="result-card">
+            <h3>🏆 תוצאות המשחק</h3>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-around;
+              "
+            >
+              <div>
+                <p id="score"></p>
+                <p id="accuracy-stats"></p>
+              </div>
+              <div class="progress-circle">
+                <svg width="60" height="60" viewBox="0 0 60 60">
+                  <circle
+                    cx="30"
+                    cy="30"
+                    r="28"
+                    stroke="#e2e8f0"
+                    stroke-width="4"
+                    fill="none"
+                    class="status-circle-bg"
+                  />
+                  <circle
+                    cx="30"
+                    cy="30"
+                    r="28"
+                    stroke-width="4"
+                    fill="none"
+                    stroke-dasharray="175.9"
+                    stroke-dashoffset="175.9"
+                    id="result-progress-circle"
+                    class="status-circle-progress"
+                  />
+                </svg>
+                <span id="percentage-text-result">%</span>
+              </div>
+            </div>
+          </div>
+          <div class="result-card">
+            <h3>⚙️ כלים בשימוש</h3>
+            <p id="tools-used"></p>
+          </div>
+          <div class="result-card">
+            <h3>📊 דירוג יומי (לפי תשובות נכונות)</h3>
+            <div id="ranking">טוען דירוג יומי...</div>
+          </div>
+          <div class="result-card">
+            <h3>💎 היכל התהילה (Top 10 לפי ניקוד)</h3>
+            <div id="overall-ranking">טוען דירוג כללי...</div>
+          </div>
+          <div class="result-card">
+            <h3>📚 טעית? למדת!</h3>
+            <div id="mistakes"></div>
+          </div>
+          <div class="result-card">
+            <h3>🏷️ תגיות</h3>
+            <p>לחץ על תגית כדי לבצע חיפוש בגוגל.</p>
+            <div id="tag-analysis"></div>
+          </div>
+          <div class="result-buttons">
+            <button id="share-result">שתף תוצאה</button>
+            <button id="restart">שחק שוב</button>
+          </div>
+        </div>
+      </main>
+    </div>
+    <footer>
+      פותח על ידי אריאל מ<a
+        href="https://galilbio.wordpress.com"
+        target="_blank"
+        >הַבִּיּוֹלוֹגִים של גליל</a
+      >
+      בעזרת<a href="https://grok.com/" target="_blank">גרוק</a>,<a
+        href="https://chatgpt.com/"
+        target="_blank"
+        >Chat GPT</a
+      >וגם<a href="https://gemini.google.com/app" target="_blank">Gemini</a> |
+      <a href="admin.html" target="_blank">ניהול</a>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+      // Wrap entire script logic in a try-catch block for better error reporting
+      try {
+          console.log("Script loaded and running");
+
+          // --- Constants and Config ---
+          const topicNames = { "human-body": "גוף האדם", cell: "התא", ecology: "אקולוגיה", mix: "ערבב אותי", };
+          const firebaseConfig = { apiKey: "AIzaSyAGFC_TB8iEMvS2PyxeASj1HH4i66AW4UA", authDomain: "trivbio.firebaseapp.com", projectId: "trivbio", storageBucket: "trivbio.firebasestorage.app", messagingSenderId: "1097087574583", appId: "1:1097087574583:web:b36c0441537a1f596215b2", measurementId: "G-ZY245YB23E", };
+          const CIRCLE_CIRCUMFERENCE = 159.84;
+          const RESULT_CIRCLE_CIRCUMFERENCE = 175.9;
+          const BASE_SCORE_PER_QUESTION = 10;
+          const STREAK_BONUS_MULTIPLIER = 2;
+          const INITIAL_SKIP_COUNT = 5;
+          const INITIAL_FIFTY_FIFTY_COUNT = 2;
+          const STREAK_THRESHOLD = 3;
+          const LIFELINE_BONUS_CHANCE = 0.5;
+          const SKIP_BONUS_PROBABILITY = 0.7;
+          // const MISTAKE_CORRECTION_BONUS = 3; // Reverted
+
+          // --- Firebase Initialization ---
+          let database;
+          try {
+              firebase.initializeApp(firebaseConfig);
+              database = firebase.database();
+              console.log("Firebase initialized successfully");
+          } catch (e) {
+              console.error("FATAL: Firebase initialization failed!", e);
+              document.body.innerHTML = '<div style="padding: 20px; text-align: center; color: red;">שגיאה קריטית בטעינת Firebase. לא ניתן להמשיך.</div>';
+              throw e; // Re-throw to stop script execution here
+          }
+
+          // --- DOM Elements ---
+          let startScreen, gameScreen, resultScreen, startScreenButtonsContainer, timerTextElement, timerProgressElement, percentageTextIngameElement, percentageProgressElement, questionElement, answersElement, fiftyFiftyButton, addTimeButton, skipButton, restartButton, themeToggle, toolsUsedElement, mistakesElement, sequenceContainer, tagAnalysisElement, resultProgressCircleElement, percentageTextResultElement, scoreElement, accuracyStatsElement, cumulativeScoreDisplayElement, nicknameDisplayElement, rankingElement, overallRankingElement, shareButton, skipCounterElement, fiftyFiftyCounterElement;
+
+          function initializeDOMElements() {
+              // No try-catch here, let errors propagate to the main try-catch
+              startScreen = document.getElementById("start-screen");
+              gameScreen = document.getElementById("game-screen");
+              resultScreen = document.getElementById("result-screen");
+              startScreenButtonsContainer = document.getElementById("start-screen-buttons");
+              timerTextElement = document.getElementById("timer-text");
+              timerProgressElement = document.getElementById("timer-progress");
+              percentageTextIngameElement = document.getElementById("percentage-text-ingame");
+              percentageProgressElement = document.getElementById("percentage-progress");
+              questionElement = document.getElementById("question");
+              answersElement = document.getElementById("answers");
+              fiftyFiftyButton = document.getElementById("fifty-fifty");
+              addTimeButton = document.getElementById("add-time");
+              skipButton = document.getElementById("skip");
+              restartButton = document.getElementById("restart");
+              themeToggle = document.getElementById("theme-toggle"); // Critical for theme listener
+              toolsUsedElement = document.getElementById("tools-used");
+              mistakesElement = document.getElementById("mistakes");
+              sequenceContainer = document.getElementById("sequence-container");
+              tagAnalysisElement = document.getElementById("tag-analysis");
+              resultProgressCircleElement = document.getElementById("result-progress-circle");
+              percentageTextResultElement = document.getElementById("percentage-text-result");
+              scoreElement = document.getElementById("score");
+              accuracyStatsElement = document.getElementById("accuracy-stats");
+              cumulativeScoreDisplayElement = document.getElementById("cumulative-score-display"); // Critical for player state
+              nicknameDisplayElement = document.getElementById("nickname-display"); // Critical for player state
+              rankingElement = document.getElementById("ranking");
+              overallRankingElement = document.getElementById("overall-ranking");
+              shareButton = document.getElementById("share-result");
+              skipCounterElement = document.getElementById("skip-counter");
+              fiftyFiftyCounterElement = document.getElementById("fifty-fifty-counter");
+
+              // Explicitly check critical elements needed early
+              if (!themeToggle) throw new Error("Theme toggle element (#theme-toggle) not found!");
+              if (!nicknameDisplayElement) throw new Error("Nickname display element (#nickname-display) not found!");
+              if (!cumulativeScoreDisplayElement) throw new Error("Cumulative score display element (#cumulative-score-display) not found!");
+              // Also check lifeline buttons needed for listeners later
+              if (!fiftyFiftyButton) throw new Error("Fifty-fifty button (#fifty-fifty) not found!");
+              if (!addTimeButton) throw new Error("Add time button (#add-time) not found!");
+              if (!skipButton) throw new Error("Skip button (#skip) not found!");
+
+
+              console.log("DOM elements retrieved.");
+              return true; // Indicate success (or let error propagate)
+          }
+
+
+          // --- Game State Variables ---
+          let currentTopic = "";
+          let allQuestions = [];
+          let questions = [];
+          let currentQuestionIndex = 0;
+          let currentQuestion = null;
+          let correctCount = 0;
+          let wrongCount = 0;
+          let timerValue = 120;
+          let totalTime = 120;
+          let timerInterval;
+          let fiftyFiftyUsedCount = 0;
+          let addTimeUsed = false;
+          let skipUsedCount = 0;
+          let mistakeDetails = [];
+          let mistakenQuestions = [];
+          let answerSequence = [];
+          let answeredCorrectly = [];
+          let gameTagStats = {};
+          let currentStreak = 0;
+          let longestStreak = 0;
+          let playerId = null;
+          let timerExpired = false;
+          let gameActive = false;
+          let currentGameScore = 0;
+          let cumulativePlayerScore = 0;
+          let playerNickname = "";
+          let availableSkips = INITIAL_SKIP_COUNT;
+          let availableFiftyFifty = INITIAL_FIFTY_FIFTY_COUNT;
+
+          // --- Nickname Generation ---
+          const animalsMale = ["קרוקודיל","קיפודן","קנגורו","ברווזן","נמר","אריה","זאב","דוב","תנין","פיל","ג'ירף","צבי","יגואר","ברדלס","גמל","שועל",];
+          const animalsFemale = ["נמלה","צרעה","פרפרית","צלופחית","ציפור","חתולה","ארנבת","עטלף","צפרדע","שפירית","ברווזה","יענה","טווסית","נחשית","עכברה","ינשופה",];
+          const attributesMale = ["אמיץ","חכם","מהיר","שקט","חזק","סקרן","נאמן","ירוק","כחול","אדום","צהוב","שחור","לבן","סגול","כתום","זהוב",];
+          const attributesFemale = ["אמיצה","חכמה","מהירה","שקטה","חזקה","סקרנית","נאמנה","ירוקה","כחולה","אדומה","צהובה","שחורה","לבנה","סגולה","כתומה","זהובה",];
+          function generateRandomUsername() {
+            const isMale = Math.random() < 0.5;
+            const animals = isMale ? animalsMale : animalsFemale;
+            const animal = animals[Math.floor(Math.random() * animals.length)];
+            const attributes = isMale ? attributesMale : attributesFemale;
+            const attribute = attributes[Math.floor(Math.random() * attributes.length)];
+            return `${animal} ${attribute}`;
+          }
+
+          // --- UI Update Functions ---
+          function populateTopicButtons(questionCounts) {
+              if (!startScreenButtonsContainer) return;
+              const topics = [ /* ... */ ];
+              startScreenButtonsContainer.innerHTML = "";
+              topics.forEach((topic) => {
+                  const button = document.createElement("button");
+                  button.classList.add("topic-btn");
+                  button.dataset.topic = topic.id;
+                  const count = typeof questionCounts[topic.id] === "number" ? questionCounts[topic.id] : 0;
+                  button.innerHTML = `${topic.name} <span>${topic.emoji}</span> <span class="question-count">[${count} שאלות]</span>`;
+                  button.addEventListener("click", async () => {
+                      vibrate(50);
+                      currentTopic = button.getAttribute("data-topic");
+                      console.log(`Topic button clicked: ${currentTopic}. Calling loadQuestionsForTopic.`); // Log click
+                      await loadQuestionsForTopic(currentTopic);
+                  });
+                  startScreenButtonsContainer.appendChild(button);
+              });
+          }
+
+          function showToast(message, duration = 3000) { /* unchanged */ }
+
+          function updateCumulativeScoreDisplay() {
+              if (cumulativeScoreDisplayElement) {
+                  const score = cumulativePlayerScore.toLocaleString();
+                  console.log(`Updating cumulative score display to: ${score}`); // Log value
+                  cumulativeScoreDisplayElement.textContent = `ניקוד כללי: ${score}`;
+              } else {
+                  console.error("cumulativeScoreDisplayElement not found for update");
+              }
+          }
+
+          function updateNicknameDisplay() {
+              if (nicknameDisplayElement) {
+                  console.log(`Updating nickname display to: ${playerNickname}`); // Log value
+                  nicknameDisplayElement.textContent = playerNickname;
+                  nicknameDisplayElement.removeEventListener("click", editNickname);
+                  nicknameDisplayElement.addEventListener("click", editNickname);
+              } else {
+                  console.error("nicknameDisplayElement not found for update");
+              }
+          }
+
+          function setTheme(isDarkMode) { /* unchanged */ }
+          function updateLifelineCounters() { /* unchanged */ }
+
+          // --- Initialization and Auth ---
+          function mainAppLogic() {
+              if (!database) { /* ... */ return; }
+
+              (async function initializeQuestionCounts() {
+                  let cachedCounts = {};
+                  let cachedTimestamp = null;
+                  const defaultCounts = { "human-body": 0, cell: 0, ecology: 0, mix: 0 };
+                  try { /* ... */ } catch (e) { /* ... */ }
+                  const currentTime = Date.now();
+                  const oneDay = 24 * 60 * 60 * 1000;
+                  const isCacheStale = !cachedTimestamp || currentTime - parseInt(cachedTimestamp) >= oneDay;
+                  console.log("Counts before populating buttons:", cachedCounts); // Log counts
+                  populateTopicButtons(cachedCounts);
+                  if (isCacheStale) { /* ... fetch fresh counts ... */ }
+                  else { console.log("Using fresh cached question counts."); }
+              })();
+
+
+              firebase.auth().signInAnonymously()
+                  .then((userCredential) => { /* ... */ })
+                  .catch((error) => { /* ... */ });
+
+              if (themeToggle) { /* ... add listener ... */ }
+              else { console.error("Theme toggle element not found! Cannot add listener."); }
+
+              // --- Moved Lifeline Listeners Here ---
+              if (fiftyFiftyButton) {
+                  fiftyFiftyButton.addEventListener("click", fiftyFiftyButtonClickHandler);
+              } else { console.error("Fifty-fifty button not found!"); }
+              if (addTimeButton) {
+                  addTimeButton.addEventListener("click", addTimeButtonClickHandler);
+              } else { console.error("Add time button not found!"); }
+              if (skipButton) {
+                  skipButton.addEventListener("click", skipButtonClickHandler);
+              } else { console.error("Skip button not found!"); }
+              // --- End Moved Lifeline Listeners ---
+          }
+
+
+          function initializePlayerState() { /* unchanged */ }
+          function savePlayerInitialData(isDarkMode) { /* unchanged */ }
+          function updateStartScreenHint(topicId) { /* unchanged */ }
+          function editNickname() { /* unchanged */ }
+          function saveNicknameToFirebase() { /* unchanged */ }
+          function saveThemePreference(isDarkMode) { /* unchanged */ }
+
+          // --- Question Loading ---
+          async function loadQuestions() { /* unchanged */ }
+          async function loadQuestionsForTopic(topic) {
+              try {
+                  showToast("טוען שאלות...", 0);
+                  saveLastTopic(topic);
+                  allQuestions = await loadQuestions();
+                  console.log(`Loaded ${allQuestions.length} total questions.`); // Log load result
+                  document.querySelectorAll(".toast").forEach((t) => t.remove());
+                  if (allQuestions.length === 0) { /* ... */ return; }
+                  if (topic === "mix") { questions = [...allQuestions]; }
+                  else { questions = allQuestions.filter((q) => q && q.topic === topic); }
+                  questions = questions.filter( /* ... */ );
+                  if (questions.length === 0) { /* ... */ return; }
+                  startGame(); // Call startGame here
+              } catch (error) { /* ... */ }
+          }
+
+          function saveLastTopic(topic) { /* unchanged */ }
+          function vibrate(duration) { /* unchanged */ }
+
+          // --- Game Logic ---
+          function resetGame() { /* unchanged */ }
+          function startGame() {
+              startScreen.style.display = "none";
+              resultScreen.style.display = "none";
+              gameScreen.style.display = "block";
+              resetGame();
+              gameActive = true;
+              questions = [...questions].sort(() => Math.random() - 0.5);
+              initSequence();
+              updatePercentage();
+              console.log(`Calling loadQuestion to start game.`); // Log start
+              loadQuestion(); // Initial question load
+              startTimer(); // Start timer
+              console.log(`Game started with ${questions.length} questions for topic: ${currentTopic}`);
+          }
+
+          function initSequence() { /* unchanged */ }
+          function shuffleAnswers(answers, correctIndex) { /* unchanged */ }
+
+          // --- REVERTED: loadQuestion ---
+          function loadQuestion() {
+            if (!gameActive || (timerExpired && currentQuestion)) { /* ... */ return; }
+            const readyMistakes = [];
+            mistakenQuestions = mistakenQuestions.filter((mq) => { /* ... */ });
+            let availableRegularQuestions = questions.filter( /* ... */ );
+            console.log(`Available regular: ${availableRegularQuestions.length}, Ready mistakes: ${readyMistakes.length}, Waiting mistakes: ${mistakenQuestions.length}`);
+            if (availableRegularQuestions.length === 0 && readyMistakes.length === 0 && mistakenQuestions.length === 0) { /* ... */ return; }
+            let nextQuestion = null;
+            const showMistakeChance = 0.4;
+            if (readyMistakes.length > 0 && (availableRegularQuestions.length === 0 || Math.random() < showMistakeChance)) { /* ... */ }
+            else if (availableRegularQuestions.length > 0) { /* ... */ }
+            else if (readyMistakes.length > 0) { /* ... */ }
+            else { /* ... */ return; }
+            readyMistakes.forEach(m => { /* ... */ });
+            if (!nextQuestion || !nextQuestion.id /* ... */) { /* ... */ return; }
+            currentQuestion = nextQuestion;
+            currentQuestion.startTime = Date.now();
+            currentQuestion.shuffledAnswers = shuffleAnswers([...currentQuestion.answers], currentQuestion.correct);
+            if (!Array.isArray(currentQuestion.shuffledAnswers) || currentQuestion.shuffledAnswers.length < 2) { /* ... */ return; }
+            questionElement.innerHTML = "";
+            const questionTextNode = document.createTextNode(currentQuestion.question);
+            questionElement.appendChild(questionTextNode);
+            answersElement.innerHTML = "";
+            currentQuestion.shuffledAnswers.forEach((answer, index) => { /* ... */ });
+            updateLifelineCounters();
+            updateSequence();
+          }
+
+          // --- REVERTED: createScorePopup ---
+          function createScorePopup(score, isStreakBonus = false, lifelineBonusText = null) {
+              const popup = document.createElement("div");
+              popup.classList.add("score-popup");
+              let scoreText = "";
+              if (isStreakBonus) { scoreText += "🔥 בונוס רצף! "; }
+              scoreText += `+${score}`;
+              popup.textContent = scoreText;
+              const appendBonusText = (text) => {
+                  if (text) {
+                      const bonusSpan = document.createElement('span');
+                      bonusSpan.className = 'bonus-text';
+                      bonusSpan.textContent = text;
+                      popup.appendChild(bonusSpan);
+                  }
+              };
+              appendBonusText(lifelineBonusText);
+              document.body.appendChild(popup);
+              requestAnimationFrame(() => { popup.classList.add("show"); });
+              setTimeout(() => { /* ... */ }, 1500);
+          }
+
+          async function updatePlayerStatsFirebase(playerId, question, isCorrect, scoreGained = 0) { /* unchanged */ }
+
+          // --- REVERTED: checkAnswer ---
+          function checkAnswer(selectedIndex) {
+            if (!gameActive || !currentQuestion || !currentQuestion.shuffledAnswers) return;
+            const answerTime = Date.now();
+            const timeTakenMs = answerTime - (currentQuestion.startTime || answerTime);
+            const timeTakenSec = Math.max(0, Math.floor(timeTakenMs / 1000));
+            const buttons = answersElement.querySelectorAll(".answer-btn");
+            buttons.forEach(btn => btn.disabled = true);
+            const correctAnswerObject = currentQuestion.shuffledAnswers.find(a => a.isCorrect);
+            const selectedAnswerObject = currentQuestion.shuffledAnswers[selectedIndex];
+            if (!selectedAnswerObject || typeof selectedAnswerObject.isCorrect === 'undefined' || !correctAnswerObject) { /* ... */ return; }
+            const isCorrect = selectedAnswerObject.isCorrect;
+            const questionNumber = correctCount + wrongCount + 1;
+            let questionScore = 0;
+            let isStreakScoreBonus = false;
+            let lifelineBonusMessage = null;
+            buttons.forEach((btn, idx) => { /* ... */ });
+            if (isCorrect) {
+                correctCount++;
+                currentStreak++;
+                longestStreak = Math.max(longestStreak, currentStreak);
+                answerSequence.push({ number: questionNumber, correct: true });
+                const timeBonus = Math.max(0, Math.floor((15 - timeTakenSec) / 2));
+                const streakBonus = currentStreak > 1 ? (currentStreak - 1) * STREAK_BONUS_MULTIPLIER : 0;
+                questionScore = BASE_SCORE_PER_QUESTION + timeBonus + streakBonus;
+                if (streakBonus > 0) { isStreakScoreBonus = true; }
+                currentGameScore += questionScore;
+                if (currentStreak >= STREAK_THRESHOLD && Math.random() < LIFELINE_BONUS_CHANCE) { /* ... lifeline bonus logic ... */ }
+                createScorePopup(questionScore, isStreakScoreBonus, lifelineBonusText);
+                const mistakeIndex = mistakenQuestions.findIndex(mq => mq && mq.question.id === currentQuestion.id);
+                if (mistakeIndex > -1) { /* ... */ }
+                if (!answeredCorrectly.some(aq => aq && aq.id === currentQuestion.id)) { /* ... */ }
+            } else { // Incorrect answer
+                wrongCount++;
+                currentStreak = 0;
+                questionScore = 0;
+                answerSequence.push({ number: questionNumber, correct: false });
+                mistakeDetails.push({ /* ... */ });
+                const mistakeIndex = mistakenQuestions.findIndex(mq => mq && mq.question.id === currentQuestion.id);
+                const delay = Math.floor(Math.random() * 3) + 2;
+                if (mistakeIndex === -1) { /* ... */ }
+                else { /* ... */ }
+            }
+            const questionTags = Array.isArray(currentQuestion.tags) ? currentQuestion.tags.filter(t => t) : [];
+            questionTags.forEach(tag => { /* ... */ });
+            if (playerId) { /* ... */ }
+            updatePercentage();
+            currentQuestion = null;
+            if (timerExpired) { /* ... */ }
+            else { setTimeout(loadQuestion, 1200); }
+          }
+
+
+          function updateSequence() { /* unchanged */ }
+          function updatePercentage() { /* unchanged */ }
+          function startTimer(reset = true) { /* unchanged */ }
+          function updateTimerCircle() { /* unchanged */ }
+
+          // --- Lifeline Handlers ---
+          function fiftyFiftyButtonClickHandler() { /* unchanged */ }
+          // Listener added in DOMContentLoaded
+          function addTimeButtonClickHandler() { /* unchanged */ }
+          // Listener added in DOMContentLoaded
+          function skipButtonClickHandler() { /* unchanged */ }
+          // Listener added in DOMContentLoaded
+
+          // --- End Game and Results ---
+          function launchConfetti() { /* unchanged */ }
+          function saveGameResult() { /* unchanged */ }
+          async function getDailyRankings() { /* unchanged */ }
+          async function getOverallRankings(limit = 10) { /* unchanged */ }
+          function displayRankings(element, rankings, currentPlayerRank, scoreField, rankLabelPrefix = "") { /* unchanged */ }
+          async function endGame() { /* unchanged */ }
+
+          // --- Wait for DOMContentLoaded before running main logic ---
+          document.addEventListener('DOMContentLoaded', () => {
+              console.log("DOMContentLoaded event fired.");
+              try {
+                  if (initializeDOMElements()) { // Initialize DOM elements first
+                      mainAppLogic(); // Run main logic only if DOM elements are found
+                  }
+              } catch (error) {
+                  console.error("Error during DOMContentLoaded execution:", error);
+                  // Display error to user if DOM init failed
+                   document.body.innerHTML = `<div style="padding: 20px; text-align: center; color: red;">שגיאה קריטית בטעינת המשחק (${error.message}). נסה לרענן את הדף.</div>`;
+              }
+          });
+
+      } catch (error) {
+          // Catch any synchronous error during script setup
+          console.error("Critical error during script execution:", error);
+          // Attempt to display a generic error message to the user
+          try {
+              document.body.innerHTML = `<div style="padding: 20px; text-align: center; color: red;">אירעה שגיאה קריטית בטעינת המשחק. אנא נסה לרענן את הדף.<br><br>פרטי שגיאה: ${error.message}</div>`;
+          } catch (e) {
+              // Fallback if even modifying body fails
+          }
+      }
+    </script>
+  </body>
+</html>
