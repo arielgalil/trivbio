@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>טריווBIO - ניהול</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- General Styles --- */
+        :root {
+            --bg-color: #f5f7fa;
+            --text-color: #2d3748;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --button-bg: #a3bffa;
+            --button-hover-bg: #7f9cf5;
+            --button-text: white;
+            --input-bg: #e2e8f0;
+            --input-border: #cbd5e0;
+            --accent-color: #7f9cf5;
+            --success-color: #48bb78;
+            --danger-color: #f56565;
+            --link-color: #5a67d8;
+            --disabled-bg: #cbd5e0;
+            --disabled-text: #a0aec0;
+            --icon-color: #4a5568;
+            /* Color for icons like refresh */
+        }
+
+        body.dark-mode {
+            --bg-color: #1a202c;
+            --text-color: #e2e8f0;
+            --card-bg: #2d3748;
+            --card-border: #4a5568;
+            --button-bg: #4a5568;
+            --button-hover-bg: #2d3748;
+            --button-text: #e2e8f0;
+            --input-bg: #4a5568;
+            --input-border: #718096;
+            --accent-color: #63b3ed;
+            --success-color: #68d391;
+            --danger-color: #fc8181;
+            --link-color: #63b3ed;
+            --disabled-bg: #4a5568;
+            --disabled-text: #718096;
+            --icon-color: #a0aec0;
+            /* Icon color in dark mode */
+        }
+
+        body {
+            font-family: "Noto Sans Hebrew", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, color 0.3s;
+            line-height: 1.6;
+            box-sizing: border-box;
+        }
+        *, *::before, *::after {
+            box-sizing: inherit;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 15px;
+        }
+
+        header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        h1 { font-size: 1.8rem; margin: 0; order: 2; }
+        header .switch { order: 1; }
+        header #logout-btn { order: 3; }
+
+        /* --- Theme Toggle --- */
+         .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+         .switch input { opacity: 0; width: 0; height: 0; }
+         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 5px; }
+         .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+         input:checked + .slider { background-color: var(--accent-color); }
+         input:checked + .slider:before { transform: translateX(26px); }
+         .theme-icon { width: 20px; height: 20px; transition: opacity 0.4s; }
+         .sun { opacity: 1; } .moon { opacity: 0; }
+         input:checked + .slider .sun { opacity: 0; } input:checked + .slider .moon { opacity: 1; }
+
+        /* --- Buttons --- */
+        button { font-family: "Noto Sans Hebrew", sans-serif; padding: 8px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.95rem; transition: background-color 0.3s, transform 0.1s, opacity 0.2s; margin: 5px; vertical-align: middle; }
+        button:active { transform: scale(0.98); }
+        button:disabled { background-color: var(--disabled-bg) !important; color: var(--disabled-text) !important; cursor: not-allowed; transform: none !important; opacity: 0.7; }
+        .btn-primary { background-color: var(--button-bg); color: var(--button-text); }
+        .btn-primary:hover:not(:disabled) { background-color: var(--button-hover-bg); }
+        .btn-danger { background-color: var(--danger-color); color: white; }
+        .btn-danger:hover:not(:disabled) { opacity: 0.85; }
+        .btn-success { background-color: var(--success-color); color: white; }
+        .btn-success:hover:not(:disabled) { opacity: 0.85; }
+        .btn-icon { padding: 5px; background-color: transparent; border: 1px solid var(--input-border); color: var(--icon-color); line-height: 1; transition: background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s; margin: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .btn-icon:hover:not(:disabled) { background-color: var(--input-bg); border-color: var(--accent-color); color: var(--accent-color); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-icon svg { vertical-align: middle; width: 16px; height: 16px; }
+        .btn-round { border-radius: 50%; width: 34px; height: 34px; display: inline-flex; justify-content: center; align-items: center; }
+        /* Add spinning animation on refresh */
+        #refresh-dashboard-btn.refreshing svg { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* --- Auth Section --- */
+        #auth-section { text-align: center; padding: 40px 20px; }
+        #auth-section p { margin-bottom: 20px; font-size: 1.1rem; }
+
+        /* --- Admin Content --- */
+        #admin-content { display: none; }
+        .card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 15px 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        body.dark-mode .card { box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+
+        /* --- Card Header with Button --- */
+        .card-header-with-button { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--card-border); }
+        .card-header-with-button h2 { margin: 0; font-size: 1.2rem; flex-grow: 1; }
+        #refresh-dashboard-container { margin-left: 10px; } /* Space from title */
+         #dashboard-date { font-size: 0.8em; font-weight: normal; color: var(--disabled-text); margin-right: 10px; }
+
+        /* --- NEW Dashboard Styles --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* התאמה אוטומטית של עמודות */
+            gap: 20px; /* רווח גדול יותר */
+            text-align: center;
+            margin-top: 20px; /* רווח מהכותרת */
+        }
+
+        .stat-item .stat-icon {
+            display: inline-block;
+            margin-left: 8px; /* רווח מהטקסט ב-RTL */
+            font-size: 1.2em; /* אייקון מעט גדול יותר */
+            vertical-align: middle; /* יישור אנכי */
+        }
+
+        .stat-item h3 {
+            margin: 0 0 8px 0;
+            font-size: 0.9rem; /* כותרת מעט קטנה יותר */
+            color: var(--text-color);
+            opacity: 0.8; /* מעט פחות בולט */
+            font-weight: normal;
+            display: flex; /* מאפשר מרכוז */
+            align-items: center;
+            justify-content: center;
+            line-height: 1.3; /* מרווח שורות קטן בכותרת */
+             vertical-align: middle; /* יישור אנכי */
+        }
+
+        .stat-item p {
+            margin: 0;
+            font-size: 1.8rem; /* מספר גדול ובולט */
+            font-weight: bold;
+            color: var(--accent-color); /* צבע הדגשה למספר */
+            line-height: 1.1;
+        }
+
+        /* --- NEW Enhanced Leaderboard Styles --- */
+        #leaderboard-enhanced-section h2 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .leaderboard-note {
+            font-size: 0.8rem;
+            color: var(--disabled-text);
+            font-weight: normal;
+        }
+
+        #leaderboard-enhanced-display table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.95rem;
+        }
+
+        #leaderboard-enhanced-display th,
+        #leaderboard-enhanced-display td {
+            padding: 10px 8px; /* ריווח פנימי לתאים */
+            text-align: right; /* יישור לימין כברירת מחדל */
+            border-bottom: 1px solid var(--card-border);
+            vertical-align: middle; /* יישור אנכי לאמצע */
+        }
+
+        #leaderboard-enhanced-display th {
+            font-weight: bold;
+            background-color: var(--input-bg);
+            white-space: nowrap; /* מניעת שבירת שורות בכותרות */
+        }
+
+        body.dark-mode #leaderboard-enhanced-display th {
+             background-color: #3a475a; /* רקע כהה יותר לכותרות במצב כהה */
+        }
+
+        #leaderboard-enhanced-display td.rank-col {
+            width: 40px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--disabled-text);
+        }
+
+        #leaderboard-enhanced-display td.name-col {
+            font-weight: 500; /* מעט הדגשה לשם */
+        }
+
+        #leaderboard-enhanced-display td.score-col,
+        #leaderboard-enhanced-display td.correct-col {
+            width: 90px; /* רוחב אחיד לעמודות המספרים */
+            text-align: center;
+            font-weight: bold;
+            direction: ltr; /* כיווניות למספרים */
+        }
+
+        #leaderboard-enhanced-display td.score-col {
+            color: var(--accent-color); /* צבע הדגשה לניקוד */
+        }
+        #leaderboard-enhanced-display td.correct-col {
+             color: var(--success-color); /* צבע ירוק לתשובות נכונות */
+        }
+
+        #leaderboard-enhanced-display tr:last-child td {
+            border-bottom: none; /* ללא קו תחתון לשורה האחרונה */
+        }
+
+        #leaderboard-enhanced-display tr:hover {
+             background-color: var(--input-bg); /* אפקט ריחוף */
+             opacity: 0.9;
+        }
+
+        body.dark-mode #leaderboard-enhanced-display tr:hover {
+             background-color: #3a475a; /* אפקט ריחוף במצב כהה */
+        }
+
+
+        /* --- Questions Section --- */
+        #questions-section h2 { margin-bottom: 15px; }
+        #questions-list .question-item { border-bottom: 1px solid var(--card-border); padding: 15px 0; }
+        #questions-list .question-item:last-child { border-bottom: none; }
+        .question-summary { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .question-text { flex-grow: 1; font-size: 1rem; margin: 0; }
+        .question-actions button { font-size: 0.85rem; padding: 5px 10px; }
+
+        /* --- Question Details Alignment --- */
+        .question-details { font-size: 0.8rem; color: var(--disabled-text); margin-top: 5px; display: block; direction: rtl; text-align: right; }
+        body.dark-mode .question-details { color: var(--disabled-bg); }
+
+        /* --- Filter Controls CSS --- */
+        #filter-controls { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--card-border); padding-bottom: 15px; align-items: flex-end; }
+        #filter-controls > div { flex-grow: 1; }
+        .filter-group-topic-clear { display: flex; align-items: flex-end; gap: 10px; flex-grow: 1; }
+        .topic-select-wrapper { flex-grow: 1; }
+        #filter-controls label { display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: bold; }
+        #filter-controls input[type="search"], #filter-controls select { width: 100%; padding: 8px; border: 1px solid var(--input-border); background-color: var(--input-bg); color: var(--text-color); border-radius: 5px; box-sizing: border-box; font-size: 0.95rem; margin: 0; }
+        #filter-controls button#clear-filters-btn { padding: 8px 12px; white-space: nowrap; margin: 0; flex-shrink: 0; }
+
+        /* --- Question Form (Modal) --- */
+        #question-form-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 15px; box-sizing: border-box; }
+        #question-form-container { background-color: var(--card-bg); padding: 25px; border-radius: 10px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; }
+        #question-form h3 { margin-top: 0; margin-bottom: 20px; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input[type="text"], .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--input-border); background-color: var(--input-bg); color: var(--text-color); border-radius: 5px; font-size: 1rem; box-sizing: border-box; }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .answer-group { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .answer-group input[type="text"] { flex-grow: 1; }
+        .answer-group input[type="radio"] { width: 20px; height: 20px; cursor: pointer; margin-left: 5px; } /* Added margin for RTL */
+        .answer-group button { padding: 3px 8px !important; font-size: 1rem !important; line-height: 1; margin: 0 5px 0 0 !important; } /* Adjusted margin */
+        .form-actions { text-align: center; margin-top: 20px; }
+        #close-modal-btn { position: absolute; top: 10px; left: 15px; background: none; border: none; font-size: 1.5rem; color: var(--text-color); cursor: pointer; padding: 5px; line-height: 1;}
+
+        /* --- Loading / Messages --- */
+        #loading, #access-denied, #general-error, #no-results-message { text-align: center; padding: 30px; font-size: 1.1rem; display: none; }
+        #loading p, #access-denied p, #general-error p, #no-results-message p { margin: 0; }
+        #no-results-message { padding: 20px; color: var(--disabled-text); }
+        body.dark-mode #no-results-message { color: var(--disabled-bg); }
+        .error-text { color: var(--danger-color); font-weight: bold; } /* Style for error messages in stats */
+
+        /* --- Clickable Links (Topic/Tag) --- */
+        .topic-link, .tag-link { color: var(--link-color); cursor: pointer; text-decoration: none; margin: 0 2px; display: inline-block; padding: 1px 4px; border-radius: 4px; transition: background-color 0.2s, color 0.2s; }
+        .topic-link:hover, .tag-link:hover { text-decoration: underline; background-color: var(--input-bg); }
+
+        /* --- Pagination Controls --- */
+        #pagination-controls { text-align: center; margin-top: 20px; display: none; }
+        #pagination-controls span { margin: 0 15px; vertical-align: middle; direction: ltr; }
+
+        /* --- Responsive --- */
+        @media (max-width: 700px) {
+             #filter-controls > div { min-width: 100%; }
+             .filter-group-topic-clear { width: 100%; }
+             /* Dashboard Responsive */
+             .dashboard-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; }
+             .stat-item p { font-size: 1.6rem; }
+             .stat-item h3 { font-size: 0.85rem; }
+             #leaderboard-enhanced-display th, #leaderboard-enhanced-display td { padding: 8px 5px; font-size: 0.9rem; }
+             #leaderboard-enhanced-display td.score-col, #leaderboard-enhanced-display td.correct-col { width: 70px; }
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.5rem; }
+            header { justify-content: space-around; }
+            .question-summary { flex-direction: column; align-items: stretch; }
+            .question-actions { text-align: right; margin-top: 10px; }
+            #question-form-container { padding: 15px; }
+            #close-modal-btn { top: 5px; left: 10px; }
+            .answer-group label { display: none; }
+            .card-header-with-button h2 { font-size: 1.1rem; }
+            .btn-round { width: 30px; height: 30px; }
+            .btn-icon svg { width: 14px; height: 14px; }
+            #pagination-controls span { margin: 0 8px; }
+            #pagination-controls button { padding: 6px 10px; }
+        }
+        @media (max-width: 500px) {
+             /* Dashboard further adjustment */
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); /* 2 columns on very small screens */ }
+        }
+    </style>
+</head>
+<body>
+    <script>
+        // Set theme ASAP to avoid flash
+        const initialDarkMode = localStorage.getItem("darkMode") === "true";
+        document.body.classList.toggle("dark-mode", initialDarkMode);
+    </script>
+
+    <div class="container">
+        <header>
+            <label class="switch">
+                <input type="checkbox" id="theme-toggle" />
+                <span class="slider">
+                    <img src="https://img.icons8.com/ios-glyphs/30/ffffff/sun.png" alt="שמש" class="theme-icon sun"/>
+                    <img src="https://img.icons8.com/ios-glyphs/30/ffffff/moon-symbol.png" alt="ירח" class="theme-icon moon"/>
+                </span>
+              </label>
+            <h1>ניהול טריווBIO</h1>
+            <button id="logout-btn" class="btn-danger" style="display: none;">התנתק</button>
+        </header>
+
+        <main>
+            <div id="auth-section" style="display: none;">
+              <p>יש להתחבר עם חשבון Google מורשה כדי לגשת לניהול.</p>
+                <button id="login-btn" class="btn-primary">התחבר עם Google</button>
+            </div>
+            <div id="loading"><p>טוען...</p></div>
+            <div id="access-denied"><p>🚫 אינך מורשה לגשת לעמוד זה.</p></div>
+            <div id="general-error"><p>⚠️ שגיאה בטעינת הנתונים. בדוק את החיבור או נסה שוב מאוחר יותר.</p></div>
+
+            <div id="admin-content">
+
+                <section id="dashboard-overview" class="card">
+                    <div class="card-header-with-button">
+                        <h2>סקירה כללית <span id="dashboard-date"></span></h2>
+                        <div id="refresh-dashboard-container">
+                            <button id="refresh-dashboard-btn" class="btn-icon btn-round" title="רענן נתונים">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="stat-item"><h3><span class="stat-icon" title="סה&quot;כ שאלות">📊</span> סה"כ שאלות</h3><p id="stat-total-questions">?</p></div>
+                        <div class="stat-item"><h3><span class="stat-icon" title="שחקנים רשומים">👥</span> שחקנים רשומים</h3><p id="stat-total-players">?</p></div>
+
+                        <div class="stat-item"><h3><span class="stat-icon" title="שחקנים פעילים היום">☀️</span> שחקנים פעילים (היום)</h3><p id="stat-active-players-today">?</p></div>
+                        <div class="stat-item"><h3><span class="stat-icon" title="משחקים ששוחקו היום">🎮</span> משחקים ששוחקו (היום)</h3><p id="stat-games-today">?</p></div>
+                        <div class="stat-item"><h3><span class="stat-icon" title="ממוצע ניקוד היום">🎯</span> ממוצע ניקוד (היום)</h3><p id="stat-avg-score-today">?</p></div>
+                        <div class="stat-item"><h3><span class="stat-icon" title="ממוצע תשובות נכונות למשחק (היום)">✅</span> ממוצע נכונות (היום)</h3><p id="stat-avg-correct-today">?</p></div>
+                        <div class="stat-item"><h3><span class="stat-icon" title="שחקנים חדשים היום">✨</span> שחקנים חדשים (היום)</h3><p id="stat-new-players-today">?</p></div>
+                    </div>
+                </section>
+
+                <section id="leaderboard-enhanced-section" class="card">
+                    <h2>לוח דירוג כללי <span class="leaderboard-note">(Top 10)</span></h2>
+                    <div id="leaderboard-enhanced-display">
+                        <p>טוען דירוג...</p>
+                        </div>
+                </section>
+                <section id="questions-section" class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                       <h2>ניהול שאלות</h2>
+                       <button id="add-question-btn" class="btn-success">הוסף שאלה חדשה +</button>
+                    </div>
+
+                    <div id="filter-controls">
+                        <div>
+                            <label for="search-input">חיפוש:</label>
+                            <input type="search" id="search-input" placeholder="חפש בשאלה, תשובות, נושא, תגיות...">
+                        </div>
+                        <div class="filter-group-topic-clear">
+                            <div class="topic-select-wrapper">
+                                 <label for="topic-filter">סנן לפי נושא:</label>
+                                <select id="topic-filter">
+                                    <option value="">כל הנושאים</option>
+                                    <option value="human-body">גוף האדם</option>
+                                    <option value="cell">התא</option>
+                                    <option value="ecology">אקולוגיה</option>
+                                </select>
+                            </div>
+                            <button id="clear-filters-btn" class="btn-danger">נקה סינונים</button>
+                        </div>
+                    </div>
+
+                    <div id="questions-list"></div>
+                    <div id="pagination-controls">
+                        <button id="prev-page-btn" class="btn-primary">« קודם</button>
+                        <span id="page-info"></span>
+                        <button id="next-page-btn" class="btn-primary">הבא »</button>
+                    </div>
+                     <p id="no-results-message" style="padding: 20px; text-align: center; display: none;">לא נמצאו שאלות התואמות את הסינון.</p>
+                </section>
+            </div> </main>
+
+        <div id="question-form-modal">
+            <div id="question-form-container">
+                 <button id="close-modal-btn" title="סגור">×</button>
+                 <form id="question-form">
+                    <h3 id="form-title">הוסף שאלה חדשה</h3>
+                    <input type="hidden" id="question-id">
+                    <div class="form-group"><label for="question-text-input">טקסט השאלה:</label><textarea id="question-text-input" required></textarea></div>
+                    <div class="form-group"><label>תשובות (סמן את הנכונה):</label><div id="answers-container"></div><button type="button" id="add-answer-btn" class="btn-primary" style="margin-top: 10px;">הוסף תשובה +</button></div>
+                    <div class="form-group"><label for="question-topic">נושא:</label><select id="question-topic" required><option value="" disabled selected>בחר נושא...</option><option value="human-body">גוף האדם</option><option value="cell">התא</option><option value="ecology">אקולוגיה</option></select></div>
+                    <div class="form-group"><label for="question-tags">תגיות (מופרדות בפסיק):</label><input type="text" id="question-tags" placeholder="לדוגמה: מערכת העיכול, אנזימים"></div>
+                    <div class="form-actions"><button type="submit" id="save-question-btn" class="btn-primary">שמור שאלה</button><button type="button" id="cancel-edit-btn" class="btn-danger">ביטול</button></div>
+                 </form>
+            </div>
+        </div>
+    </div> <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Firebase Config (User Provided) ---
+            const firebaseConfig = { apiKey: "AIzaSyAGFC_TB8iEMvS2PyxeASj1HH4i66AW4UA", authDomain: "trivbio.firebaseapp.com", projectId: "trivbio", storageBucket: "trivbio.firebasestorage.app", messagingSenderId: "1097087574583", appId: "1:1097087574583:web:b36c0441537a1f596215b2", measurementId: "G-ZY245YB23E" };
+            try {
+                 // Check if Firebase is already initialized (useful for development HMR)
+                 if (!firebase.apps.length) {
+                     firebase.initializeApp(firebaseConfig);
+                 } else {
+                     firebase.app(); // if already initialized, use that app
+                 }
+            } catch (e) {
+                 console.error("FATAL: Firebase init failed!", e);
+                 const li = document.getElementById('loading');
+                 if(li) li.innerHTML = '<p class="error-text">שגיאת Firebase קריטית!</p>';
+                 // Prevent further execution if Firebase fails
+                 return;
+            }
+            const auth = firebase.auth();
+            const database = firebase.database();
+            console.log("Admin Firebase initialized");
+
+            // --- DOM Elements ---
+            const loginBtn = document.getElementById('login-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const authSect = document.getElementById('auth-section');
+            const adminCont = document.getElementById('admin-content');
+            const loadInd = document.getElementById('loading');
+            const accessDen = document.getElementById('access-denied');
+            const genErr = document.getElementById('general-error');
+            const themeTog = document.getElementById('theme-toggle');
+
+            // Dashboard Elements
+            const dashboardOverview = document.getElementById('dashboard-overview');
+            const dashboardDate = document.getElementById('dashboard-date');
+            const refreshDashboardBtn = document.getElementById('refresh-dashboard-btn');
+            const statTotalQuestions = document.getElementById('stat-total-questions');
+            const statTotalPlayers = document.getElementById('stat-total-players');
+            const statActivePlayersToday = document.getElementById('stat-active-players-today');
+            const statGamesToday = document.getElementById('stat-games-today');
+            const statAvgScoreToday = document.getElementById('stat-avg-score-today');
+            const statAvgCorrectToday = document.getElementById('stat-avg-correct-today'); // Renamed ID
+            const statNewPlayersToday = document.getElementById('stat-new-players-today');
+            const leaderboardEnhancedDisplay = document.getElementById('leaderboard-enhanced-display');
+
+            // Questions Management Elements
+            const qListDiv = document.getElementById('questions-list');
+            const searchIn = document.getElementById('search-input');
+            const topicFil = document.getElementById('topic-filter');
+            const clearFilBtn = document.getElementById('clear-filters-btn');
+            const noResMsg = document.getElementById('no-results-message');
+            const addQBtn = document.getElementById('add-question-btn');
+            const qFormModal = document.getElementById('question-form-modal');
+            const qFormCont = document.getElementById('question-form-container');
+            const qForm = document.getElementById('question-form');
+            const closeModBtn = document.getElementById('close-modal-btn');
+            const formTit = document.getElementById('form-title');
+            const qIdIn = document.getElementById('question-id');
+            const qTextIn = document.getElementById('question-text-input');
+            const ansCont = document.getElementById('answers-container');
+            const addAnsBtn = document.getElementById('add-answer-btn');
+            const qTopicSel = document.getElementById('question-topic');
+            const qTagsIn = document.getElementById('question-tags');
+            const saveQBtn = document.getElementById('save-question-btn');
+            const cancelEdBtn = document.getElementById('cancel-edit-btn');
+            const pagCont = document.getElementById('pagination-controls');
+            const prevPBtn = document.getElementById('prev-page-btn');
+            const nextPBtn = document.getElementById('next-page-btn');
+            const pageInf = document.getElementById('page-info');
+
+            // Check essential elements
+            const essentialElements = [
+                 loginBtn, logoutBtn, authSect, adminCont, loadInd, accessDen, genErr, themeTog, // Core
+                 dashboardOverview, dashboardDate, refreshDashboardBtn, statTotalQuestions, statTotalPlayers, // Dashboard
+                 statActivePlayersToday, statGamesToday, statAvgScoreToday, statAvgCorrectToday, statNewPlayersToday, leaderboardEnhancedDisplay, // Dashboard
+                 qListDiv, searchIn, topicFil, clearFilBtn, noResMsg, addQBtn, qFormModal, qForm, // Questions
+                 closeModBtn, formTit, qIdIn, qTextIn, ansCont, addAnsBtn, qTopicSel, qTagsIn, saveQBtn, cancelEdBtn, // Questions Form
+                 pagCont, prevPBtn, nextPBtn, pageInf // Pagination
+            ];
+            if (essentialElements.some(el => !el)) {
+                console.error("FATAL: Missing essential UI elements!");
+                if(loadInd) loadInd.innerHTML = '<p class="error-text">שגיאה: רכיבי ממשק חסרים. בדוק את קונסול המפתחים.</p>';
+                return; // Stop execution if UI is broken
+            }
+
+            // --- Global State ---
+            let currentAdminUid = null;
+            let allQuestions = {};
+            let questionsListener = null;
+            let filteredQuestionIds = [];
+            let currentPage = 1;
+            const itemsPerPage = 10;
+            const topicTranslations = { "human-body": "גוף האדם", "cell": "התא", "ecology": "אקולוגיה", "unknown": "לא ידוע" };
+
+            // --- Helpers ---
+            function showEl(el) { if(el) el.style.display = 'block'; }
+            function hideEl(el) { if(el) el.style.display = 'none'; }
+            function showFlexEl(el) { if(el) { el.style.display = 'flex'; document.body.style.overflow = 'hidden'; } } // Used for modal
+            function debounce(func, wait) { let timeout; return function executedFunction(...args) { const later = () => { clearTimeout(timeout); func.apply(this, args); }; clearTimeout(timeout); timeout = setTimeout(later, wait); }; }
+            function getTodayDateString() { return new Date().toISOString().split('T')[0]; } // YYYY-MM-DD format
+
+            // --- Theme ---
+            function setTheme(isDark) { document.body.classList.toggle('dark-mode', isDark); }
+            themeTog.checked = document.body.classList.contains('dark-mode');
+            themeTog.addEventListener('change', () => {
+                const isDark = themeTog.checked;
+                setTheme(isDark);
+                localStorage.setItem("darkMode", isDark.toString());
+                if (currentAdminUid) {
+                    database.ref(`players/${currentAdminUid}/adminDarkMode`).set(isDark)
+                        .catch(e => console.warn("Failed to save dark mode preference to Firebase", e));
+                }
+            });
+            function loadThemePref(uid) {
+                 database.ref(`players/${uid}/adminDarkMode`).once('value').then(snapshot => {
+                     if (snapshot.exists() && typeof snapshot.val() === 'boolean') {
+                         const prefIsDark = snapshot.val();
+                         if (themeTog.checked !== prefIsDark) {
+                             themeTog.checked = prefIsDark;
+                             setTheme(prefIsDark);
+                             localStorage.setItem("darkMode", prefIsDark.toString());
+                             console.log("Applied dark mode preference from Firebase.");
+                         }
+                     }
+                 }).catch(e => console.warn("Failed to load dark mode preference from Firebase", e));
+            }
+
+            // --- Auth ---
+            auth.onAuthStateChanged(async (user) => {
+                hideEl(loadInd); hideEl(accessDen); hideEl(genErr); hideEl(adminCont); hideEl(authSect); hideEl(logoutBtn);
+                // Detach listeners and reset state on auth change
+                if (questionsListener) { database.ref('questions').off('value', questionsListener); questionsListener = null; }
+                resetFilters(false); // Don't render yet
+                allQuestions = {}; filteredQuestionIds = []; currentPage = 1;
+                resetDashboardStats(); // Reset dashboard numbers
+
+                if (user) {
+                    currentAdminUid = user.uid;
+                    console.log("Auth State Changed: User logged in:", user.uid, "Is Anonymous:", user.isAnonymous);
+                    if (user.isAnonymous) {
+                        currentAdminUid = null; // Treat anonymous as logged out for admin
+                        showEl(authSect);
+                        console.log("Anonymous user detected, showing login.");
+                    } else {
+                        showEl(loadInd); // Show loading while checking admin status
+                        try {
+                            const isAdmin = await checkAdmin(user.uid);
+                            hideEl(loadInd);
+                            if (isAdmin) {
+                                console.log("Admin check successful for:", user.uid);
+                                showEl(adminCont);
+                                showEl(logoutBtn);
+                                loadThemePref(user.uid); // Load theme preference after confirming admin
+                                loadData(); // Load dashboard and questions
+                            } else {
+                                console.log("User is not an admin:", user.uid);
+                                showEl(accessDen);
+                                showEl(logoutBtn); // Allow logout even if not admin
+                            }
+                        } catch (error) {
+                            console.error("Error during admin check:", error);
+                            hideEl(loadInd);
+                            genErr.innerHTML = `<p class="error-text">⚠️ שגיאה באימות המנהל.</p>`;
+                            showEl(genErr);
+                            showEl(logoutBtn);
+                        }
+                    }
+                } else {
+                    currentAdminUid = null;
+                    console.log("Auth State Changed: No user session.");
+                    showEl(authSect);
+                }
+            });
+            async function checkAdmin(uid) {
+                 if (!uid) return false;
+                 try {
+                     const snapshot = await database.ref(`admins/${uid}`).once('value');
+                     return snapshot.exists() && snapshot.val() === true;
+                 } catch (error) {
+                     console.error("Firebase error checking admin status:", error);
+                     throw error; // Re-throw the error to be caught by the caller
+                 }
+            }
+            loginBtn.addEventListener('click', () => {
+                 const provider = new firebase.auth.GoogleAuthProvider();
+                 showEl(loadInd); hideEl(authSect); hideEl(genErr);
+                 auth.signInWithPopup(provider).catch(error => {
+                     console.error("Google Sign-In Error:", error);
+                     hideEl(loadInd);
+                     // Provide more specific error messages if possible
+                     if (error.code === 'auth/popup-closed-by-user') {
+                         genErr.innerHTML = `<p>חלון ההתחברות נסגר.</p>`;
+                     } else if (error.code === 'auth/network-request-failed') {
+                         genErr.innerHTML = `<p class="error-text">⚠️ בעיית רשת מנעה את ההתחברות.</p>`;
+                     } else {
+                         genErr.innerHTML = `<p class="error-text">⚠️ כשל בהתחברות: ${error.message}</p>`;
+                     }
+                     showEl(genErr);
+                     showEl(authSect); // Show login button again
+                 });
+            });
+            logoutBtn.addEventListener('click', () => {
+                 auth.signOut().catch(e => console.error("Logout Error:", e));
+            });
+
+            // --- Data Loading ---
+            function loadData() {
+                 console.log("loadData called");
+                 loadDashboardData(); // Load new dashboard data
+                 loadQuestions(); // Load questions data
+            }
+
+            // --- NEW Dashboard Data Loading ---
+            async function loadDashboardData() {
+                console.log("loadDashboardData called");
+                if (!refreshDashboardBtn) return; // Safety check
+
+                resetDashboardStats(); // Set to '...' initially
+                refreshDashboardBtn.disabled = true;
+                refreshDashboardBtn.classList.add('refreshing');
+
+                const todayStr = getTodayDateString();
+                if (dashboardDate) dashboardDate.textContent = `(נכון ל-${todayStr.split('-').reverse().join('/')})`;
+
+                const dashboardPromises = [
+                    database.ref('questions').once('value'), // 0: Total Questions
+                    database.ref('players').once('value'),   // 1: Total Players
+                    database.ref(`gameResults/${todayStr}`).once('value'), // 2: Today's Game Results
+                    database.ref('players').orderByChild('registrationDate').equalTo(todayStr).once('value'), // 3: New Players Today (Assuming YYYY-MM-DD format)
+                    database.ref('leaderboard').orderByChild('cumulativeScore').limitToLast(10).once('value') // 4: Leaderboard
+                ];
+
+                const results = await Promise.allSettled(dashboardPromises);
+                console.log("Dashboard fetch results:", results);
+
+                // Process results individually to handle errors gracefully
+                // 0: Total Questions
+                if (results[0].status === 'fulfilled' && results[0].value.exists()) {
+                    statTotalQuestions.textContent = results[0].value.numChildren();
+                } else if (results[0].status === 'rejected') {
+                    console.error("Error fetching total questions:", results[0].reason);
+                    statTotalQuestions.textContent = 'ERR';
+                } else {
+                    statTotalQuestions.textContent = '0';
+                }
+
+                // 1: Total Players
+                if (results[1].status === 'fulfilled' && results[1].value.exists()) {
+                    statTotalPlayers.textContent = results[1].value.numChildren();
+                } else if (results[1].status === 'rejected') {
+                    console.error("Error fetching total players:", results[1].reason);
+                    statTotalPlayers.textContent = 'ERR';
+                } else {
+                    statTotalPlayers.textContent = '0';
+                }
+
+                // 2: Today's Game Results (Active Players, Games Today, Avg Score, Avg Correct)
+                if (results[2].status === 'fulfilled' && results[2].value.exists()) {
+                    const dailyResults = results[2].value.val();
+                    const gameIds = Object.keys(dailyResults);
+                    const gameCount = gameIds.length;
+                    statGamesToday.textContent = gameCount;
+
+                    let activePlayerIds = new Set();
+                    let totalScore = 0;
+                    let totalCorrect = 0;
+                    gameIds.forEach(id => {
+                        const result = dailyResults[id];
+                        if (result && result.playerId) {
+                            activePlayerIds.add(result.playerId);
+                        }
+                        if (result && typeof result.score === 'number') {
+                            totalScore += result.score;
+                        }
+                        // Sum correct answers - adjust field name if necessary
+                        if (result && typeof result.correctAnswers === 'number') {
+                            totalCorrect += result.correctAnswers;
+                        }
+                    });
+
+                    statActivePlayersToday.textContent = activePlayerIds.size;
+                    statAvgScoreToday.textContent = gameCount > 0 ? (totalScore / gameCount).toFixed(1) : '0';
+                    // Display Average Correct Answers per Game
+                    statAvgCorrectToday.textContent = gameCount > 0 ? (totalCorrect / gameCount).toFixed(1) : '0';
+
+                } else if (results[2].status === 'rejected') {
+                     console.error("Error fetching daily results:", results[2].reason);
+                     statGamesToday.textContent = 'ERR';
+                     statActivePlayersToday.textContent = 'ERR';
+                     statAvgScoreToday.textContent = 'ERR';
+                     statAvgCorrectToday.textContent = 'ERR';
+                } else {
+                     statGamesToday.textContent = '0';
+                     statActivePlayersToday.textContent = '0';
+                     statAvgScoreToday.textContent = '0';
+                     statAvgCorrectToday.textContent = '0';
+                }
+
+                // 3: New Players Today
+                if (results[3].status === 'fulfilled' && results[3].value.exists()) {
+                    statNewPlayersToday.textContent = results[3].value.numChildren();
+                } else if (results[3].status === 'rejected') {
+                    console.error("Error fetching new players:", results[3].reason);
+                    // Check for index errors specifically
+                    if (results[3].reason?.message?.includes("index")) {
+                         console.warn("Suggestion: Ensure an index is defined on 'registrationDate' in Firebase Rules for players.");
+                         statNewPlayersToday.innerHTML = '<span class="error-text" title="נדרש אינדקס במסד הנתונים עבור שדה registrationDate">ERR</span>';
+                    } else {
+                         statNewPlayersToday.textContent = 'ERR';
+                    }
+                } else {
+                    statNewPlayersToday.textContent = '0';
+                }
+
+                 // 4: Leaderboard
+                if (results[4].status === 'fulfilled' && results[4].value.exists()) {
+                     renderEnhancedLeaderboard(results[4].value.val());
+                } else if (results[4].status === 'rejected') {
+                    console.error("Error fetching leaderboard:", results[4].reason);
+                    leaderboardEnhancedDisplay.innerHTML = `<p class="error-text">שגיאה בטעינת הדירוג.</p>`;
+                } else {
+                    leaderboardEnhancedDisplay.innerHTML = `<p>אין נתוני דירוג זמינים.</p>`;
+                }
+
+
+                refreshDashboardBtn.disabled = false;
+                refreshDashboardBtn.classList.remove('refreshing');
+                console.log("Dashboard data loading complete.");
+            }
+
+            function renderEnhancedLeaderboard(leaderboardData) {
+                const dataArray = Object.entries(leaderboardData).map(([playerId, data]) => ({
+                    playerId,
+                    nickname: data.nickname || `שחקן...${playerId.substring(playerId.length - 4)}`,
+                    cumulativeScore: data.cumulativeScore || 0,
+                    // IMPORTANT: Assumes 'correctAnswersCount' exists in the leaderboard data
+                    // If not, remove this line and the corresponding column in the table below
+                    correctAnswersCount: data.correctAnswersCount // May be undefined if not stored
+                }));
+
+                // Sort by score descending
+                dataArray.sort((a, b) => b.cumulativeScore - a.cumulativeScore);
+
+                if (dataArray.length === 0) {
+                    leaderboardEnhancedDisplay.innerHTML = '<p>אין נתוני דירוג זמינים.</p>';
+                    return;
+                }
+
+                const table = document.createElement('table');
+                const thead = table.createTHead();
+                const tbody = table.createTBody();
+                const headerRow = thead.insertRow();
+
+                // Define columns dynamically based on available data
+                const columns = [
+                    { header: '#', class: 'rank-col' },
+                    { header: 'שם משתמש', class: 'name-col' },
+                    { header: 'ניקוד', class: 'score-col' }
+                ];
+                // Add 'Correct Answers' column only if data exists for at least one player
+                const hasCorrectCount = dataArray.some(p => typeof p.correctAnswersCount === 'number');
+                if (hasCorrectCount) {
+                    columns.push({ header: 'תשובות נכונות', class: 'correct-col' });
+                }
+
+                columns.forEach(col => {
+                    const th = document.createElement('th');
+                    th.textContent = col.header;
+                    th.className = col.class || '';
+                    headerRow.appendChild(th);
+                });
+
+
+                dataArray.forEach((player, index) => {
+                    const row = tbody.insertRow();
+                    const rank = index + 1;
+
+                    const cellRank = row.insertCell();
+                    cellRank.textContent = rank;
+                    cellRank.className = 'rank-col';
+
+                    const cellName = row.insertCell();
+                    cellName.textContent = player.nickname;
+                    cellName.className = 'name-col';
+
+                    const cellScore = row.insertCell();
+                    cellScore.textContent = (player.cumulativeScore || 0).toLocaleString();
+                    cellScore.className = 'score-col';
+
+                    // Add correct answers cell if the column exists
+                    if (hasCorrectCount) {
+                         const cellCorrect = row.insertCell();
+                         cellCorrect.textContent = (typeof player.correctAnswersCount === 'number') ? player.correctAnswersCount.toLocaleString() : '-';
+                         cellCorrect.className = 'correct-col';
+                    }
+                });
+
+                leaderboardEnhancedDisplay.innerHTML = ''; // Clear loading message
+                leaderboardEnhancedDisplay.appendChild(table);
+            }
+
+
+            function resetDashboardStats() {
+                 console.log("Resetting dashboard stats display");
+                 if(statTotalQuestions) statTotalQuestions.textContent = '?';
+                 if(statTotalPlayers) statTotalPlayers.textContent = '?';
+                 if(statActivePlayersToday) statActivePlayersToday.textContent = '?';
+                 if(statGamesToday) statGamesToday.textContent = '?';
+                 if(statAvgScoreToday) statAvgScoreToday.textContent = '?';
+                 if(statAvgCorrectToday) statAvgCorrectToday.textContent = '?';
+                 if(statNewPlayersToday) statNewPlayersToday.textContent = '?';
+                 if(leaderboardEnhancedDisplay) leaderboardEnhancedDisplay.innerHTML = '<p>טוען דירוג...</p>';
+                 if(dashboardDate) dashboardDate.textContent = '';
+            }
+
+            // Attach listener to the new refresh button
+            refreshDashboardBtn.addEventListener('click', loadDashboardData);
+
+
+             // --- Questions Loading ---
+             function loadQuestions() {
+                 if (questionsListener) {
+                     console.log("Detaching previous questions listener.");
+                     database.ref('questions').off('value', questionsListener);
+                 }
+                 qListDiv.innerHTML = '<p>טוען שאלות...</p>';
+                 hideEl(noResMsg); hideEl(pagCont);
+
+                 const ref = database.ref('questions').orderByKey(); // Can add ordering later if needed
+                 console.log("Attaching questions listener.");
+                 questionsListener = ref.on('value', (snapshot) => {
+                     allQuestions = snapshot.exists() ? snapshot.val() : {};
+                     console.log(`Questions listener triggered. Loaded ${Object.keys(allQuestions).length} questions.`);
+                     filterAndRender(); // Filter and render based on the new data
+                 }, (error) => {
+                     console.error("Firebase Error loading questions:", error);
+                     qListDiv.innerHTML = `<p class="error-text">שגיאה בטעינת שאלות.</p>`;
+                     allQuestions = {}; filteredQuestionIds = [];
+                     hideEl(noResMsg); hideEl(pagCont);
+                     // Detach listener on error to prevent potential loops
+                     if (questionsListener) ref.off('value', questionsListener);
+                     questionsListener = null;
+                 });
+            }
+
+            // --- Filtering & Rendering Questions ---
+            const debouncedFilter = debounce(() => { currentPage = 1; filterAndRender(); }, 350);
+            searchIn.addEventListener('input', debouncedFilter);
+            topicFil.addEventListener('change', () => { currentPage = 1; filterAndRender(); });
+            clearFilBtn.addEventListener('click', () => resetFilters(true));
+
+            function filterAndRender() {
+                const searchTerm = searchIn.value.toLowerCase().trim();
+                const selectedTopic = topicFil.value;
+                console.log(`Filtering questions: Term='${searchTerm}', Topic='${selectedTopic}'`);
+
+                filteredQuestionIds = Object.keys(allQuestions).filter(id => {
+                    const questionData = allQuestions[id];
+                    if (!questionData?.question) return false; // Basic validation
+
+                    let topicMatch = !selectedTopic || questionData.topic === selectedTopic;
+                    if (!topicMatch) return false;
+
+                    if (searchTerm) {
+                        const questionText = questionData.question.toLowerCase();
+                        const answersText = (questionData.answers || []).map(a => String(a).toLowerCase()).join(' ');
+                        const tagsText = (questionData.tags || []).map(t => String(t).trim().toLowerCase());
+                        const topicText = questionData.topic?.toLowerCase() || '';
+
+                        const termMatch = questionText.includes(searchTerm) ||
+                                          answersText.includes(searchTerm) ||
+                                          topicText.includes(searchTerm) ||
+                                          tagsText.some(t => t.includes(searchTerm));
+                        if (!termMatch) return false;
+                    }
+                    return true; // Passes all filters
+                }).sort((a, b) => a.localeCompare(b)); // Simple sort by ID, can be changed
+
+                console.log(`Filter resulted in ${filteredQuestionIds.length} questions. Current Page: ${currentPage}`);
+                renderQuestionPage();
+            }
+
+            function renderQuestionPage() {
+                const totalItems = filteredQuestionIds.length;
+                const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+                // Adjust current page if it's out of bounds
+                if (currentPage < 1) currentPage = 1;
+                if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const idsToRender = filteredQuestionIds.slice(startIndex, endIndex);
+
+                qListDiv.innerHTML = ''; // Clear previous list
+                hideEl(noResMsg);
+
+                if (totalItems === 0) {
+                    if (searchIn.value || topicFil.value) { // Show 'no results' only if filters are active
+                        showEl(noResMsg);
+                    } else {
+                        qListDiv.innerHTML = '<p>לא נמצאו שאלות במערכת.</p>'; // No questions at all
+                    }
+                } else {
+                    idsToRender.forEach(id => renderQuestionItem(id, allQuestions[id]));
+                }
+                updatePaginationControls(totalPages);
+            }
+
+            function renderQuestionItem(id, data) {
+                 if (!data?.question || !id) return;
+                 const item = document.createElement('div'); item.className = 'question-item'; item.dataset.id = id;
+                 const summary = document.createElement('div'); summary.className = 'question-summary';
+                 const text = document.createElement('p'); text.className = 'question-text'; text.textContent = data.question;
+                 const actions = document.createElement('div'); actions.className = 'question-actions';
+                 const editBtn = document.createElement('button'); editBtn.textContent = 'ערוך'; editBtn.className = 'btn-primary'; editBtn.onclick = () => openEditForm(id, data);
+                 const delBtn = document.createElement('button'); delBtn.textContent = 'מחק'; delBtn.className = 'btn-danger'; delBtn.onclick = () => deleteQuestion(id);
+                 actions.append(editBtn, delBtn); summary.append(text, actions); item.append(summary);
+
+                 const details = document.createElement('span'); details.className = 'question-details';
+                 const topicKey = data.topic || 'unknown';
+                 const hebrewTopic = topicTranslations[topicKey] || topicKey;
+                 details.appendChild(document.createTextNode(`נושא: `));
+                 const topicLink = document.createElement('a'); topicLink.href = '#'; topicLink.className = 'topic-link'; topicLink.textContent = hebrewTopic; topicLink.dataset.topic = topicKey; topicLink.onclick = (e) => { e.preventDefault(); filterByTopic(topicKey); };
+                 details.appendChild(topicLink);
+
+                 if (Array.isArray(data.tags) && data.tags.length > 0) {
+                     const validTags = data.tags.map(t => t ? String(t).trim() : null).filter(Boolean);
+                     if (validTags.length > 0) {
+                         details.appendChild(document.createTextNode(" | תגיות: "));
+                         validTags.forEach((trimmedTag, i) => {
+                             const link = document.createElement('a'); link.href = '#'; link.className = 'tag-link'; link.textContent = trimmedTag; link.dataset.tag = trimmedTag; link.onclick = (e) => { e.preventDefault(); filterByTag(trimmedTag); };
+                             details.appendChild(link);
+                             if (i < validTags.length - 1) { details.appendChild(document.createTextNode(", ")); }
+                         });
+                     }
+                 }
+                 item.appendChild(details);
+                 qListDiv.appendChild(item);
+            }
+
+             function updatePaginationControls(totalPages) {
+                 if (totalPages <= 1) { hideEl(pagCont); }
+                 else { showEl(pagCont); pageInf.textContent = `עמוד ${currentPage} מתוך ${totalPages}`; prevPBtn.disabled = (currentPage === 1); nextPBtn.disabled = (currentPage === totalPages); }
+             }
+
+             function filterByTopic(topicKey) {
+                  topicFil.value = topicKey === 'unknown' ? '' : topicKey;
+                  currentPage = 1;
+                  filterAndRender();
+             }
+             function filterByTag(tag) {
+                  searchIn.value = tag.trim();
+                  currentPage = 1;
+                  filterAndRender();
+             }
+            function resetFilters(render = true) {
+                 searchIn.value = '';
+                 topicFil.value = '';
+                 currentPage = 1;
+                 if (render) filterAndRender();
+            }
+
+            // --- Question CRUD ---
+            addQBtn.addEventListener('click', openAddForm);
+            closeModBtn.addEventListener('click', closeForm);
+            cancelEdBtn.addEventListener('click', closeForm);
+            addAnsBtn.addEventListener('click', () => addAnswerField());
+            qForm.addEventListener('submit', handleFormSubmit);
+
+            function openAddForm() {
+                 qForm.reset();
+                 qIdIn.value = ''; // Clear any previous ID
+                 formTit.textContent = 'הוסף שאלה חדשה';
+                 ansCont.innerHTML = ''; // Clear existing answer fields
+                 addAnswerField('', false); // Add initial fields
+                 addAnswerField('', false);
+                 qTopicSel.value = ''; // Reset topic dropdown
+                 qTagsIn.value = '';
+                 showFlexEl(qFormModal); // Show the modal
+            }
+
+            function openEditForm(id, data) {
+                 if (!data) return;
+                 qForm.reset();
+                 formTit.textContent = 'ערוך שאלה';
+                 qIdIn.value = id;
+                 qTextIn.value = data.question || '';
+                 qTopicSel.value = data.topic || '';
+                 qTagsIn.value = Array.isArray(data.tags) ? data.tags.join(', ') : '';
+                 ansCont.innerHTML = ''; // Clear previous answers
+                 if (Array.isArray(data.answers)) {
+                     data.answers.forEach((text, index) => {
+                         addAnswerField(text, index === data.correct);
+                     });
+                     // Ensure minimum of 2 answer fields
+                     while (ansCont.children.length < 2) { addAnswerField(); }
+                 } else {
+                     addAnswerField(); addAnswerField(); // Add default fields if no answers exist
+                 }
+                 showFlexEl(qFormModal);
+            }
+
+            function closeForm() {
+                 hideEl(qFormModal);
+                 document.body.style.overflow = ''; // Restore body scroll
+            }
+
+            function addAnswerField(text = '', isCorrect = false) {
+                 const answerCount = ansCont.children.length;
+                 const div = document.createElement('div'); div.className = 'answer-group';
+
+                 const radio = document.createElement('input');
+                 radio.type = 'radio'; radio.name = 'correctAnswer'; radio.value = answerCount; // Value is index
+                 radio.checked = isCorrect; radio.required = true; radio.title = `סמן כתשובה נכונה ${answerCount + 1}`;
+
+                 const input = document.createElement('input');
+                 input.type = 'text'; input.placeholder = `תשובה ${answerCount + 1}`; input.value = text; input.required = true; input.setAttribute('aria-label', `תשובה ${answerCount + 1}`);
+
+                 const removeBtn = document.createElement('button');
+                 removeBtn.type = 'button'; removeBtn.textContent = '×'; removeBtn.className = 'btn-danger'; removeBtn.title = 'הסר תשובה';
+                 removeBtn.onclick = () => {
+                     if (ansCont.children.length > 2) { // Enforce minimum 2 answers
+                         div.remove();
+                         updateAnswerIndices(); // Renumber remaining answers
+                     } else {
+                         alert("חובה להשאיר לפחות 2 תשובות.");
+                     }
+                 };
+                 div.append(radio, input, removeBtn);
+                 ansCont.appendChild(div);
+            }
+
+            function updateAnswerIndices() {
+                 ansCont.querySelectorAll('.answer-group').forEach((group, index) => {
+                     const radio = group.querySelector('input[type="radio"]'); if (radio) radio.value = index;
+                     const input = group.querySelector('input[type="text"]'); if (input) input.placeholder = `תשובה ${index + 1}`;
+                     const radioLabel = group.querySelector('label'); if(radioLabel) radioLabel.textContent = `נכונה ${index + 1}`; // If labels were used
+                 });
+            }
+
+            async function handleFormSubmit(event) {
+                 event.preventDefault(); // Prevent default form submission
+                 saveQBtn.disabled = true; saveQBtn.textContent = 'שומר...';
+
+                 const questionId = qIdIn.value;
+                 const questionText = qTextIn.value.trim();
+                 const answers = [];
+                 const answerInputs = ansCont.querySelectorAll('.answer-group input[type="text"]');
+                 const correctRadio = ansCont.querySelector('input[type="radio"]:checked');
+
+                 // Validations
+                 if (!questionText) { alert("חובה למלא את טקסט השאלה."); return cleanupSubmit(); }
+                 if (!correctRadio) { alert("חובה לסמן תשובה נכונה!"); return cleanupSubmit(); }
+
+                 const correctIndex = parseInt(correctRadio.value, 10);
+                 let invalidAnswer = false;
+                 answerInputs.forEach(input => {
+                     const value = input.value.trim();
+                     if (!value) invalidAnswer = true;
+                     answers.push(value);
+                 });
+
+                 if (invalidAnswer) { alert("כל התשובות חייבות להכיל טקסט."); return cleanupSubmit(); }
+                 if (answers.length < 2) { alert("חובה להגדיר לפחות 2 תשובות."); return cleanupSubmit(); }
+                 if (isNaN(correctIndex) || correctIndex < 0 || correctIndex >= answers.length) { alert("הבחירה בתשובה נכונה אינה תקינה."); return cleanupSubmit(); }
+                 if (!qTopicSel.value) { alert("חובה לבחור נושא לשאלה."); return cleanupSubmit(); }
+
+                 const tags = qTagsIn.value.split(',').map(t => t.trim()).filter(Boolean); // Clean tags
+
+                 const questionData = {
+                     question: questionText,
+                     answers: answers,
+                     correct: correctIndex,
+                     topic: qTopicSel.value,
+                     tags: tags.length ? tags : null // Store null if no tags
+                 };
+
+                 try {
+                     console.log("Saving question:", questionId || "(new)", questionData);
+                     let saveOperation;
+                     if (questionId) { // Update existing question
+                         saveOperation = database.ref(`questions/${questionId}`).set(questionData);
+                     } else { // Add new question
+                         saveOperation = database.ref('questions').push(questionData);
+                     }
+                     await saveOperation;
+                     console.log("Question saved successfully!");
+                     closeForm(); // Close modal on success
+                 } catch (error) {
+                     console.error("Error saving question:", error);
+                     alert(`שגיאה בשמירת השאלה: ${error.message}`);
+                 } finally {
+                     cleanupSubmit(); // Re-enable button etc.
+                 }
+            }
+            function cleanupSubmit() {
+                 saveQBtn.disabled = false;
+                 saveQBtn.textContent = 'שמור שאלה';
+            }
+            async function deleteQuestion(id) {
+                 if (!id || !confirm(`האם אתה בטוח שברצונך למחוק שאלה זו?\nמזהה: ${id}\nהפעולה אינה הפיכה.`)) return;
+                 console.log("Attempting to delete question:", id);
+                 try {
+                     await database.ref(`questions/${id}`).remove();
+                     console.log("Question deleted successfully:", id);
+                     // The listener will automatically update the list
+                 } catch (error) {
+                     console.error("Error deleting question:", error);
+                     alert(`שגיאה במחיקת השאלה: ${error.message}`);
+                 }
+            }
+
+            // --- Pagination Listeners ---
+            prevPBtn.addEventListener('click', () => {
+                 if (currentPage > 1) { currentPage--; renderQuestionPage(); qListDiv.scrollIntoView({ behavior: 'smooth' }); }
+            });
+            nextPBtn.addEventListener('click', () => {
+                 const totalPages = Math.ceil(filteredQuestionIds.length / itemsPerPage);
+                 if (currentPage < totalPages) { currentPage++; renderQuestionPage(); qListDiv.scrollIntoView({ behavior: 'smooth' }); }
+            });
+
+            console.log("DOM Content Loaded and script initialized.");
+        }); // --- END OF DOMContentLoaded ---
+    </script>
+
+</body>
+</html>

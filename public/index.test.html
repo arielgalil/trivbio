@@ -1,0 +1,2728 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>טריווBIO - משחק טריוויה בביולוגיה</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Noto Sans Hebrew", sans-serif;
+        background-color: #f5f7fa;
+        color: #2d3748;
+        margin: 0;
+        padding: 0;
+        transition: background-color 0.3s, color 0.3s;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        min-height: 100svh;
+        position: relative;
+      }
+      .dark-mode {
+        background-color: #1a202c;
+        color: #e2e8f0;
+      }
+      .container {
+        max-width: 800px;
+        margin: 10px auto;
+        padding: 10px;
+        text-align: center;
+        width: 100%;
+        box-sizing: border-box;
+        grid-row: 2 / 3;
+      }
+      header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        margin-bottom: 5px;
+        padding: 10px 0;
+        grid-row: 1 / 2;
+        width: 100%;
+      }
+      h1 {
+        font-size: 2rem;
+        margin: 0;
+      }
+      .switch {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 5px;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: #7f9cf5;
+      }
+      .dark-mode input:checked + .slider {
+        background-color: #4299e1;
+      }
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+      .theme-icon {
+        width: 20px;
+        height: 20px;
+        transition: opacity 0.4s;
+      }
+      .sun {
+        opacity: 1;
+      }
+      .moon {
+        opacity: 0;
+      }
+      input:checked + .slider .sun {
+        opacity: 0;
+      }
+      input:checked + .slider .moon {
+        opacity: 1;
+      }
+      #cumulative-score-container {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        text-align: left;
+      }
+      #nickname-display {
+        font-size: 0.9rem;
+        font-weight: bold;
+        color: #4a5568;
+        cursor: pointer;
+        transition: color 0.3s;
+      }
+      #nickname-display:hover {
+        color: #7f9cf5;
+      }
+      .dark-mode #nickname-display {
+        color: #a0aec0;
+      }
+      .dark-mode #nickname-display:hover {
+        color: #63b3ed;
+      }
+      #cumulative-score-display {
+        font-size: 0.8rem;
+        color: #4a5568;
+      }
+      .dark-mode #cumulative-score-display {
+        color: #a0aec0;
+      }
+      #start-screen {
+        background: linear-gradient(135deg, #a3bffa, #e2e8f0);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin: 10px 0;
+      }
+      .dark-mode #start-screen {
+        background: linear-gradient(135deg, #2d3748, #1a202c);
+      }
+      #start-screen h2 {
+        color: #2d3748;
+        font-size: 1.5rem;
+        margin: 10px 0;
+      }
+      .dark-mode #start-screen h2 {
+        color: #e2e8f0;
+      }
+      #start-screen p {
+        font-size: 1.1rem;
+        line-height: 1.5;
+        margin: 20px 0;
+        color: #2d3748;
+      }
+      .dark-mode #start-screen p {
+        color: #e2e8f0;
+      }
+      #start-screen-buttons {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      @media (max-width: 600px) {
+        #start-screen-buttons {
+          grid-template-columns: 1fr;
+        }
+      }
+      .topic-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        background-color: #a3bffa;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.3s;
+      }
+      .topic-btn:hover {
+        background-color: #7f9cf5;
+      }
+      .dark-mode .topic-btn {
+        background-color: #4a5568;
+        color: #e2e8f0;
+      }
+      .dark-mode .topic-btn:hover {
+        background-color: #2d3748;
+      }
+      .question-count {
+        font-size: 0.8rem;
+        opacity: 0.8;
+      }
+      #game-screen,
+      #result-screen {
+        margin-top: 10px;
+      }
+      #status-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 15px 0;
+        height: 60px;
+      }
+      .status-circle-container {
+        position: relative;
+        width: 54px;
+        height: 54px;
+      }
+      .status-circle-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-weight: bold;
+        font-size: 1rem;
+      }
+      .status-circle-bg {
+        stroke: #e2e8f0;
+        transition: stroke 0.3s;
+      }
+      .dark-mode .status-circle-bg {
+        stroke: #4a5568;
+      }
+      .status-circle-progress {
+        transition: stroke-dashoffset 0.5s linear, stroke 0.5s linear;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+      }
+      #timer-progress {
+        stroke: #7f9cf5;
+      }
+      .dark-mode #timer-progress {
+        stroke: #4299e1;
+      }
+      #percentage-progress.green {
+        stroke: #48bb78;
+      }
+      #percentage-progress.yellow {
+        stroke: #ecc94b;
+      }
+      #percentage-progress.red {
+        stroke: #f56565;
+      }
+      #question {
+        font-size: 1.25rem;
+        margin: 20px 0;
+        line-height: 1.4;
+      }
+      .question-id-display {
+        display: inline-block;
+        font-size: 0.7rem;
+        color: #a0aec0;
+        margin-right: 8px;
+        opacity: 0.8;
+        user-select: text;
+        direction: ltr;
+      }
+      .dark-mode .question-id-display {
+        color: #718096;
+      }
+      #answers {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .answer-btn {
+        padding: 15px;
+        text-align: center;
+        font-size: 1rem;
+        background-color: #e2e8f0;
+        border: none;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.1s, visibility 0s,
+          opacity 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .dark-mode .answer-btn {
+        background-color: #4a5568;
+        color: #e2e8f0;
+      }
+      .answer-btn:hover {
+        background-color: #cbd5e0;
+      }
+      .dark-mode .answer-btn:hover {
+        background-color: #718096;
+      }
+      .answer-btn:active {
+        transform: scale(0.95);
+      }
+      .correct {
+        background-color: #48bb78 !important;
+        color: white !important;
+      }
+      .wrong {
+        background-color: #f56565 !important;
+        color: white !important;
+      }
+      .answer-btn:focus {
+        outline: none;
+      }
+      #game-buttons {
+        margin: 25px 0;
+      }
+      #game-buttons button {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        background-color: #a3bffa;
+        color: white;
+        transition: background-color 0.3s, opacity 0.3s, transform 0.1s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin: 0 5px;
+      }
+      #game-buttons button:hover {
+        background-color: #7f9cf5;
+        transform: translateY(-1px);
+      }
+      #game-buttons button:active {
+        transform: scale(0.95);
+        box-shadow: none;
+      }
+      .disabled {
+        background-color: #cbd5e0 !important;
+        color: #a0aec0 !important;
+        cursor: not-allowed;
+        opacity: 0.7;
+        box-shadow: none !important;
+        transform: none !important;
+      }
+      .dark-mode #game-buttons button {
+        background-color: #2d3748;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+      .dark-mode #game-buttons button:hover {
+        background-color: #1a202c;
+      }
+      .dark-mode .disabled {
+        background-color: #4a5568 !important;
+        color: #718096 !important;
+        opacity: 0.6;
+      }
+      .result-card {
+        background-color: #fff;
+        padding: 12px 20px;
+        margin: 10px 0;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .dark-mode .result-card {
+        background-color: #2d3748;
+        border: 1px solid #4a5568;
+      }
+      .progress-circle {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 60px;
+        margin: 0 10px 10px 30px;
+        vertical-align: middle;
+      }
+      #percentage-text-result {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-weight: bold;
+      }
+      .highlight {
+        color: #7f9cf5;
+        font-weight: bold;
+      }
+      .dark-mode .highlight {
+        color: #63b3ed;
+      }
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #2d3748;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        opacity: 0;
+        transition: opacity 0.5s;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+      .toast.show {
+        opacity: 1;
+      }
+      .dark-mode .toast {
+        background-color: #e2e8f0;
+        color: #2d3748;
+      }
+      footer {
+        margin-top: 20px;
+        padding-bottom: 20px;
+        font-size: 0.9rem;
+        text-align: center;
+        grid-row: 3 / 4;
+      }
+      footer a {
+        color: #5a67d8;
+        text-decoration: none;
+        margin: 0 2px;
+      }
+      .dark-mode footer a {
+        color: #63b3ed;
+      }
+      .sequence-circle {
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        border-radius: 50%;
+        background-color: #e2e8f0;
+        border: 1px solid #cbd5e0;
+        margin: 0 5px;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 0.9rem;
+        transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        color: #4a5568;
+      }
+      .dark-mode .sequence-circle {
+        background-color: #4a5568;
+        border: 1px solid #718096;
+        color: #e2e8f0;
+      }
+      .sequence-circle.correct {
+        background-color: #48bb78;
+        color: white;
+        border-color: #48bb78;
+      }
+      .sequence-circle.wrong {
+        background-color: #f56565;
+        color: white;
+        border-color: #f56565;
+      }
+      .sequence-circle.current {
+        background-color: #ecc94b;
+        color: #744210;
+        font-weight: bold;
+        border-color: #d69e2e;
+      }
+      .dark-mode .sequence-circle.current {
+        background-color: #ecc94b;
+        color: #744210;
+        font-weight: bold;
+        border-color: #d69e2e;
+      }
+      .mistake-block {
+        text-align: right;
+        margin: 15px 0;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      .dark-mode .mistake-block {
+        border-bottom: 1px solid #4a5568;
+      }
+      .mistake-block:last-child {
+        border-bottom: none;
+      }
+      .mistake-question {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .wrong-answer {
+        color: #f56565;
+        margin-bottom: 3px;
+      }
+      .correct-answer {
+        color: #48bb78;
+      }
+      .perfect {
+        color: #48bb78;
+        font-weight: bold;
+        font-size: 1.1rem;
+      }
+      #tag-analysis {
+        margin-top: 15px;
+        line-height: 2;
+        text-align: right;
+      }
+      .tag-cloud-item {
+        display: inline-block;
+        margin: 3px 4px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        border: 1px solid;
+        cursor: pointer;
+        transition: transform 0.2s;
+        white-space: nowrap;
+        text-decoration: none;
+      }
+      .tag-cloud-item:hover {
+        transform: translateY(-1px);
+        text-decoration: none;
+      }
+      .tag-cloud-item:visited {
+        color: inherit;
+      }
+      .result-buttons {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+      }
+      .result-buttons button {
+        padding: 10px 25px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.3s;
+      }
+      #share-result {
+        background-color: #48bb78;
+        color: white;
+      }
+      #share-result:hover {
+        background-color: #38a169;
+      }
+      #restart {
+        background-color: #7f9cf5;
+        color: white;
+      }
+      #restart:hover {
+        background-color: #5a67d8;
+      }
+      .dark-mode #share-result {
+        background-color: #68d391;
+      }
+      .dark-mode #share-result:hover {
+        background-color: #48bb78;
+      }
+      .dark-mode #restart {
+        background-color: #63b3ed;
+      }
+      .dark-mode #restart:hover {
+        background-color: #4299e1;
+      }
+      #result-progress-circle.green {
+        stroke: #48bb78;
+      }
+      #result-progress-circle.yellow {
+        stroke: #ecc94b;
+      }
+      #result-progress-circle.red {
+        stroke: #f56565;
+      }
+      #result-progress-circle {
+        transition: stroke-dashoffset 0.5s linear, stroke 0.5s linear;
+      }
+      #ranking ul,
+      #overall-ranking ul {
+        list-style: none;
+        padding: 0;
+        margin: 10px 0 0 0;
+        text-align: right;
+      }
+      #ranking li,
+      #overall-ranking li {
+        padding: 5px 0;
+        border-bottom: 1px dashed #e2e8f0;
+        font-size: 0.9rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      #ranking li:last-child,
+      #overall-ranking li:last-child {
+        border-bottom: none;
+      }
+      .dark-mode #ranking li,
+      .dark-mode #overall-ranking li {
+        border-bottom-color: #4a5568;
+      }
+      #ranking li.current-player,
+      #overall-ranking li.current-player {
+        font-weight: bold;
+        color: #7f9cf5;
+      }
+      .dark-mode #ranking li.current-player,
+      .dark-mode #overall-ranking li.current-player {
+        color: #63b3ed;
+      }
+      #ranking .rank-score,
+      #overall-ranking .rank-score {
+        font-weight: bold;
+        direction: ltr;
+        margin-left: 10px;
+      }
+      #ranking .rank-number,
+      #overall-ranking .rank-number {
+        margin-right: 10px;
+        color: #a0aec0;
+        min-width: 25px;
+        text-align: center;
+      }
+      .dark-mode #ranking .rank-number,
+      .dark-mode #overall-ranking .rank-number {
+        color: #718096;
+      }
+      .score-popup {
+        position: fixed;
+        top: 40%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(72, 187, 120, 0.9);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 1.4rem;
+        font-weight: bold;
+        z-index: 1001;
+        opacity: 0;
+        transition: opacity 0.5s ease-out, transform 0.6s ease-out;
+        pointer-events: none;
+      }
+      .score-popup.show {
+        opacity: 1;
+        transform: translate(-50%, -50px);
+      }
+      .dark-mode .score-popup {
+        background-color: rgba(104, 211, 145, 0.9);
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      if (localStorage.getItem("darkMode") === "true") {
+        document.body.classList.add("dark-mode");
+      }
+    </script>
+    <header>
+      <h1>טריווBIO</h1>
+      <div id="cumulative-score-container">
+        <div id="nickname-display">טוען שם...</div>
+        <div id="cumulative-score-display">טוען ניקוד...</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="theme-toggle" />
+        <span class="slider">
+          <img
+            src="https://img.icons8.com/ios-glyphs/30/ffffff/sun.png"
+            alt="שמש"
+            class="theme-icon sun"
+          />
+          <img
+            src="https://img.icons8.com/ios-glyphs/30/ffffff/moon-symbol.png"
+            alt="ירח"
+            class="theme-icon moon"
+          />
+        </span>
+      </label>
+    </header>
+    <div class="container">
+      <main>
+        <div id="start-screen">
+          <h2>מוכן לבחור נושא?</h2>
+          <p>
+            הדרך הכי טובה ללמוד לבגרות בביולוגיה? פשוט לשחק!
+            <br />ככל שתענו על יותר שאלות – תבינו, תזכרו ותנצחו את הבחינה.
+            <br />טריווBIO הוא הדרך הכי כיפית, חכמה וממוקדת להתכונן.
+          </p>
+          <div id="start-screen-buttons"></div>
+        </div>
+        <div id="game-screen" style="display: none">
+          <div id="status-row">
+            <div class="status-circle-container">
+              <svg width="53.6" height="53.6" viewBox="0 0 53.6 53.6">
+                <circle
+                  class="status-circle-bg"
+                  cx="26.8"
+                  cy="26.8"
+                  r="25.46"
+                  stroke-width="2.68"
+                  fill="none"
+                />
+                <circle
+                  class="status-circle-progress"
+                  id="timer-progress"
+                  cx="26.8"
+                  cy="26.8"
+                  r="25.46"
+                  stroke-width="2.68"
+                  fill="none"
+                  stroke-dasharray="159.84"
+                  stroke-dashoffset="0"
+                />
+              </svg>
+              <div class="status-circle-text" id="timer-text">120</div>
+            </div>
+            <div id="sequence-container"></div>
+            <div class="status-circle-container">
+              <svg width="53.6" height="53.6" viewBox="0 0 53.6 53.6">
+                <circle
+                  class="status-circle-bg"
+                  cx="26.8"
+                  cy="26.8"
+                  r="25.46"
+                  stroke-width="2.68"
+                  fill="none"
+                />
+                <circle
+                  class="status-circle-progress"
+                  id="percentage-progress"
+                  cx="26.8"
+                  cy="26.8"
+                  r="25.46"
+                  stroke-width="2.68"
+                  fill="none"
+                  stroke-dasharray="159.84"
+                  stroke-dashoffset="159.84"
+                />
+              </svg>
+              <div class="status-circle-text" id="percentage-text-ingame">
+                0%
+              </div>
+            </div>
+          </div>
+          <div id="question"></div>
+          <div id="answers"></div>
+          <div id="game-buttons">
+            <button id="fifty-fifty">50:50</button>
+            <button id="add-time">30+</button>
+            <button id="skip">דלג</button>
+          </div>
+        </div>
+        <div id="result-screen" style="display: none">
+          <div class="result-card">
+            <h3>🏆 תוצאות המשחק</h3>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-around;
+              "
+            >
+              <div>
+                <p id="score"></p>
+                <p id="accuracy-stats"></p>
+              </div>
+              <div class="progress-circle">
+                <svg width="60" height="60" viewBox="0 0 60 60">
+                  <circle
+                    cx="30"
+                    cy="30"
+                    r="28"
+                    stroke="#e2e8f0"
+                    stroke-width="4"
+                    fill="none"
+                    class="status-circle-bg"
+                  />
+                  <circle
+                    cx="30"
+                    cy="30"
+                    r="28"
+                    stroke-width="4"
+                    fill="none"
+                    stroke-dasharray="175.9"
+                    stroke-dashoffset="175.9"
+                    id="result-progress-circle"
+                    class="status-circle-progress"
+                  />
+                </svg>
+                <span id="percentage-text-result">%</span>
+              </div>
+            </div>
+          </div>
+          <div class="result-card">
+            <h3>⚙️ כלים בשימוש</h3>
+            <p id="tools-used"></p>
+          </div>
+          <div class="result-card">
+            <h3>📊 דירוג יומי (לפי תשובות נכונות)</h3>
+            <div id="ranking">טוען דירוג יומי...</div>
+          </div>
+          <div class="result-card">
+            <h3>💎 היכל התהילה (Top 10 לפי ניקוד)</h3>
+            <div id="overall-ranking">טוען דירוג כללי...</div>
+          </div>
+          <div class="result-card">
+            <h3>📚 טעית? למדת!</h3>
+            <div id="mistakes"></div>
+          </div>
+          <div class="result-card">
+            <h3>🏷️ תגיות</h3>
+            <p>לחץ על תגית כדי לבצע חיפוש בגוגל.</p>
+            <div id="tag-analysis"></div>
+          </div>
+          <div class="result-buttons">
+            <button id="share-result">שתף תוצאה</button>
+            <button id="restart">שחק שוב</button>
+          </div>
+        </div>
+      </main>
+    </div>
+    <footer>
+      פותח על ידי אריאל מ<a
+        href="https://galilbio.wordpress.com"
+        target="_blank"
+        >הַבִּיּוֹלוֹגִים של גליל</a
+      >
+      בעזרת<a href="https://grok.com/" target="_blank">גרוק</a>,<a
+        href="https://chatgpt.com/"
+        target="_blank"
+        >Chat GPT</a
+      >וגם<a href="https://gemini.google.com/app" target="_blank">Gemini</a> |
+      <a href="admin.html" target="_blank">ניהול</a>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+      console.log("Script loaded and running");
+
+      const topicNames = {
+        "human-body": "גוף האדם",
+        cell: "התא",
+        ecology: "אקולוגיה",
+        mix: "ערבב אותי",
+      };
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyAGFC_TB8iEMvS2PyxeASj1HH4i66AW4UA",
+        authDomain: "trivbio.firebaseapp.com",
+        projectId: "trivbio",
+        storageBucket: "trivbio.firebasestorage.app",
+        messagingSenderId: "1097087574583",
+        appId: "1:1097087574583:web:b36c0441537a1f596215b2",
+        measurementId: "G-ZY245YB23E",
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const database = firebase.database();
+      console.log("Firebase initialized successfully");
+
+      const startScreen = document.getElementById("start-screen");
+      const gameScreen = document.getElementById("game-screen");
+      const resultScreen = document.getElementById("result-screen");
+      const startScreenButtonsContainer = document.getElementById(
+        "start-screen-buttons"
+      );
+      const timerTextElement = document.getElementById("timer-text");
+      const timerProgressElement = document.getElementById("timer-progress");
+      const percentageTextIngameElement = document.getElementById(
+        "percentage-text-ingame"
+      );
+      const percentageProgressElement = document.getElementById(
+        "percentage-progress"
+      );
+      const questionElement = document.getElementById("question");
+      const answersElement = document.getElementById("answers");
+      const fiftyFiftyButton = document.getElementById("fifty-fifty");
+      const addTimeButton = document.getElementById("add-time");
+      const skipButton = document.getElementById("skip");
+      const restartButton = document.getElementById("restart");
+      const themeToggle = document.getElementById("theme-toggle");
+      const toolsUsedElement = document.getElementById("tools-used");
+      const mistakesElement = document.getElementById("mistakes");
+      const sequenceContainer = document.getElementById("sequence-container");
+      const tagAnalysisElement = document.getElementById("tag-analysis");
+      const resultProgressCircleElement = document.getElementById(
+        "result-progress-circle"
+      );
+      const percentageTextResultElement = document.getElementById(
+        "percentage-text-result"
+      );
+      const scoreElement = document.getElementById("score");
+      const accuracyStatsElement = document.getElementById("accuracy-stats");
+      const cumulativeScoreDisplayElement = document.getElementById(
+        "cumulative-score-display"
+      );
+      const nicknameDisplayElement =
+        document.getElementById("nickname-display");
+      const rankingElement = document.getElementById("ranking");
+      const overallRankingElement = document.getElementById("overall-ranking");
+      const shareButton = document.getElementById("share-result");
+
+      let currentTopic = "";
+      let allQuestions = [];
+      let questions = [];
+      let currentQuestionIndex = 0;
+      let currentQuestion = null;
+      let correctCount = 0;
+      let wrongCount = 0;
+      let timerValue = 120;
+      let totalTime = 120;
+      let timerInterval;
+      let fiftyFiftyUsed = false;
+      let addTimeUsed = false;
+      let skipUsed = 0;
+      let mistakeDetails = [];
+      let mistakenQuestions = [];
+      let answerSequence = [];
+      let answeredCorrectly = [];
+      let gameTagStats = {};
+      let currentStreak = 0;
+      let longestStreak = 0;
+      let playerId = null;
+      let timerExpired = false;
+      let gameActive = false;
+      let currentGameScore = 0;
+      let cumulativePlayerScore = 0;
+      let playerNickname = "";
+
+      const CIRCLE_CIRCUMFERENCE = 159.84;
+      const RESULT_CIRCLE_CIRCUMFERENCE = 175.9;
+      const BASE_SCORE_PER_QUESTION = 10;
+      const STREAK_BONUS_MULTIPLIER = 2;
+
+      const animalsMale = [
+        "קרוקודיל",
+        "קיפודן",
+        "קנגורו",
+        "ברווזן",
+        "נמר",
+        "אריה",
+        "זאב",
+        "דוב",
+        "תנין",
+        "פיל",
+        "ג'ירף",
+        "צבי",
+        "יגואר",
+        "ברדלס",
+        "גמל",
+        "שועל",
+      ];
+      const animalsFemale = [
+        "נמלה",
+        "צרעה",
+        "פרפרית",
+        "צלופחית",
+        "ציפור",
+        "חתולה",
+        "ארנבת",
+        "עטלף",
+        "צפרדע",
+        "שפירית",
+        "ברווזה",
+        "יענה",
+        "טווסית",
+        "נחשית",
+        "עכברה",
+        "ינשופה",
+      ];
+      const attributesMale = [
+        "אמיץ",
+        "חכם",
+        "מהיר",
+        "שקט",
+        "חזק",
+        "סקרן",
+        "נאמן",
+        "ירוק",
+        "כחול",
+        "אדום",
+        "צהוב",
+        "שחור",
+        "לבן",
+        "סגול",
+        "כתום",
+        "זהוב",
+      ];
+      const attributesFemale = [
+        "אמיצה",
+        "חכמה",
+        "מהירה",
+        "שקטה",
+        "חזקה",
+        "סקרנית",
+        "נאמנה",
+        "ירוקה",
+        "כחולה",
+        "אדומה",
+        "צהובה",
+        "שחורה",
+        "לבנה",
+        "סגולה",
+        "כתומה",
+        "זהובה",
+      ];
+
+      function generateRandomUsername() {
+        const isMale = Math.random() < 0.5;
+        const animals = isMale ? animalsMale : animalsFemale;
+        const animal = animals[Math.floor(Math.random() * animals.length)];
+        const attributes = isMale ? attributesMale : attributesFemale;
+        const attribute =
+          attributes[Math.floor(Math.random() * attributes.length)];
+        return `${animal} ${attribute}`;
+      }
+
+      function populateTopicButtons(questionCounts) {
+        const topics = [
+          { id: "human-body", name: "גוף האדם", emoji: "🧍" },
+          { id: "cell", name: "התא", emoji: "🧬" },
+          { id: "ecology", name: "אקולוגיה", emoji: "🌍" },
+          { id: "mix", name: "ערבב אותי", emoji: "🎲" },
+        ];
+
+        startScreenButtonsContainer.innerHTML = "";
+        topics.forEach((topic) => {
+          const button = document.createElement("button");
+          button.classList.add("topic-btn");
+          button.dataset.topic = topic.id;
+          const count =
+            typeof questionCounts[topic.id] === "number"
+              ? questionCounts[topic.id]
+              : 0;
+          button.innerHTML = `${topic.name} <span>${topic.emoji}</span> <span class="question-count">[${count} שאלות]</span>`;
+          button.addEventListener("click", async () => {
+            vibrate(50);
+            currentTopic = button.getAttribute("data-topic");
+            await loadQuestionsForTopic(currentTopic);
+          });
+          startScreenButtonsContainer.appendChild(button);
+        });
+      }
+
+      (async function initializeQuestionCounts() {
+        let cachedCounts = {};
+        let cachedTimestamp = null;
+        const defaultCounts = { "human-body": 0, cell: 0, ecology: 0, mix: 0 };
+
+        try {
+          cachedCounts = JSON.parse(
+            localStorage.getItem("questionCounts") || "{}"
+          );
+          Object.keys(defaultCounts).forEach((key) => {
+            if (typeof cachedCounts[key] !== "number") {
+              cachedCounts[key] = 0;
+            }
+          });
+          cachedTimestamp = localStorage.getItem("questionCountsTimestamp");
+        } catch (e) {
+          console.error("Error reading question counts from localStorage", e);
+          cachedCounts = defaultCounts;
+          localStorage.removeItem("questionCounts");
+          localStorage.removeItem("questionCountsTimestamp");
+        }
+
+        const currentTime = Date.now();
+        const oneDay = 24 * 60 * 60 * 1000;
+        const isCacheStale =
+          !cachedTimestamp || currentTime - parseInt(cachedTimestamp) >= oneDay;
+
+        console.log("Populating buttons with initial counts:", cachedCounts);
+        populateTopicButtons(cachedCounts);
+
+        if (isCacheStale) {
+          console.log(
+            "Cache is stale or data missing. Fetching new question counts from Firebase..."
+          );
+          try {
+            const snapshot = await database.ref("questions").once("value");
+            const allQsData = snapshot.val();
+            const freshCounts = {
+              "human-body": 0,
+              cell: 0,
+              ecology: 0,
+              mix: 0,
+            };
+            let totalFetched = 0;
+            if (allQsData) {
+              Object.values(allQsData).forEach((q) => {
+                if (q && q.topic && freshCounts.hasOwnProperty(q.topic)) {
+                  freshCounts[q.topic]++;
+                  freshCounts["mix"]++;
+                  totalFetched++;
+                }
+              });
+            }
+
+            if (totalFetched > 0) {
+              localStorage.setItem(
+                "questionCounts",
+                JSON.stringify(freshCounts)
+              );
+              localStorage.setItem(
+                "questionCountsTimestamp",
+                currentTime.toString()
+              );
+              console.log(
+                "Repopulating buttons with fresh counts:",
+                freshCounts
+              );
+              populateTopicButtons(freshCounts);
+            } else {
+              console.warn(
+                "No valid questions found during Firebase fetch, keeping initial counts."
+              );
+            }
+          } catch (error) {
+            console.error(
+              "Error fetching question counts during background update:",
+              error
+            );
+          }
+        } else {
+          console.log("Using fresh cached question counts.");
+        }
+      })();
+
+      function showToast(message, duration = 3000) {
+        document.querySelectorAll(".toast").forEach((t) => t.remove());
+        const toast = document.createElement("div");
+        toast.classList.add("toast");
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        toast.offsetHeight;
+        toast.classList.add("show");
+        if (duration > 0) {
+          setTimeout(() => {
+            toast.classList.remove("show");
+            setTimeout(() => toast.remove(), 500);
+          }, duration);
+        }
+      }
+
+      firebase
+        .auth()
+        .signInAnonymously()
+        .then((userCredential) => {
+          playerId = userCredential.user.uid;
+          console.log("Anonymous Auth Success. Player ID:", playerId);
+          initializePlayerState();
+        })
+        .catch((error) => {
+          console.error("Anonymous auth failed:", error);
+          showToast("חלה שגיאה בהתחברות אנונימית...");
+          cumulativeScoreDisplayElement.textContent = "שגיאת התחברות";
+          nicknameDisplayElement.textContent = "שגיאת התחברות";
+        });
+
+      function initializePlayerState() {
+        if (!playerId) return;
+
+        const savedDarkMode = localStorage.getItem("darkMode") === "true";
+        setTheme(savedDarkMode);
+        themeToggle.checked = savedDarkMode;
+
+        const localLastTopic = localStorage.getItem("lastTopic");
+        if (localLastTopic && topicNames[localLastTopic]) {
+          updateStartScreenHint(localLastTopic);
+        }
+
+        console.log("Fetching player data for playerId:", playerId);
+        database
+          .ref(`players/${playerId}`)
+          .once("value")
+          .then((snapshot) => {
+            const playerData = snapshot.val() || {};
+            console.log("Player data fetched:", playerData);
+
+            cumulativePlayerScore = playerData.cumulativeScore || 0;
+            playerNickname = playerData.nickname || generateRandomUsername();
+            updateCumulativeScoreDisplay();
+            updateNicknameDisplay();
+
+            if (
+              playerData.lastTopic &&
+              topicNames[playerData.lastTopic] &&
+              playerData.lastTopic !== localLastTopic
+            ) {
+              updateStartScreenHint(playerData.lastTopic);
+              localStorage.setItem("lastTopic", playerData.lastTopic);
+            }
+
+            if (
+              typeof playerData.darkMode === "boolean" &&
+              playerData.darkMode !== savedDarkMode
+            ) {
+              setTheme(playerData.darkMode);
+              themeToggle.checked = playerData.darkMode;
+              localStorage.setItem("darkMode", playerData.darkMode.toString());
+            }
+
+            if (!snapshot.exists()) {
+              savePlayerInitialData(savedDarkMode);
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching player data:", error);
+            showToast("שגיאה בטעינת נתוני שחקן");
+            cumulativePlayerScore = parseInt(
+              localStorage.getItem("cumulativeScoreBackup") || "0"
+            );
+            playerNickname = generateRandomUsername();
+            updateCumulativeScoreDisplay();
+            updateNicknameDisplay();
+          });
+      }
+
+      function savePlayerInitialData(isDarkMode) {
+        if (!playerId) return;
+        const initialData = {
+          cumulativeScore: 0,
+          nickname: playerNickname,
+          darkMode: isDarkMode,
+          createdAt: firebase.database.ServerValue.TIMESTAMP,
+          // Initialize other fields required by your rules if needed
+          correctCount: 0,
+          wrongCount: 0,
+          topicStats: {},
+          tagStats: {}
+        };
+        console.log("Saving initial player data:", initialData);
+        database
+          .ref(`players/${playerId}`)
+          .set(initialData)
+          .then(() => {
+            console.log("Initial player data saved for new player.");
+          })
+          .catch((error) => {
+            console.error("Failed to save initial player data:", error);
+            showToast("שגיאה בשמירת נתונים ראשוניים");
+          });
+      }
+
+      function updateStartScreenHint(topicId) {
+        const hintElement = document.querySelector("#start-screen h2");
+        if (hintElement && topicNames[topicId]) {
+          hintElement.textContent = `בפעם שעברה בחרת ${topicNames[topicId]}, מה הפעם?`;
+        } else if (hintElement) {
+          hintElement.textContent = `מוכן לבחור נושא?`;
+        }
+      }
+
+      function updateCumulativeScoreDisplay() {
+        cumulativeScoreDisplayElement.textContent = `ניקוד כללי: ${cumulativePlayerScore.toLocaleString()}`;
+      }
+
+      function updateNicknameDisplay() {
+        nicknameDisplayElement.textContent = playerNickname;
+        nicknameDisplayElement.addEventListener("click", editNickname);
+      }
+
+      function editNickname() {
+        if (!gameActive) {
+          const newName = prompt(
+            "הכנס שם משתמש חדש (עד 25 תווים):",
+            playerNickname
+          );
+          if (newName && newName.trim() && newName.length <= 25) {
+            playerNickname = newName.trim();
+            updateNicknameDisplay();
+            saveNicknameToFirebase();
+          } else if (newName && newName.length > 25) {
+            showToast("שם המשתמש ארוך מדי!");
+          }
+          return;
+        }
+
+        clearInterval(timerInterval);
+        const newName = prompt(
+          "הכנס שם משתמש חדש (עד 25 תווים):",
+          playerNickname
+        );
+        if (newName && newName.trim() && newName.length <= 25) {
+          playerNickname = newName.trim();
+          updateNicknameDisplay();
+          saveNicknameToFirebase();
+        } else if (newName && newName.length > 25) {
+          showToast("שם המשתמש ארוך מדי!");
+        }
+        if (gameActive && !timerExpired) {
+          startTimer();
+        }
+      }
+
+      function saveNicknameToFirebase() {
+        if (!playerId) return;
+        database
+          .ref(`players/${playerId}`)
+          .update({ nickname: playerNickname })
+          .then(() => {
+            console.log("Nickname updated in Firebase:", playerNickname);
+          })
+          .catch((error) => {
+            console.error("Failed to update nickname:", error);
+            showToast("שגיאה בעדכון שם המשתמש");
+          });
+      }
+
+      function setTheme(isDarkMode) {
+        document.body.classList.toggle("dark-mode", isDarkMode);
+        if (timerValue > 30) {
+          timerProgressElement.style.stroke = isDarkMode
+            ? "#4299e1"
+            : "#7F9CF5";
+        }
+        document.querySelectorAll(".status-circle-bg").forEach((circle) => {
+          circle.style.stroke = isDarkMode ? "#4a5568" : "#e2e8f0";
+        });
+        const resultBgCircle =
+          resultProgressCircleElement?.previousElementSibling;
+        if (resultBgCircle) {
+          resultBgCircle.style.stroke = isDarkMode ? "#4a5568" : "#e2e8f0";
+        }
+      }
+
+      themeToggle.addEventListener("change", () => {
+        vibrate(50);
+        const isDarkMode = themeToggle.checked;
+        setTheme(isDarkMode);
+        saveThemePreference(isDarkMode);
+      });
+
+      function saveThemePreference(isDarkMode) {
+        localStorage.setItem("darkMode", isDarkMode.toString());
+        if (playerId) {
+          database
+            .ref(`players/${playerId}`)
+            .update({ darkMode: isDarkMode })
+            .catch((error) =>
+              console.error("Failed to save theme preference:", error)
+            );
+        }
+      }
+
+      async function loadQuestions() {
+        const cachedQuestions = localStorage.getItem("questions");
+        const cachedTimestamp = localStorage.getItem("questionsTimestamp");
+        const currentTime = Date.now();
+        const oneDay = 24 * 60 * 60 * 1000;
+
+        if (
+          cachedQuestions &&
+          cachedTimestamp &&
+          currentTime - parseInt(cachedTimestamp) < oneDay
+        ) {
+          console.log("Using cached questions.");
+          try {
+            const parsed = JSON.parse(cachedQuestions);
+            if (
+              Array.isArray(parsed) &&
+              parsed.every((q) => typeof q.id !== "undefined")
+            ) {
+              return parsed;
+            } else {
+              console.warn(
+                "Cached questions format invalid or missing IDs, refetching."
+              );
+              localStorage.removeItem("questions");
+              localStorage.removeItem("questionsTimestamp");
+            }
+          } catch (e) {
+            console.error("Error parsing cached questions, fetching fresh.", e);
+            localStorage.removeItem("questions");
+            localStorage.removeItem("questionsTimestamp");
+          }
+        }
+
+        console.log("Fetching fresh questions from Firebase...");
+        try {
+          const snapshot = await database.ref("questions").once("value");
+          const questionsData = snapshot.val();
+          const fetchedQuestions = [];
+          if (questionsData) {
+            for (const key in questionsData) {
+              const q = questionsData[key];
+              if (
+                q &&
+                q.question &&
+                Array.isArray(q.answers) &&
+                typeof q.correct !== "undefined"
+              ) {
+                q.id = key;
+                fetchedQuestions.push(q);
+              } else {
+                console.warn(
+                  `Skipping invalid question data with key ${key}:`,
+                  q
+                );
+              }
+            }
+          }
+
+          if (fetchedQuestions.length > 0) {
+            localStorage.setItem("questions", JSON.stringify(fetchedQuestions));
+            localStorage.setItem("questionsTimestamp", currentTime.toString());
+            console.log(
+              `Workspaceed and cached ${fetchedQuestions.length} valid questions with IDs.`
+            );
+            return fetchedQuestions;
+          } else {
+            console.warn("No valid questions found in Firebase!");
+            return [];
+          }
+        } catch (error) {
+          console.error("Error fetching questions from Firebase:", error);
+          showToast("שגיאה חמורה בטעינת שאלות!");
+          return [];
+        }
+      }
+
+      async function loadQuestionsForTopic(topic) {
+        try {
+          showToast("טוען שאלות...", 0);
+          saveLastTopic(topic);
+          allQuestions = await loadQuestions();
+          document.querySelectorAll(".toast").forEach((t) => t.remove());
+
+          if (allQuestions.length === 0) {
+            showToast("לא נטענו שאלות. נסה לרענן את הדף.");
+            return;
+          }
+
+          if (topic === "mix") {
+            questions = [...allQuestions];
+          } else {
+            questions = allQuestions.filter((q) => q && q.topic === topic);
+          }
+
+          questions = questions.filter(
+            (q) =>
+              q &&
+              q.id &&
+              q.question &&
+              Array.isArray(q.answers) &&
+              typeof q.correct !== "undefined" &&
+              q.answers.length >= 2
+          );
+
+          if (questions.length === 0) {
+            showToast(`אין שאלות זמינות לנושא "${topicNames[topic]}"!`);
+            return;
+          }
+
+          startGame();
+        } catch (error) {
+          console.error("Error loading questions for topic:", error);
+          document.querySelectorAll(".toast").forEach((t) => t.remove());
+          showToast("חלה שגיאה בטעינת השאלות!");
+        }
+      }
+
+      function saveLastTopic(topic) {
+        localStorage.setItem("lastTopic", topic);
+        if (playerId) {
+          database
+            .ref(`players/${playerId}`)
+            .update({ lastTopic: topic })
+            .catch((error) =>
+              console.error("Failed to save last topic:", error)
+            );
+        }
+      }
+
+      function vibrate(duration) {
+        if ("vibrate" in navigator) {
+          try {
+            navigator.vibrate(duration);
+          } catch (e) {}
+        }
+      }
+
+      function resetGame() {
+        correctCount = 0;
+        wrongCount = 0;
+        currentGameScore = 0;
+        currentQuestionIndex = 0;
+        currentQuestion = null;
+        fiftyFiftyUsed = false;
+        addTimeUsed = false;
+        skipUsed = 0;
+        mistakeDetails = [];
+        mistakenQuestions = [];
+        answerSequence = [];
+        answeredCorrectly = [];
+        gameTagStats = {};
+        currentStreak = 0;
+        longestStreak = 0;
+        timerValue = 120;
+        totalTime = 120;
+        timerExpired = false;
+        gameActive = false;
+
+        fiftyFiftyButton.classList.remove("disabled");
+        addTimeButton.classList.remove("disabled");
+        skipButton.classList.remove("disabled");
+        fiftyFiftyButton.disabled = false;
+        addTimeButton.disabled = false;
+        skipButton.disabled = false;
+
+        percentageTextIngameElement.textContent = "0%";
+        percentageProgressElement.style.strokeDashoffset = CIRCLE_CIRCUMFERENCE;
+        percentageProgressElement.className.baseVal =
+          "status-circle-progress red";
+        timerTextElement.textContent = timerValue;
+        timerProgressElement.style.strokeDashoffset = 0;
+        timerProgressElement.style.stroke = document.body.classList.contains(
+          "dark-mode"
+        )
+          ? "#4299e1"
+          : "#7F9CF5";
+        clearInterval(timerInterval);
+        console.log("Game reset complete.");
+      }
+
+      function startGame() {
+        startScreen.style.display = "none";
+        resultScreen.style.display = "none";
+        gameScreen.style.display = "block";
+        resetGame();
+        gameActive = true;
+        questions = [...questions].sort(() => Math.random() - 0.5);
+        initSequence();
+        updatePercentage();
+        loadQuestion();
+        startTimer();
+        console.log(
+          `Game started with ${questions.length} questions for topic: ${currentTopic}`
+        );
+      }
+
+      function initSequence() {
+        sequenceContainer.innerHTML = "";
+        const numCircles = Math.min(5, questions.length);
+        for (let i = 1; i <= numCircles; i++) {
+          const circle = document.createElement("div");
+          circle.classList.add("sequence-circle");
+          circle.textContent = i;
+          if (i === 1) circle.classList.add("current");
+          sequenceContainer.appendChild(circle);
+        }
+      }
+
+      function shuffleAnswers(answers, correctIndex) {
+        if (!Array.isArray(answers)) {
+          console.error(
+            "Invalid answers array passed to shuffleAnswers:",
+            answers
+          );
+          return [];
+        }
+        const answersCopy = answers.map((answer, idx) => ({
+          text: answer,
+          isCorrect: idx === correctIndex,
+        }));
+
+        for (let i = answersCopy.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [answersCopy[i], answersCopy[j]] = [answersCopy[j], answersCopy[i]];
+        }
+        return answersCopy;
+      }
+
+      function loadQuestion() {
+        if (!gameActive || (timerExpired && currentQuestion)) {
+          console.log(
+            "Timer expired or game inactive, preventing next question load."
+          );
+          if (gameActive && !currentQuestion) endGame();
+          return;
+        }
+
+        const readyMistakes = [];
+        mistakenQuestions = mistakenQuestions.filter((mq) => {
+          if (!mq || !mq.question) return false;
+          if (mq.delay > 0) {
+            mq.delay--;
+            return true;
+          } else {
+            readyMistakes.push(mq.question);
+            return false;
+          }
+        });
+
+        let availableRegularQuestions = questions.filter(
+          (q) =>
+            q &&
+            q.id &&
+            q.question &&
+            !answeredCorrectly.some((aq) => aq && aq.id === q.id) &&
+            !mistakenQuestions.some((mq) => mq && mq.question.id === q.id) &&
+            !readyMistakes.some((rm) => rm && rm.id === q.id)
+        );
+
+        console.log(
+          `Available regular: ${availableRegularQuestions.length}, Ready mistakes: ${readyMistakes.length}, Waiting mistakes: ${mistakenQuestions.length}`
+        );
+
+        if (
+          availableRegularQuestions.length === 0 &&
+          readyMistakes.length === 0 &&
+          mistakenQuestions.length === 0
+        ) {
+          console.log("No more questions or mistakes. Ending game.");
+          if (gameActive) endGame();
+          return;
+        }
+
+        let nextQuestion = null;
+        const showMistakeChance = 0.4;
+
+        if (
+          readyMistakes.length > 0 &&
+          (availableRegularQuestions.length === 0 ||
+            Math.random() < showMistakeChance)
+        ) {
+          const randomIndex = Math.floor(Math.random() * readyMistakes.length);
+          nextQuestion = readyMistakes.splice(randomIndex, 1)[0];
+          console.log("Loading a mistake question:", nextQuestion.id);
+        } else if (availableRegularQuestions.length > 0) {
+          if (currentQuestionIndex >= availableRegularQuestions.length) {
+            currentQuestionIndex = 0;
+          }
+          nextQuestion = availableRegularQuestions[currentQuestionIndex];
+          currentQuestionIndex++;
+          console.log(
+            `Loading regular question #${currentQuestionIndex}:`,
+            nextQuestion.id
+          );
+        } else if (readyMistakes.length > 0) {
+          const randomIndex = Math.floor(Math.random() * readyMistakes.length);
+          nextQuestion = readyMistakes.splice(randomIndex, 1)[0];
+          console.log("Loading a fallback mistake question:", nextQuestion.id);
+        } else {
+          console.warn(
+            "Question selection logic failed - should have ended or found a question. Ending game."
+          );
+          if (gameActive) endGame();
+          return;
+        }
+
+        readyMistakes.forEach((m) => {
+          if (!mistakenQuestions.some((mq) => mq && mq.question.id === m.id)) {
+            mistakenQuestions.push({ question: m, delay: 0 });
+          }
+        });
+
+        if (
+          !nextQuestion ||
+          !nextQuestion.id ||
+          !nextQuestion.question ||
+          !Array.isArray(nextQuestion.answers) ||
+          typeof nextQuestion.correct === "undefined" ||
+          nextQuestion.answers.length < 2
+        ) {
+          console.error(
+            "Invalid question data selected:",
+            nextQuestion,
+            "Attempting to skip and load another..."
+          );
+          questions = questions.filter((q) => q !== nextQuestion);
+          mistakenQuestions = mistakenQuestions.filter(
+            (mq) => mq.question !== nextQuestion
+          );
+          loadQuestion();
+          return;
+        }
+
+        currentQuestion = nextQuestion;
+        currentQuestion.startTime = Date.now();
+
+        currentQuestion.shuffledAnswers = shuffleAnswers(
+          [...currentQuestion.answers],
+          currentQuestion.correct
+        );
+        if (
+          !Array.isArray(currentQuestion.shuffledAnswers) ||
+          currentQuestion.shuffledAnswers.length < 2
+        ) {
+          console.error(
+            "Failed to shuffle answers or not enough answers for:",
+            currentQuestion.id,
+            "Skipping..."
+          );
+          questions = questions.filter((q) => q !== currentQuestion);
+          mistakenQuestions = mistakenQuestions.filter(
+            (mq) => mq.question !== currentQuestion
+          );
+          loadQuestion();
+          return;
+        }
+
+        questionElement.innerHTML = "";
+        const questionTextNode = document.createTextNode(
+          currentQuestion.question
+        );
+        questionElement.appendChild(questionTextNode);
+
+        answersElement.innerHTML = "";
+        currentQuestion.shuffledAnswers.forEach((answer, index) => {
+          const button = document.createElement("button");
+          button.classList.add("answer-btn");
+          button.textContent = answer.text;
+          button.style.visibility = "visible";
+          button.disabled = false;
+          button.addEventListener("click", () => {
+            vibrate(50);
+            checkAnswer(index);
+          });
+          answersElement.appendChild(button);
+        });
+
+        fiftyFiftyButton.disabled = fiftyFiftyUsed || timerExpired;
+        addTimeButton.disabled = addTimeUsed || timerExpired;
+        skipButton.disabled = timerExpired;
+
+        updateSequence();
+      }
+
+      function createScorePopup(score) {
+        const popup = document.createElement("div");
+        popup.classList.add("score-popup");
+        popup.textContent = `${score}+`;
+        document.body.appendChild(popup);
+
+        requestAnimationFrame(() => {
+          popup.classList.add("show");
+        });
+
+        setTimeout(() => {
+          popup.classList.remove("show");
+          setTimeout(() => {
+            if (popup.parentNode) {
+              popup.parentNode.removeChild(popup);
+            }
+          }, 600);
+        }, 1000);
+      }
+
+      async function updatePlayerStatsFirebase(
+        playerId,
+        question,
+        isCorrect,
+        scoreGained = 0
+      ) {
+        if (!playerId || !question) return;
+
+        const topic = question.topic || "unknown";
+        const tags = Array.isArray(question.tags)
+          ? question.tags.filter((t) => t)
+          : [];
+        const playerRef = database.ref(`players/${playerId}`);
+        let updatedPlayerData;
+
+        try {
+          const transactionResult = await playerRef.transaction(
+            (playerData) => {
+              if (playerData === null) {
+                 // Should not happen if savePlayerInitialData worked, but handle defensively
+                 console.warn("Player data was null during transaction, re-initializing.");
+                 playerData = {
+                     cumulativeScore: 0, correctCount: 0, wrongCount: 0,
+                     nickname: playerNickname, darkMode: localStorage.getItem("darkMode") === "true",
+                     topicStats: {}, tagStats: {}
+                 };
+              }
+
+              // Ensure nested objects exist
+              if (!playerData.topicStats) playerData.topicStats = {};
+              if (!playerData.tagStats) playerData.tagStats = {};
+
+              playerData.cumulativeScore =
+                (playerData.cumulativeScore || 0) + scoreGained;
+              playerData.correctCount =
+                (playerData.correctCount || 0) + (isCorrect ? 1 : 0);
+              playerData.wrongCount =
+                (playerData.wrongCount || 0) + (isCorrect ? 0 : 1);
+
+              if (!playerData.topicStats[topic]) {
+                playerData.topicStats[topic] = {
+                  correctCount: 0, wrongCount: 0,
+                };
+              }
+              playerData.topicStats[topic].correctCount =
+                (playerData.topicStats[topic].correctCount || 0) +
+                (isCorrect ? 1 : 0);
+              playerData.topicStats[topic].wrongCount =
+                (playerData.topicStats[topic].wrongCount || 0) +
+                (isCorrect ? 0 : 1);
+
+              tags.forEach((tag) => {
+                if (!playerData.tagStats[tag]) {
+                  playerData.tagStats[tag] = { correctCount: 0, wrongCount: 0 };
+                }
+                playerData.tagStats[tag].correctCount =
+                  (playerData.tagStats[tag].correctCount || 0) +
+                  (isCorrect ? 1 : 0);
+                playerData.tagStats[tag].wrongCount =
+                  (playerData.tagStats[tag].wrongCount || 0) +
+                  (isCorrect ? 0 : 1);
+              });
+
+              return playerData;
+            }
+          );
+
+          if (
+            transactionResult.committed &&
+            transactionResult.snapshot.exists()
+          ) {
+            console.log("Player stats transaction committed.");
+            updatedPlayerData = transactionResult.snapshot.val();
+            // Update local score based on the *committed* value from Firebase
+            // This handles potential race conditions if the transaction had to re-run
+            cumulativePlayerScore = updatedPlayerData.cumulativeScore;
+            updateCumulativeScoreDisplay(); // Ensure header display is updated with committed value
+            localStorage.setItem("cumulativeScoreBackup", cumulativePlayerScore.toString()); // Backup locally
+
+            // Update leaderboard only after successful player data update
+            await database.ref(`leaderboard/${playerId}`).set({
+              nickname: updatedPlayerData.nickname,
+              cumulativeScore: updatedPlayerData.cumulativeScore,
+            });
+            console.log("Leaderboard updated.");
+
+          } else {
+             console.log("Player stats transaction was not committed.");
+             // Maybe retry or show an error? For now, log it.
+          }
+        } catch (error) {
+          console.error("Error updating player stats/leaderboard:", error);
+          // Don't update local score display on error, as DB update failed
+          showToast("שגיאה בעדכון נתונים ודירוג!");
+          // Note: No need to throw error here unless subsequent code depends on success
+        }
+      }
+
+      function checkAnswer(selectedIndex) {
+        if (!gameActive || !currentQuestion || !currentQuestion.shuffledAnswers)
+          return;
+
+        const answerTime = Date.now();
+        const timeTakenMs =
+          answerTime - (currentQuestion.startTime || answerTime);
+        const timeTakenSec = Math.max(0, Math.floor(timeTakenMs / 1000));
+
+        const buttons = answersElement.querySelectorAll(".answer-btn");
+        buttons.forEach((btn) => (btn.disabled = true));
+
+        const correctAnswerObject = currentQuestion.shuffledAnswers.find(
+          (a) => a.isCorrect
+        );
+        const selectedAnswerObject =
+          currentQuestion.shuffledAnswers[selectedIndex];
+
+        if (
+          !selectedAnswerObject ||
+          typeof selectedAnswerObject.isCorrect === "undefined" ||
+          !correctAnswerObject
+        ) {
+          console.error("Error identifying selected or correct answer object.");
+          setTimeout(loadQuestion, 1200);
+          return;
+        }
+
+        const isCorrect = selectedAnswerObject.isCorrect;
+        const questionNumber = correctCount + wrongCount + 1;
+        let questionScore = 0;
+
+        buttons.forEach((btn, idx) => {
+          if (currentQuestion.shuffledAnswers[idx]?.isCorrect) {
+            btn.classList.add("correct");
+          } else if (idx === selectedIndex) {
+            btn.classList.add("wrong");
+          } else {
+            if (btn.style.visibility !== "hidden") {
+              btn.style.opacity = "0.5";
+            }
+          }
+        });
+
+        if (isCorrect) {
+          correctCount++;
+          currentStreak++;
+          longestStreak = Math.max(longestStreak, currentStreak);
+          answerSequence.push({ number: questionNumber, correct: true });
+
+          const timeBonus = Math.max(0, Math.floor((15 - timeTakenSec) / 2));
+          const streakBonus =
+            currentStreak > 1
+              ? (currentStreak - 1) * STREAK_BONUS_MULTIPLIER
+              : 0;
+          questionScore = BASE_SCORE_PER_QUESTION + timeBonus + streakBonus;
+          currentGameScore += questionScore;
+
+          // --- BEGIN MODIFICATION ---
+          // cumulativePlayerScore += questionScore; // Update the global score variable locally *temporarily*
+          // updateCumulativeScoreDisplay(); // Update the display in the header *temporarily*
+          // Note: The authoritative update now happens in updatePlayerStatsFirebase after transaction success
+          // --- END MODIFICATION ---
+
+          createScorePopup(questionScore); // Show visual feedback
+
+          const mistakeIndex = mistakenQuestions.findIndex(
+            (mq) => mq && mq.question.id === currentQuestion.id
+          );
+          if (mistakeIndex > -1) {
+            mistakenQuestions.splice(mistakeIndex, 1);
+            console.log("Corrected a mistake, removed from pool.");
+          }
+          if (
+            !answeredCorrectly.some((aq) => aq && aq.id === currentQuestion.id)
+          ) {
+            answeredCorrectly.push(currentQuestion);
+          }
+        } else {
+          wrongCount++;
+          currentStreak = 0;
+          questionScore = 0;
+          answerSequence.push({ number: questionNumber, correct: false });
+
+          mistakeDetails.push({
+            question: currentQuestion.question,
+            selected: selectedAnswerObject.text,
+            correct: correctAnswerObject.text,
+            tags: currentQuestion.tags || [],
+          });
+
+          const mistakeIndex = mistakenQuestions.findIndex(
+            (mq) => mq && mq.question.id === currentQuestion.id
+          );
+          const delay = Math.floor(Math.random() * 3) + 2;
+          if (mistakeIndex === -1) {
+            if (
+              !answeredCorrectly.some(
+                (aq) => aq && aq.id === currentQuestion.id
+              )
+            ) {
+              mistakenQuestions.push({
+                question: currentQuestion,
+                delay: delay,
+              });
+              console.log(
+                `Added mistake ${currentQuestion.id} to pool with delay ${delay}. Pool size: ${mistakenQuestions.length}`
+              );
+            } else {
+              console.log(
+                `Mistake ${currentQuestion.id} answered wrong, but already answered correctly earlier. Not adding back.`
+              );
+            }
+          } else {
+            mistakenQuestions[mistakeIndex].delay = delay;
+            console.log(
+              `Mistake ${currentQuestion.id} answered wrong again, resetting delay to ${delay}.`
+            );
+          }
+        }
+
+        const questionTags = Array.isArray(currentQuestion.tags)
+          ? currentQuestion.tags.filter((t) => t)
+          : [];
+        questionTags.forEach((tag) => {
+          if (!gameTagStats[tag]) gameTagStats[tag] = { correct: 0, wrong: 0 };
+          gameTagStats[tag][isCorrect ? "correct" : "wrong"]++;
+        });
+
+        if (playerId) {
+           // Call the function but don't necessarily wait for it here
+           updatePlayerStatsFirebase(
+              playerId,
+              currentQuestion,
+              isCorrect,
+              questionScore
+           ).catch(e => console.error("Background stat update failed:", e)); // Log errors if the async update fails later
+        }
+
+        updatePercentage();
+        currentQuestion = null;
+
+        if (timerExpired) {
+          console.log(
+            "Timer expired, ending game after answering last question."
+          );
+          setTimeout(endGame, 1200);
+        } else {
+          setTimeout(loadQuestion, 1200);
+        }
+      }
+
+
+      function updateSequence() {
+        sequenceContainer.innerHTML = "";
+        const totalAnswered = answerSequence.length;
+        const currentQNumInGame = totalAnswered + 1;
+        const displayCount =
+          sequenceContainer.children.length > 0
+            ? sequenceContainer.children.length
+            : 5;
+
+        let startNum = Math.max(
+          1,
+          currentQNumInGame - Math.floor(displayCount / 2)
+        );
+
+        for (let i = 0; i < displayCount; i++) {
+          const displayNum = startNum + i;
+          const circle = document.createElement("div");
+          circle.classList.add("sequence-circle");
+          circle.textContent = displayNum;
+
+          const answer = answerSequence.find((a) => a.number === displayNum);
+
+          if (displayNum === currentQNumInGame) {
+            circle.classList.add("current");
+          } else if (answer) {
+            circle.classList.add(answer.correct ? "correct" : "wrong");
+          }
+          sequenceContainer.appendChild(circle);
+        }
+      }
+
+      function updatePercentage() {
+        const total = correctCount + wrongCount;
+        const percentage =
+          total === 0 ? 0 : Math.round((correctCount / total) * 100);
+        percentageTextIngameElement.textContent = `${percentage}%`;
+
+        const offset = CIRCLE_CIRCUMFERENCE * (1 - percentage / 100);
+        percentageProgressElement.style.strokeDashoffset = Math.max(
+          0,
+          Math.min(CIRCLE_CIRCUMFERENCE, offset)
+        );
+
+        let colorClass = "red";
+        if (percentage >= 75) colorClass = "green";
+        else if (percentage >= 55) colorClass = "yellow";
+        percentageProgressElement.className.baseVal = `status-circle-progress ${colorClass}`;
+      }
+
+      function startTimer() {
+        timerValue = 120;
+        totalTime = 120;
+        timerExpired = false;
+        timerTextElement.textContent = timerValue;
+        updateTimerCircle();
+        clearInterval(timerInterval);
+
+        timerInterval = setInterval(() => {
+          if (!gameActive) {
+            clearInterval(timerInterval);
+            return;
+          }
+
+          if (timerValue > 0) {
+            timerValue--;
+            timerTextElement.textContent = timerValue;
+            updateTimerCircle();
+
+            if (timerValue <= 30 && timerValue > 0) {
+              timerProgressElement.style.stroke = "#f56565";
+              if (timerValue === 30 || timerValue === 20 || timerValue === 10)
+                vibrate(300);
+              else if (
+                timerValue < 10 &&
+                timerValue > 0 &&
+                timerValue % 2 === 0
+              )
+                vibrate(150);
+            } else if (timerValue > 30) {
+              timerProgressElement.style.stroke =
+                document.body.classList.contains("dark-mode")
+                  ? "#4299e1"
+                  : "#7F9CF5";
+            }
+          }
+
+          if (timerValue <= 0 && !timerExpired) {
+            timerExpired = true;
+            timerTextElement.textContent = "0";
+            console.log(
+              "Timer reached 0. Flag set. Game will end after current/next action."
+            );
+            vibrate([200, 100, 200]);
+
+            fiftyFiftyButton.disabled = true;
+            addTimeButton.disabled = true;
+            skipButton.disabled = true;
+            fiftyFiftyButton.classList.add("disabled");
+            addTimeButton.classList.add("disabled");
+            skipButton.classList.add("disabled");
+
+            if (!currentQuestion) {
+              console.log("Timer expired between questions. Ending game now.");
+              endGame();
+            } else {
+              console.log(
+                "Timer expired while question is shown. Waiting for answer/skip."
+              );
+            }
+          }
+        }, 1000);
+      }
+
+      function updateTimerCircle() {
+        const clampedTime = Math.max(0, timerValue);
+        const timeRatio = totalTime > 0 ? clampedTime / totalTime : 0;
+        const offset = CIRCLE_CIRCUMFERENCE * (1 - timeRatio);
+        timerProgressElement.style.strokeDashoffset = Math.max(
+          0,
+          Math.min(CIRCLE_CIRCUMFERENCE, offset)
+        );
+      }
+
+      function fiftyFiftyButtonClickHandler() {
+        if (
+          !fiftyFiftyUsed &&
+          currentQuestion &&
+          currentQuestion.shuffledAnswers &&
+          !timerExpired &&
+          gameActive
+        ) {
+          vibrate(50);
+          fiftyFiftyUsed = true;
+          fiftyFiftyButton.classList.add("disabled");
+          fiftyFiftyButton.disabled = true;
+
+          const buttons = answersElement.querySelectorAll(".answer-btn");
+          const incorrectButtonsIndices = [];
+
+          currentQuestion.shuffledAnswers.forEach((answer, index) => {
+            if (
+              !answer.isCorrect &&
+              buttons[index] &&
+              buttons[index].style.visibility !== "hidden"
+            ) {
+              incorrectButtonsIndices.push(index);
+            }
+          });
+
+          incorrectButtonsIndices.sort(() => Math.random() - 0.5);
+
+          let hiddenCount = 0;
+          for (
+            let i = 0;
+            i < incorrectButtonsIndices.length && hiddenCount < 2;
+            i++
+          ) {
+            const btnIndex = incorrectButtonsIndices[i];
+            if (buttons[btnIndex]) {
+              buttons[btnIndex].style.visibility = "hidden";
+              buttons[btnIndex].disabled = true;
+              hiddenCount++;
+            }
+          }
+          console.log("50:50 used, hid " + hiddenCount + " incorrect answers.");
+        }
+      }
+      fiftyFiftyButton.addEventListener("click", fiftyFiftyButtonClickHandler);
+
+      function addTimeButtonClickHandler() {
+        if (!addTimeUsed && !timerExpired && gameActive) {
+          vibrate(50);
+          addTimeUsed = true;
+          addTimeButton.classList.add("disabled");
+          addTimeButton.disabled = true;
+
+          timerValue += 30;
+          totalTime += 30;
+          timerTextElement.textContent = timerValue;
+          updateTimerCircle();
+
+          if (timerValue > 30) {
+            timerProgressElement.style.stroke =
+              document.body.classList.contains("dark-mode")
+                ? "#4299e1"
+                : "#7F9CF5";
+          }
+          console.log(
+            "+30 seconds used. New time:",
+            timerValue,
+            "New total:",
+            totalTime
+          );
+        }
+      }
+      addTimeButton.addEventListener("click", addTimeButtonClickHandler);
+
+      function skipButtonClickHandler() {
+        if (
+          currentQuestion &&
+          currentQuestion.shuffledAnswers &&
+          !timerExpired &&
+          gameActive
+        ) {
+          vibrate(50);
+          skipUsed++;
+          console.log("Skip used. Count:", skipUsed);
+
+          const answerBtns = answersElement.querySelectorAll(".answer-btn");
+          answerBtns.forEach((btn) => {
+            btn.disabled = true;
+            const answerObj = currentQuestion.shuffledAnswers.find(
+              (a) => a.text === btn.textContent
+            );
+            if (answerObj?.isCorrect) {
+              btn.classList.add("correct");
+            } else {
+              if (btn.style.visibility !== "hidden") {
+                btn.style.opacity = "0.5";
+              }
+            }
+          });
+
+          skipButton.disabled = true;
+
+          const skippedQuestion = currentQuestion;
+          currentQuestion = null;
+
+          const mistakeIndex = mistakenQuestions.findIndex(
+            (mq) => mq && mq.question.id === skippedQuestion.id
+          );
+          if (
+            mistakeIndex === -1 &&
+            !answeredCorrectly.some((aq) => aq && aq.id === skippedQuestion.id)
+          ) {
+            mistakenQuestions.push({ question: skippedQuestion, delay: 1 });
+            console.log(
+              `Added skipped question ${skippedQuestion.id} to mistake pool.`
+            );
+          }
+
+          setTimeout(() => {
+            if (!timerExpired) {
+              skipButton.disabled = false;
+            }
+            loadQuestion();
+          }, 1000);
+        }
+      }
+      skipButton.addEventListener("click", skipButtonClickHandler);
+
+      function launchConfetti() {
+        const totalQuestions = correctCount + wrongCount;
+        const percentage =
+          totalQuestions === 0
+            ? 0
+            : Math.round((correctCount / totalQuestions) * 100);
+        let particleCount = 100;
+        if (percentage >= 90) particleCount = 150;
+        if (percentage < 50) particleCount = 50;
+
+        confetti({
+          particleCount: particleCount,
+          spread: 70,
+          origin: { y: 0.6 },
+        });
+
+        if (percentage >= 80) {
+          const end = Date.now() + 1.5 * 1000;
+          const colors = ["#a3bffa", "#7f9cf5", "#ffffff", "#48bb78"];
+          (function frame() {
+            confetti({
+              particleCount: 2,
+              angle: 60,
+              spread: 55,
+              origin: { x: 0, y: 0.7 },
+              colors: colors,
+            });
+            confetti({
+              particleCount: 2,
+              angle: 120,
+              spread: 55,
+              origin: { x: 1, y: 0.7 },
+              colors: colors,
+            });
+            if (Date.now() < end) {
+              requestAnimationFrame(frame);
+            }
+          })();
+        }
+      }
+
+      function saveGameResult() {
+        if (!playerId) return;
+        const now = new Date();
+        const dateStr = now.toISOString().split("T")[0];
+        const timestamp = now.toISOString();
+        const totalQuestions = correctCount + wrongCount;
+
+        if (totalQuestions === 0 && currentGameScore === 0) {
+          console.log("Skipping save for empty game.");
+          return;
+        }
+
+        const result = {
+          correctCount: correctCount,
+          totalQuestions: totalQuestions,
+          longestStreak: longestStreak,
+          score: currentGameScore,
+          timestamp: timestamp,
+          topic: currentTopic || "unknown",
+          tools: {
+            fiftyFifty: fiftyFiftyUsed,
+            addTime: addTimeUsed,
+            skips: skipUsed,
+          },
+          nickname: playerNickname, // Ensure nickname is saved with the result
+        };
+
+        const resultRef = database.ref(`gameResults/${dateStr}/${playerId}`);
+
+        resultRef
+          .once("value")
+          .then((snapshot) => {
+            const existingResult = snapshot.val();
+            let shouldUpdate = true;
+
+            if (existingResult) {
+              // Compare based on correctCount first, then score, then streak
+              if (result.correctCount < existingResult.correctCount) {
+                shouldUpdate = false;
+              } else if (result.correctCount === existingResult.correctCount) {
+                if ((result.score || 0) < (existingResult.score || 0)) {
+                  shouldUpdate = false;
+                } else if (
+                  (result.score || 0) === (existingResult.score || 0)
+                ) {
+                  if (
+                    (result.longestStreak || 0) <=
+                    (existingResult.longestStreak || 0)
+                  ) {
+                    shouldUpdate = false;
+                  }
+                }
+              }
+            }
+
+            if (shouldUpdate) {
+              resultRef
+                .set(result)
+                .then(() =>
+                  console.log("Daily best game result saved/updated.")
+                )
+                .catch((err) =>
+                  console.error("Error saving game result:", err)
+                );
+            } else {
+              console.log(
+                "Existing daily result is better or equal, not updating."
+              );
+            }
+          })
+          .catch((err) =>
+            console.error("Error fetching existing game result:", err)
+          );
+
+        // Cumulative score is updated via transaction, but ensure backup is current
+        localStorage.setItem(
+          "cumulativeScoreBackup",
+          cumulativePlayerScore.toString()
+        );
+      }
+
+
+      async function getDailyRankings() {
+        if (!playerId) return { rankings: [], currentPlayerRank: -1 };
+        const dateStr = new Date().toISOString().split("T")[0];
+        try {
+          const snapshot = await database
+            .ref(`gameResults/${dateStr}`)
+            .orderByChild("correctCount") // Primary sort by correct answers
+            .limitToLast(100) // Get top 100 potential candidates
+            .once("value");
+          const results = snapshot.val() || {};
+
+          const resultArray = Object.entries(results).map(([pid, data]) => ({
+            playerId: pid,
+            correctCount: data.correctCount || 0,
+            score: data.score || 0, // Include score for tie-breaking
+            longestStreak: data.longestStreak || 0, // Include streak for tie-breaking
+            nickname:
+              data.nickname || `שחקן...${pid.substring(pid.length - 4)}`,
+          }));
+
+          // Sort primarily by correctCount (desc), then score (desc), then streak (desc)
+          resultArray.sort(
+            (a, b) =>
+              b.correctCount - a.correctCount ||
+              b.score - a.score ||
+              b.longestStreak - a.longestStreak
+          );
+
+          const currentPlayerRank =
+            resultArray.findIndex((r) => r.playerId === playerId) + 1; // Find rank (1-based)
+
+          return {
+            rankings: resultArray, // Return the full sorted array (or slice later for display)
+            currentPlayerRank: currentPlayerRank > 0 ? currentPlayerRank : -1,
+          };
+        } catch (error) {
+          console.error("Error fetching daily rankings:", error);
+          return { rankings: [], currentPlayerRank: -1 }; // Return empty on error
+        }
+      }
+
+
+      async function getOverallRankings(limit = 10) {
+         // Fetch directly from the pre-calculated leaderboard path
+         if (!playerId) return { rankings: [], currentPlayerRank: -1 };
+         try {
+             const snapshot = await database.ref('leaderboard')
+                                     .orderByChild('cumulativeScore') // Order by score
+                                     .limitToLast(limit) // Get the top 'limit' players
+                                     .once('value');
+             const results = snapshot.val() || {};
+
+             const resultArray = Object.entries(results).map(([pid, data]) => ({
+                 playerId: pid,
+                 cumulativeScore: data.cumulativeScore || 0,
+                 nickname: data.nickname || `שחקן...${pid.substring(pid.length - 4)}`
+             }));
+
+             // Sort descending by score (Firebase returns ascending with limitToLast)
+             resultArray.sort((a, b) => b.cumulativeScore - a.cumulativeScore);
+
+             const currentPlayerRank = resultArray.findIndex(r => r.playerId === playerId) + 1;
+
+             return {
+                 rankings: resultArray,
+                 currentPlayerRank: currentPlayerRank > 0 ? currentPlayerRank : -1
+             };
+         } catch (error) {
+             console.error("Error fetching overall rankings from /leaderboard:", error);
+             return { rankings: [], currentPlayerRank: -1 }; // Return empty on error
+         }
+      }
+
+
+      function displayRankings(
+        element,
+        rankings,
+        currentPlayerRank,
+        scoreField,
+        rankLabelPrefix = ""
+      ) {
+        element.innerHTML = "";
+        if (!rankings || rankings.length === 0) {
+          element.innerHTML = "<p>אין נתוני דירוג זמינים כרגע.</p>";
+          return;
+        }
+
+        const list = document.createElement("ul");
+        rankings.forEach((player, index) => {
+          const rank = index + 1;
+          const li = document.createElement("li");
+          if (player.playerId === playerId) {
+            li.classList.add("current-player");
+          }
+
+          const rankSpan = document.createElement("span");
+          rankSpan.className = "rank-number";
+          rankSpan.textContent = `#${rank}`;
+
+          const nameSpan = document.createElement("span");
+          nameSpan.className = "rank-name";
+          nameSpan.textContent = player.nickname;
+
+          const scoreSpan = document.createElement("span");
+          scoreSpan.className = "rank-score";
+          scoreSpan.textContent = (player[scoreField] || 0).toLocaleString();
+
+          li.appendChild(rankSpan);
+          li.appendChild(nameSpan);
+          li.appendChild(scoreSpan);
+          list.appendChild(li);
+        });
+
+        element.appendChild(list);
+
+         // Add message if player is not in the top list shown
+         // Check if the player *played* the game for daily rank message
+         const totalQuestions = correctCount + wrongCount;
+         if (currentPlayerRank === -1 && (scoreField !== 'cumulativeScore' || totalQuestions > 0)) {
+           const playerScore = scoreField === "cumulativeScore" ? cumulativePlayerScore : (scoreField === 'correctCount' ? correctCount : currentGameScore);
+           const scoreLabel = scoreField === 'correctCount' ? `${correctCount}/${totalQuestions}` : playerScore.toLocaleString();
+           element.innerHTML += `<p style="font-size: 0.8rem; margin-top: 5px;">הדירוג שלך מחוץ ל-${rankings.length} הראשונים (${rankLabelPrefix}${scoreLabel}).</p>`;
+         }
+      }
+
+
+      async function endGame() {
+        if (!gameActive) return;
+        gameActive = false;
+        console.log("Game ended. Displaying results.");
+
+        clearInterval(timerInterval);
+        gameScreen.style.display = "none";
+        resultScreen.style.display = "block";
+
+        // Save result (this also updates local cumulative score backup if needed)
+        saveGameResult();
+
+        const totalQuestions = correctCount + wrongCount;
+        const percentage =
+          totalQuestions === 0
+            ? 0
+            : Math.round((correctCount / totalQuestions) * 100);
+        const endTimeValue = timerExpired ? 0 : timerValue;
+        const timeSpent = totalTime - endTimeValue;
+        const avgTimePerQuestion =
+          totalQuestions === 0 ? 0 : Math.round(timeSpent / totalQuestions);
+
+        // Display Scores (using the *final* local cumulative score)
+        scoreElement.innerHTML = `ניקוד במשחק: <span class="highlight">${currentGameScore.toLocaleString()}</span><br>ניקוד מצטבר: ${cumulativePlayerScore.toLocaleString()}`;
+        accuracyStatsElement.innerHTML = `נכונות: ${correctCount}/${totalQuestions} | רצף שיא: ${longestStreak} | זמן ממוצע: ${avgTimePerQuestion} שנ'`;
+
+        // Result Circle Animation
+        const resultOffset =
+          RESULT_CIRCLE_CIRCUMFERENCE * (1 - percentage / 100);
+        resultProgressCircleElement.style.strokeDashoffset = Math.max(
+          0,
+          Math.min(RESULT_CIRCLE_CIRCUMFERENCE, resultOffset)
+        );
+        let resultColorClass = "red";
+        if (percentage >= 75) resultColorClass = "green";
+        else if (percentage >= 55) resultColorClass = "yellow";
+        resultProgressCircleElement.setAttribute(
+          "class",
+          `status-circle-progress ${resultColorClass}`
+        );
+        percentageTextResultElement.textContent = "0%";
+        let count = 0;
+        const percentageAnim = setInterval(() => {
+          count++;
+          if (count <= percentage) {
+            percentageTextResultElement.textContent = `${count}%`;
+          } else {
+            clearInterval(percentageAnim);
+          }
+        }, 20);
+
+        // Tools Used Display
+        let toolsText = "";
+        if (fiftyFiftyUsed) toolsText += "50:50, ";
+        if (addTimeUsed) toolsText += "30+, ";
+        if (skipUsed > 0) toolsText += `דילוג (${skipUsed}), `;
+        toolsText = toolsText.endsWith(", ")
+          ? toolsText.slice(0, -2)
+          : toolsText;
+        toolsUsedElement.textContent = toolsText || "לא נעשה שימוש בכלים";
+
+        // Fetch and Display Rankings
+        rankingElement.innerHTML = "טוען דירוג יומי...";
+        overallRankingElement.innerHTML = "טוען דירוג כללי...";
+        try {
+          const [dailyData, overallData] = await Promise.all([
+            getDailyRankings(),
+            getOverallRankings(10), // Get Top 10 overall
+          ]);
+          // Display Top 10 daily, based on correct answers primarily
+          displayRankings(
+            rankingElement,
+            dailyData.rankings.slice(0, 10), // Show only top 10
+            dailyData.currentPlayerRank,
+            "correctCount",
+            "תשובות: "
+          );
+          // Display Top 10 overall, based on cumulative score
+          displayRankings(
+            overallRankingElement,
+            overallData.rankings, // Already limited to 10
+            overallData.currentPlayerRank,
+            "cumulativeScore",
+            "ניקוד: "
+          );
+        } catch (error) {
+          console.error("Error fetching or displaying rankings:", error);
+          rankingElement.textContent = "שגיאה בטעינת דירוג יומי.";
+          overallRankingElement.textContent = "שגיאה בטעינת דירוג כללי.";
+        }
+
+        // Mistakes Review
+        mistakesElement.innerHTML = "";
+        if (mistakeDetails.length > 0) {
+          const uniqueMistakes = new Map();
+          mistakeDetails.forEach((mistake) => {
+            if (!uniqueMistakes.has(mistake.question)) {
+              uniqueMistakes.set(mistake.question, mistake);
+            }
+          });
+          uniqueMistakes.forEach((mistake) => {
+            mistakesElement.innerHTML += `<div class="mistake-block"><div class="mistake-question">${mistake.question}</div><div class="wrong-answer">❌ תשובתך: ${mistake.selected}</div><div class="correct-answer">✅ התשובה הנכונה: ${mistake.correct}</div></div>`;
+          });
+        } else {
+          mistakesElement.innerHTML =
+            totalQuestions > 0
+              ? '<p class="perfect">💯 מושלם! כל התשובות נכונות!</p>'
+              : "<p>לא ענית על שאלות במשחק זה.</p>";
+        }
+
+        // Tag Analysis
+        tagAnalysisElement.innerHTML = "";
+        const isDarkMode = document.body.classList.contains("dark-mode");
+        const colorSchemes = {
+          light: { success: { background: "#e6fffa", text: "#2c7a7b", border: "#9ae6b4" }, moderate: { background: "#fffbeb", text: "#b7791f", border: "#f6e05e" }, failure: { background: "#fff5f5", text: "#c53030", border: "#feb2b2" }, },
+          dark: { success: { background: "#2f855a", text: "#f0fff4", border: "#68d391" }, moderate: { background: "#b7791f", text: "#fffbeb", border: "#f6e05e" }, failure: { background: "#c53030", text: "#fff5f5", border: "#fc8181" }, },
+        };
+        const currentScheme = isDarkMode
+          ? colorSchemes.dark
+          : colorSchemes.light;
+        const successThreshold = 75, failureThreshold = 50;
+
+        const tagCloudData = Object.entries(gameTagStats)
+          .map(([tag, stats]) => {
+            if (!tag || typeof stats !== "object" || stats === null)
+              return null;
+            const total = (stats.correct || 0) + (stats.wrong || 0);
+            if (total === 0) return null;
+            const accuracy = Math.round(((stats.correct || 0) / total) * 100);
+
+            let colors, sortOrder;
+            if (accuracy >= successThreshold) { colors = currentScheme.success; sortOrder = 1; }
+            else if (accuracy < failureThreshold) { colors = currentScheme.failure; sortOrder = 3; }
+            else { colors = currentScheme.moderate; sortOrder = 2; }
+
+            let fontWeight = (stats.wrong || 0) > (stats.correct || 0) ? "bold" : "normal";
+
+            return { tag, colors, fontWeight, accuracy, correct: stats.correct || 0, total, sortOrder, };
+          })
+          .filter((item) => item !== null);
+
+        tagCloudData.sort((a, b) => {
+          if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+          return a.tag.localeCompare(b.tag, "he");
+        });
+
+        if (tagCloudData.length > 0) {
+          tagCloudData.forEach((item) => {
+            const linkElement = document.createElement("a");
+            linkElement.classList.add("tag-cloud-item");
+            const searchTerm = encodeURIComponent(`${item.tag} ביולוגיה`);
+            linkElement.href = `https://www.google.com/search?q=${searchTerm}`;
+            linkElement.target = "_blank";
+            linkElement.rel = "noopener noreferrer";
+            linkElement.style.backgroundColor = item.colors.background;
+            linkElement.style.color = item.colors.text;
+            linkElement.style.borderColor = item.colors.border;
+            linkElement.style.fontWeight = item.fontWeight;
+            linkElement.textContent = `#${item.tag}`;
+            linkElement.title = `דיוק: ${item.accuracy}% (${item.correct}/${item.total}) - חפש '${item.tag}' בגוגל`;
+            tagAnalysisElement.appendChild(linkElement);
+          });
+        } else {
+          tagAnalysisElement.innerHTML =
+            "<p>לא נצברו נתונים על תגיות במשחק זה.</p>";
+        }
+
+        // Share Button Logic
+        shareButton.onclick = () => {
+          vibrate(50);
+          // Include nickname in the share text
+          const shareText = `שיחקתי טריווBIO בנושא ${
+            topicNames[currentTopic] || "מעורב"
+          } והשגתי ${currentGameScore.toLocaleString()} נקודות (${percentage}% דיוק) עם רצף שיא של ${longestStreak}! 🎉 סה"כ צברתי ${cumulativePlayerScore.toLocaleString()} נקודות. השם שלי: ${playerNickname}. בואו לשחק גם!`;
+          let currentUrl = window.location.href;
+          if (currentUrl.endsWith("/")) {
+            currentUrl = currentUrl.slice(0, -1);
+          }
+          const shareData = {
+            title: "טריווBIO - תוצאת משחק",
+            text: shareText,
+            url: currentUrl,
+          };
+
+          if (navigator.share) {
+            navigator
+              .share(shareData)
+              .then(() => console.log("Successful share"))
+              .catch((error) => console.log("Error sharing", error));
+          } else {
+            navigator.clipboard
+              .writeText(shareText + " " + currentUrl)
+              .then(() => showToast("התוצאה והקישור הועתקו!"))
+              .catch((err) => {
+                console.error("Failed to copy text: ", err);
+                showToast("שגיאה בהעתקת התוצאה.");
+              });
+          }
+        };
+
+        // Restart Button Logic
+        restartButton.onclick = () => {
+          vibrate(50);
+          resultScreen.style.display = "none";
+          startScreen.style.display = "block";
+          // Reset happens automatically when a new topic is chosen
+        };
+
+        launchConfetti(); // Fire confetti!
+      }
+
+    </script>
+  </body>
+</html>
