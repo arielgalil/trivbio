@@ -12,65 +12,64 @@
       ".read": "auth != null && root.child('admins').child(auth.uid).exists() && root.child('admins').child(auth.uid).val() === true",
       "$playerId": {
         ".read": "auth != null && (auth.uid === $playerId || (root.child('admins').child(auth.uid).exists() && root.child('admins').child(auth.uid).val() === true))",
-        // --- שינוי כאן ---
-        // אפשר כתיבה (יצירה ועדכון) אם המשתמש הוא הבעלים
+        // --- חוק כתיבה מתוקן: מאפשר יצירה ועדכון על ידי הבעלים ---
         ".write": "auth != null && auth.uid === $playerId",
         "nickname": {
-           // חוק זה נשאר כפי שהוא, מאפשר עדכון לכינוי אם הוא כבר קיים
-           ".write": "auth != null && auth.uid === $playerId && data.exists()",
-           ".validate": "newData.isString() && newData.val().length <= 25"
+          // מאפשר עדכון רק אם השדה קיים
+          ".write": "auth != null && auth.uid === $playerId && data.exists()",
+          ".validate": "newData.isString() && newData.val().length <= 25"
         },
         "darkMode": {
-           // חוק זה נשאר כפי שהוא, מאפשר עדכון למצב כהה אם הוא כבר קיים
-           ".write": "auth != null && auth.uid === $playerId && data.exists()",
-           ".validate": "newData.isBoolean()"
+           // מאפשר עדכון רק אם השדה קיים
+          ".write": "auth != null && auth.uid === $playerId && data.exists()",
+          ".validate": "newData.isBoolean()"
         },
         "lastTopic": {
-           // חוק זה נשאר כפי שהוא, מאפשר עדכון לנושא האחרון אם הוא כבר קיים
-           ".write": "auth != null && auth.uid === $playerId && data.exists()",
-           ".validate": "newData.isString()"
+           // מאפשר עדכון רק אם השדה קיים
+          ".write": "auth != null && auth.uid === $playerId && data.exists()",
+          ".validate": "newData.isString()"
         },
         "cumulativeScore": {
-          // חוק זה כבר מאפשר עדכון על ידי הבעלים
+           // מאפשר עדכון על ידי הבעלים
           ".write": "auth != null && auth.uid === $playerId",
           ".validate": "newData.isNumber()"
         },
         "correctCount": {
-          // חוק זה כבר מאפשר עדכון על ידי הבעלים
+           // מאפשר עדכון על ידי הבעלים
           ".write": "auth != null && auth.uid === $playerId",
           ".validate": "newData.isNumber()"
         },
         "wrongCount": {
-          // חוק זה כבר מאפשר עדכון על ידי הבעלים
+           // מאפשר עדכון על ידי הבעלים
           ".write": "auth != null && auth.uid === $playerId",
           ".validate": "newData.isNumber()"
         },
         "topicStats": {
-          // חוק זה כבר מאפשר עדכון על ידי הבעלים
+           // מאפשר עדכון על ידי הבעלים
           ".write": "auth != null && auth.uid === $playerId",
           "$topic": {
             ".validate": "newData.hasChildren(['correctCount', 'wrongCount']) && newData.child('correctCount').isNumber() && newData.child('wrongCount').isNumber()"
           }
         },
         "tagStats": {
-          // חוק זה כבר מאפשר עדכון על ידי הבעלים
+           // מאפשר עדכון על ידי הבעלים
           ".write": "auth != null && auth.uid === $playerId",
           "$tag": {
             ".validate": "newData.hasChildren(['correctCount', 'wrongCount']) && newData.child('correctCount').isNumber() && newData.child('wrongCount').isNumber()"
           }
         },
-        // --- הערה לגבי ה-validate הזה ---
-        // כדאי לשקול אם ה-validate הזה נחוץ. הוא דורש ש *כל* כתיבה ל-/$playerId תכיל את כל השדות הללו.
-        // אם אתה מבצע עדכונים חלקיים (למשל, רק את lastTopic), ה-validate הזה עלול לגרום לשגיאות.
-        // ייתכן שעדיף להסיר אותו ולהסתמך על ה-validate של השדות הספציפיים.
-        // ".validate": "newData.hasChildren(['cumulativeScore', 'correctCount', 'wrongCount', 'topicStats', 'tagStats'])", // REMOVED OR COMMENTED OUT FOR FLEXIBILITY
+        // --- כלל ה-validate הזה עשוי להגביל עדכונים חלקיים, הושאר בהערה או הוסר ---
+        // ".validate": "newData.hasChildren(['cumulativeScore', 'correctCount', 'wrongCount', 'topicStats', 'tagStats'])",
         "$other": {
+           // מונע כתיבה לשדות לא מוגדרים אחרים
           ".write": false
         }
       }
     },
     "gameResults": {
       "$date": {
+        // --- הוספת אינדקס למיון/סינון ---
+        ".indexOn": ["correctCount"],
         ".read": "auth != null",
         "$playerId": {
           ".read": "auth != null",
@@ -80,10 +79,15 @@
       }
     },
     "leaderboard": {
+      // --- הוספת אינדקס למיון/סינון ---
+      ".indexOn": ["cumulativeScore"],
       ".read": "auth != null",
+      // --- write false כאן בכוונה, העדכון מתבצע דרך טרנזקציה בפונקציה updatePlayerStatsFirebase ---
       ".write": false,
       "$playerId": {
-        ".write": "auth != null && auth.uid === $playerId",
+         // --- ניתן להוסיף חוק כתיבה כאן אם רוצים לאפשר עדכון ישיר,
+         // אך כרגע הוא מבוצע דרך עדכון נתוני השחקן ---
+         // ".write": "auth != null && auth.uid === $playerId",
         ".validate": "newData.hasChildren(['nickname', 'cumulativeScore']) && newData.child('nickname').isString() && newData.child('cumulativeScore').isNumber()"
       }
     }

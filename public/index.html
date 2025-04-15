@@ -1237,6 +1237,11 @@
           nickname: playerNickname,
           darkMode: isDarkMode,
           createdAt: firebase.database.ServerValue.TIMESTAMP,
+          // Initialize other fields required by your rules if needed
+          correctCount: 0,
+          wrongCount: 0,
+          topicStats: {},
+          tagStats: {}
         };
         console.log("Saving initial player data:", initialData);
         database
@@ -1414,7 +1419,7 @@
             localStorage.setItem("questions", JSON.stringify(fetchedQuestions));
             localStorage.setItem("questionsTimestamp", currentTime.toString());
             console.log(
-              `Fetched and cached ${fetchedQuestions.length} valid questions with IDs.`
+              `Workspaceed and cached ${fetchedQuestions.length} valid questions with IDs.`
             );
             return fetchedQuestions;
           } else {
@@ -1772,21 +1777,22 @@
         let updatedPlayerData;
 
         try {
-          // עדכון נתוני השחקן ב-/players באמצעות טרנזקציה
           const transactionResult = await playerRef.transaction(
             (playerData) => {
               if (playerData === null) {
-                playerData = {
-                  cumulativeScore: 0,
-                  correctCount: 0,
-                  wrongCount: 0,
-                  nickname: playerNickname,
-                  topicStats: {},
-                  tagStats: {},
-                };
+                 // Should not happen if savePlayerInitialData worked, but handle defensively
+                 console.warn("Player data was null during transaction, re-initializing.");
+                 playerData = {
+                     cumulativeScore: 0, correctCount: 0, wrongCount: 0,
+                     nickname: playerNickname, darkMode: localStorage.getItem("darkMode") === "true",
+                     topicStats: {}, tagStats: {}
+                 };
               }
 
-              // עדכון הציון והסטטיסטיקות
+              // Ensure nested objects exist
+              if (!playerData.topicStats) playerData.topicStats = {};
+              if (!playerData.tagStats) playerData.tagStats = {};
+
               playerData.cumulativeScore =
                 (playerData.cumulativeScore || 0) + scoreGained;
               playerData.correctCount =
@@ -1794,12 +1800,9 @@
               playerData.wrongCount =
                 (playerData.wrongCount || 0) + (isCorrect ? 0 : 1);
 
-              // עדכון סטטיסטיקות לפי נושא
-              if (!playerData.topicStats) playerData.topicStats = {};
               if (!playerData.topicStats[topic]) {
                 playerData.topicStats[topic] = {
-                  correctCount: 0,
-                  wrongCount: 0,
+                  correctCount: 0, wrongCount: 0,
                 };
               }
               playerData.topicStats[topic].correctCount =
@@ -1809,8 +1812,6 @@
                 (playerData.topicStats[topic].wrongCount || 0) +
                 (isCorrect ? 0 : 1);
 
-              // עדכון סטטיסטיקות לפי תגיות
-              if (!playerData.tagStats) playerData.tagStats = {};
               tags.forEach((tag) => {
                 if (!playerData.tagStats[tag]) {
                   playerData.tagStats[tag] = { correctCount: 0, wrongCount: 0 };
@@ -1827,20 +1828,34 @@
             }
           );
 
-          // אם טרנזקציית העדכון עברה בהצלחה, נעדכן גם את ה-/leaderboard
           if (
             transactionResult.committed &&
             transactionResult.snapshot.exists()
           ) {
+            console.log("Player stats transaction committed.");
             updatedPlayerData = transactionResult.snapshot.val();
+            // Update local score based on the *committed* value from Firebase
+            // This handles potential race conditions if the transaction had to re-run
+            cumulativePlayerScore = updatedPlayerData.cumulativeScore;
+            updateCumulativeScoreDisplay(); // Ensure header display is updated with committed value
+            localStorage.setItem("cumulativeScoreBackup", cumulativePlayerScore.toString()); // Backup locally
+
+            // Update leaderboard only after successful player data update
             await database.ref(`leaderboard/${playerId}`).set({
               nickname: updatedPlayerData.nickname,
               cumulativeScore: updatedPlayerData.cumulativeScore,
             });
+            console.log("Leaderboard updated.");
+
+          } else {
+             console.log("Player stats transaction was not committed.");
+             // Maybe retry or show an error? For now, log it.
           }
         } catch (error) {
-          console.error("Error updating player stats:", error);
-          throw error;
+          console.error("Error updating player stats/leaderboard:", error);
+          // Don't update local score display on error, as DB update failed
+          showToast("שגיאה בעדכון נתונים ודירוג!");
+          // Note: No need to throw error here unless subsequent code depends on success
         }
       }
 
@@ -1901,7 +1916,14 @@
               : 0;
           questionScore = BASE_SCORE_PER_QUESTION + timeBonus + streakBonus;
           currentGameScore += questionScore;
-          createScorePopup(questionScore);
+
+          // --- BEGIN MODIFICATION ---
+          // cumulativePlayerScore += questionScore; // Update the global score variable locally *temporarily*
+          // updateCumulativeScoreDisplay(); // Update the display in the header *temporarily*
+          // Note: The authoritative update now happens in updatePlayerStatsFirebase after transaction success
+          // --- END MODIFICATION ---
+
+          createScorePopup(questionScore); // Show visual feedback
 
           const mistakeIndex = mistakenQuestions.findIndex(
             (mq) => mq && mq.question.id === currentQuestion.id
@@ -1967,12 +1989,13 @@
         });
 
         if (playerId) {
-          updatePlayerStatsFirebase(
-            playerId,
-            currentQuestion,
-            isCorrect,
-            questionScore
-          );
+           // Call the function but don't necessarily wait for it here
+           updatePlayerStatsFirebase(
+              playerId,
+              currentQuestion,
+              isCorrect,
+              questionScore
+           ).catch(e => console.error("Background stat update failed:", e)); // Log errors if the async update fails later
         }
 
         updatePercentage();
@@ -1987,6 +2010,7 @@
           setTimeout(loadQuestion, 1200);
         }
       }
+
 
       function updateSequence() {
         sequenceContainer.innerHTML = "";
@@ -2304,7 +2328,7 @@
             addTime: addTimeUsed,
             skips: skipUsed,
           },
-          nickname: playerNickname,
+          nickname: playerNickname, // Ensure nickname is saved with the result
         };
 
         const resultRef = database.ref(`gameResults/${dateStr}/${playerId}`);
@@ -2316,6 +2340,7 @@
             let shouldUpdate = true;
 
             if (existingResult) {
+              // Compare based on correctCount first, then score, then streak
               if (result.correctCount < existingResult.correctCount) {
                 shouldUpdate = false;
               } else if (result.correctCount === existingResult.correctCount) {
@@ -2353,18 +2378,13 @@
             console.error("Error fetching existing game result:", err)
           );
 
-        database
-          .ref(`players/${playerId}/cumulativeScore`)
-          .set(cumulativePlayerScore)
-          .then(() => console.log("Final cumulative score confirmed in DB."))
-          .catch((err) =>
-            console.error("Error confirming final cumulative score:", err)
-          );
+        // Cumulative score is updated via transaction, but ensure backup is current
         localStorage.setItem(
           "cumulativeScoreBackup",
           cumulativePlayerScore.toString()
         );
       }
+
 
       async function getDailyRankings() {
         if (!playerId) return { rankings: [], currentPlayerRank: -1 };
@@ -2372,20 +2392,21 @@
         try {
           const snapshot = await database
             .ref(`gameResults/${dateStr}`)
-            .orderByChild("correctCount")
-            .limitToLast(100)
+            .orderByChild("correctCount") // Primary sort by correct answers
+            .limitToLast(100) // Get top 100 potential candidates
             .once("value");
           const results = snapshot.val() || {};
 
           const resultArray = Object.entries(results).map(([pid, data]) => ({
             playerId: pid,
             correctCount: data.correctCount || 0,
-            score: data.score || 0,
-            longestStreak: data.longestStreak || 0,
+            score: data.score || 0, // Include score for tie-breaking
+            longestStreak: data.longestStreak || 0, // Include streak for tie-breaking
             nickname:
               data.nickname || `שחקן...${pid.substring(pid.length - 4)}`,
           }));
 
+          // Sort primarily by correctCount (desc), then score (desc), then streak (desc)
           resultArray.sort(
             (a, b) =>
               b.correctCount - a.correctCount ||
@@ -2394,47 +2415,50 @@
           );
 
           const currentPlayerRank =
-            resultArray.findIndex((r) => r.playerId === playerId) + 1;
+            resultArray.findIndex((r) => r.playerId === playerId) + 1; // Find rank (1-based)
+
           return {
-            rankings: resultArray,
+            rankings: resultArray, // Return the full sorted array (or slice later for display)
             currentPlayerRank: currentPlayerRank > 0 ? currentPlayerRank : -1,
           };
         } catch (error) {
           console.error("Error fetching daily rankings:", error);
-          return { rankings: [], currentPlayerRank: -1 };
+          return { rankings: [], currentPlayerRank: -1 }; // Return empty on error
         }
       }
+
 
       async function getOverallRankings(limit = 10) {
-        const db = firebase.database();
-        try {
-          const snapshot = await db
-            .ref("leaderboard")
-            .orderByChild("cumulativeScore")
-            .limitToLast(limit)
-            .once("value");
-          const results = snapshot.val() || {};
+         // Fetch directly from the pre-calculated leaderboard path
+         if (!playerId) return { rankings: [], currentPlayerRank: -1 };
+         try {
+             const snapshot = await database.ref('leaderboard')
+                                     .orderByChild('cumulativeScore') // Order by score
+                                     .limitToLast(limit) // Get the top 'limit' players
+                                     .once('value');
+             const results = snapshot.val() || {};
 
-          const resultArray = Object.entries(results).map(([pid, data]) => ({
-            playerId: pid,
-            cumulativeScore: data.cumulativeScore || 0,
-            nickname:
-              data.nickname || `שחקן...${pid.substring(pid.length - 4)}`,
-          }));
+             const resultArray = Object.entries(results).map(([pid, data]) => ({
+                 playerId: pid,
+                 cumulativeScore: data.cumulativeScore || 0,
+                 nickname: data.nickname || `שחקן...${pid.substring(pid.length - 4)}`
+             }));
 
-          resultArray.sort((a, b) => b.cumulativeScore - a.cumulativeScore);
+             // Sort descending by score (Firebase returns ascending with limitToLast)
+             resultArray.sort((a, b) => b.cumulativeScore - a.cumulativeScore);
 
-          const currentPlayerRank =
-            resultArray.findIndex((r) => r.playerId === playerId) + 1;
-          return {
-            rankings: resultArray,
-            currentPlayerRank: currentPlayerRank > 0 ? currentPlayerRank : -1,
-          };
-        } catch (error) {
-          console.error("Error fetching overall rankings:", error);
-          return { rankings: [], currentPlayerRank: -1 };
-        }
+             const currentPlayerRank = resultArray.findIndex(r => r.playerId === playerId) + 1;
+
+             return {
+                 rankings: resultArray,
+                 currentPlayerRank: currentPlayerRank > 0 ? currentPlayerRank : -1
+             };
+         } catch (error) {
+             console.error("Error fetching overall rankings from /leaderboard:", error);
+             return { rankings: [], currentPlayerRank: -1 }; // Return empty on error
+         }
       }
+
 
       function displayRankings(
         element,
@@ -2477,16 +2501,16 @@
 
         element.appendChild(list);
 
-        if (currentPlayerRank === -1 && totalQuestions > 0) {
-          const playerScore =
-            scoreField === "cumulativeScore"
-              ? cumulativePlayerScore
-              : currentGameScore;
-          element.innerHTML += `<p style="font-size: 0.8rem; margin-top: 5px;">הדירוג שלך מחוץ ל-${
-            rankings.length
-          } הראשונים (${rankLabelPrefix}${playerScore.toLocaleString()}).</p>`;
-        }
+         // Add message if player is not in the top list shown
+         // Check if the player *played* the game for daily rank message
+         const totalQuestions = correctCount + wrongCount;
+         if (currentPlayerRank === -1 && (scoreField !== 'cumulativeScore' || totalQuestions > 0)) {
+           const playerScore = scoreField === "cumulativeScore" ? cumulativePlayerScore : (scoreField === 'correctCount' ? correctCount : currentGameScore);
+           const scoreLabel = scoreField === 'correctCount' ? `${correctCount}/${totalQuestions}` : playerScore.toLocaleString();
+           element.innerHTML += `<p style="font-size: 0.8rem; margin-top: 5px;">הדירוג שלך מחוץ ל-${rankings.length} הראשונים (${rankLabelPrefix}${scoreLabel}).</p>`;
+         }
       }
+
 
       async function endGame() {
         if (!gameActive) return;
@@ -2497,6 +2521,7 @@
         gameScreen.style.display = "none";
         resultScreen.style.display = "block";
 
+        // Save result (this also updates local cumulative score backup if needed)
         saveGameResult();
 
         const totalQuestions = correctCount + wrongCount;
@@ -2509,9 +2534,11 @@
         const avgTimePerQuestion =
           totalQuestions === 0 ? 0 : Math.round(timeSpent / totalQuestions);
 
+        // Display Scores (using the *final* local cumulative score)
         scoreElement.innerHTML = `ניקוד במשחק: <span class="highlight">${currentGameScore.toLocaleString()}</span><br>ניקוד מצטבר: ${cumulativePlayerScore.toLocaleString()}`;
         accuracyStatsElement.innerHTML = `נכונות: ${correctCount}/${totalQuestions} | רצף שיא: ${longestStreak} | זמן ממוצע: ${avgTimePerQuestion} שנ'`;
 
+        // Result Circle Animation
         const resultOffset =
           RESULT_CIRCLE_CIRCUMFERENCE * (1 - percentage / 100);
         resultProgressCircleElement.style.strokeDashoffset = Math.max(
@@ -2536,6 +2563,7 @@
           }
         }, 20);
 
+        // Tools Used Display
         let toolsText = "";
         if (fiftyFiftyUsed) toolsText += "50:50, ";
         if (addTimeUsed) toolsText += "30+, ";
@@ -2545,24 +2573,26 @@
           : toolsText;
         toolsUsedElement.textContent = toolsText || "לא נעשה שימוש בכלים";
 
+        // Fetch and Display Rankings
         rankingElement.innerHTML = "טוען דירוג יומי...";
         overallRankingElement.innerHTML = "טוען דירוג כללי...";
-
         try {
           const [dailyData, overallData] = await Promise.all([
             getDailyRankings(),
-            getOverallRankings(10),
+            getOverallRankings(10), // Get Top 10 overall
           ]);
+          // Display Top 10 daily, based on correct answers primarily
           displayRankings(
             rankingElement,
-            dailyData.rankings.slice(0, 10),
+            dailyData.rankings.slice(0, 10), // Show only top 10
             dailyData.currentPlayerRank,
             "correctCount",
             "תשובות: "
           );
+          // Display Top 10 overall, based on cumulative score
           displayRankings(
             overallRankingElement,
-            overallData.rankings,
+            overallData.rankings, // Already limited to 10
             overallData.currentPlayerRank,
             "cumulativeScore",
             "ניקוד: "
@@ -2573,6 +2603,7 @@
           overallRankingElement.textContent = "שגיאה בטעינת דירוג כללי.";
         }
 
+        // Mistakes Review
         mistakesElement.innerHTML = "";
         if (mistakeDetails.length > 0) {
           const uniqueMistakes = new Map();
@@ -2591,49 +2622,17 @@
               : "<p>לא ענית על שאלות במשחק זה.</p>";
         }
 
+        // Tag Analysis
         tagAnalysisElement.innerHTML = "";
         const isDarkMode = document.body.classList.contains("dark-mode");
         const colorSchemes = {
-          light: {
-            success: {
-              background: "#e6fffa",
-              text: "#2c7a7b",
-              border: "#9ae6b4",
-            },
-            moderate: {
-              background: "#fffbeb",
-              text: "#b7791f",
-              border: "#f6e05e",
-            },
-            failure: {
-              background: "#fff5f5",
-              text: "#c53030",
-              border: "#feb2b2",
-            },
-          },
-          dark: {
-            success: {
-              background: "#2f855a",
-              text: "#f0fff4",
-              border: "#68d391",
-            },
-            moderate: {
-              background: "#b7791f",
-              text: "#fffbeb",
-              border: "#f6e05e",
-            },
-            failure: {
-              background: "#c53030",
-              text: "#fff5f5",
-              border: "#fc8181",
-            },
-          },
+          light: { success: { background: "#e6fffa", text: "#2c7a7b", border: "#9ae6b4" }, moderate: { background: "#fffbeb", text: "#b7791f", border: "#f6e05e" }, failure: { background: "#fff5f5", text: "#c53030", border: "#feb2b2" }, },
+          dark: { success: { background: "#2f855a", text: "#f0fff4", border: "#68d391" }, moderate: { background: "#b7791f", text: "#fffbeb", border: "#f6e05e" }, failure: { background: "#c53030", text: "#fff5f5", border: "#fc8181" }, },
         };
         const currentScheme = isDarkMode
           ? colorSchemes.dark
           : colorSchemes.light;
-        const successThreshold = 75,
-          failureThreshold = 50;
+        const successThreshold = 75, failureThreshold = 50;
 
         const tagCloudData = Object.entries(gameTagStats)
           .map(([tag, stats]) => {
@@ -2644,29 +2643,13 @@
             const accuracy = Math.round(((stats.correct || 0) / total) * 100);
 
             let colors, sortOrder;
-            if (accuracy >= successThreshold) {
-              colors = currentScheme.success;
-              sortOrder = 1;
-            } else if (accuracy < failureThreshold) {
-              colors = currentScheme.failure;
-              sortOrder = 3;
-            } else {
-              colors = currentScheme.moderate;
-              sortOrder = 2;
-            }
+            if (accuracy >= successThreshold) { colors = currentScheme.success; sortOrder = 1; }
+            else if (accuracy < failureThreshold) { colors = currentScheme.failure; sortOrder = 3; }
+            else { colors = currentScheme.moderate; sortOrder = 2; }
 
-            let fontWeight =
-              (stats.wrong || 0) > (stats.correct || 0) ? "bold" : "normal";
+            let fontWeight = (stats.wrong || 0) > (stats.correct || 0) ? "bold" : "normal";
 
-            return {
-              tag,
-              colors,
-              fontWeight,
-              accuracy,
-              correct: stats.correct || 0,
-              total,
-              sortOrder,
-            };
+            return { tag, colors, fontWeight, accuracy, correct: stats.correct || 0, total, sortOrder, };
           })
           .filter((item) => item !== null);
 
@@ -2696,8 +2679,10 @@
             "<p>לא נצברו נתונים על תגיות במשחק זה.</p>";
         }
 
+        // Share Button Logic
         shareButton.onclick = () => {
           vibrate(50);
+          // Include nickname in the share text
           const shareText = `שיחקתי טריווBIO בנושא ${
             topicNames[currentTopic] || "מעורב"
           } והשגתי ${currentGameScore.toLocaleString()} נקודות (${percentage}% דיוק) עם רצף שיא של ${longestStreak}! 🎉 סה"כ צברתי ${cumulativePlayerScore.toLocaleString()} נקודות. השם שלי: ${playerNickname}. בואו לשחק גם!`;
@@ -2726,14 +2711,18 @@
               });
           }
         };
+
+        // Restart Button Logic
         restartButton.onclick = () => {
           vibrate(50);
           resultScreen.style.display = "none";
           startScreen.style.display = "block";
+          // Reset happens automatically when a new topic is chosen
         };
 
-        launchConfetti();
+        launchConfetti(); // Fire confetti!
       }
+
     </script>
   </body>
 </html>
