@@ -12,16 +12,17 @@
       ".read": "auth != null && root.child('admins').child(auth.uid).exists() && root.child('admins').child(auth.uid).val() === true",
       "$playerId": {
         ".read": "auth != null && (auth.uid === $playerId || (root.child('admins').child(auth.uid).exists() && root.child('admins').child(auth.uid).val() === true))",
+        ".write": "auth != null && auth.uid === $playerId && !data.exists()", // Allow initial write
         "nickname": {
-          ".write": "auth != null && auth.uid === $playerId",
+          ".write": "auth != null && auth.uid === $playerId && data.exists()", // Allow update only
           ".validate": "newData.isString() && newData.val().length <= 25"
         },
-        "darkMode":{
-          ".write": "auth != null && auth.uid === $playerId",
+        "darkMode": {
+          ".write": "auth != null && auth.uid === $playerId && data.exists()", // Allow update only
           ".validate": "newData.isBoolean()"
         },
-        "lastTopic":{
-          ".write": "auth != null && auth.uid === $playerId",
+        "lastTopic": {
+          ".write": "auth != null && auth.uid === $playerId && data.exists()", // Allow update only
           ".validate": "newData.isString()"
         },
         "$other": {
