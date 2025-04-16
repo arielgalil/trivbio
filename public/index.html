@@ -906,9 +906,11 @@
 
           // --- Firebase Initialization ---
           let database;
+          let auth; // <--- Added auth variable
           try {
               firebase.initializeApp(firebaseConfig);
               database = firebase.database();
+              auth = firebase.auth(); // <--- Initialize auth
               console.log("Firebase initialized successfully");
           } catch (e) {
               console.error("FATAL: Firebase initialization failed!", e);
@@ -1001,7 +1003,8 @@
           let gameTagStats = {};
           let currentStreak = 0;
           let longestStreak = 0;
-          let playerId = null;
+          let playerId = null; // <--- Initialized to null
+          let isUserAnonymous = true; // <--- Added flag
           let timerExpired = false;
           let gameActive = false;
           let currentGameScore = 0;
@@ -1131,11 +1134,46 @@
           }
 
 
-          // --- Initialization and Auth ---
+          // --- Authentication Logic (NEW) ---
+          function setupAuthentication() {
+              if (!auth) {
+                  console.error("Firebase Auth object not initialized!");
+                  showToast("שגיאת אימות קריטית!");
+                  return;
+              }
+              auth.onAuthStateChanged(user => {
+                  if (user) {
+                      // User is signed in (could be Google from admin or Anonymous)
+                      playerId = user.uid;
+                      isUserAnonymous = user.isAnonymous; // Check if it's an anonymous user
+                      console.log(`Auth state changed: User found. ID: ${playerId}, Anonymous: ${isUserAnonymous}`);
+                      initializePlayerState(); // Initialize with the current user's ID
+                  } else {
+                      // No user is signed in. Attempt anonymous sign-in as fallback.
+                      console.log("Auth state changed: No user found. Attempting anonymous sign-in.");
+                      auth.signInAnonymously()
+                          .then((userCredential) => {
+                              // Listener will fire again with the new anonymous user,
+                              // so initializePlayerState will be called then.
+                              console.log("Anonymous sign-in successful. Waiting for state change.");
+                          })
+                          .catch((error) => {
+                              console.error("Fallback anonymous sign-in failed:", error);
+                              showToast("שגיאה קריטית בהתחברות. נסה לרענן.");
+                              // Display error state in UI
+                              if(cumulativeScoreDisplayElement) cumulativeScoreDisplayElement.textContent = "שגיאת התחברות";
+                              if(nicknameDisplayElement) nicknameDisplayElement.textContent = "שגיאת התחברות";
+                          });
+                  }
+              });
+          }
+
+
+          // --- Initialization and Main Logic (MODIFIED) ---
           function mainAppLogic() {
-              if (!database) {
-                  console.error("Database not initialized. Cannot run main logic.");
-                  showToast("שגיאה קריטית: אין חיבור למסד הנתונים.");
+              if (!database || !auth) { // <--- Check for auth object too
+                  console.error("Database or Auth not initialized. Cannot run main logic.");
+                  showToast("שגיאה קריטית: אין חיבור למסד הנתונים או אימות.");
                   return;
               }
 
@@ -1197,20 +1235,8 @@
                   }
               })();
 
-
-              // Firebase Anonymous Authentication
-              firebase.auth().signInAnonymously()
-                  .then((userCredential) => {
-                      playerId = userCredential.user.uid;
-                      console.log("Anonymous Auth Success. Player ID:", playerId);
-                      initializePlayerState(); // Fetch player data after getting ID
-                  })
-                  .catch((error) => {
-                      console.error("Anonymous auth failed:", error);
-                      showToast("חלה שגיאה בהתחברות אנונימית...");
-                      if(cumulativeScoreDisplayElement) cumulativeScoreDisplayElement.textContent = "שגיאת התחברות";
-                      if(nicknameDisplayElement) nicknameDisplayElement.textContent = "שגיאת התחברות";
-                  });
+              // --- START AUTHENTICATION (MOVED/CHANGED) ---
+              setupAuthentication(); // Call the new auth handler
 
               // Theme Toggle Listener
               if (themeToggle) {
@@ -1236,9 +1262,18 @@
               } else { console.error("Skip button not found!"); }
           }
 
-
+          // --- Player State Initialization (MODIFIED) ---
           function initializePlayerState() {
-              if (!playerId) return;
+              // Ensure playerId is set before proceeding
+              if (!playerId) {
+                  console.error("Cannot initialize player state: playerId is null.");
+                  // Potentially show an error state in the UI
+                  if(cumulativeScoreDisplayElement) cumulativeScoreDisplayElement.textContent = "טוען משתמש...";
+                  if(nicknameDisplayElement) nicknameDisplayElement.textContent = "טוען משתמש...";
+                  return;
+              }
+
+              console.log(`Initializing player state for user: ${playerId} (Anonymous: ${isUserAnonymous})`);
 
               // Apply theme from localStorage first
               const savedDarkMode = localStorage.getItem("darkMode") === "true";
@@ -1285,8 +1320,9 @@
                       }
 
                       // Save initial data (including initial lifelines) if player doesn't exist in DB
-                      if (!snapshot.exists()) {
-                          savePlayerInitialData(savedDarkMode); // Pass current theme state
+                      // Also save if user is NOT anonymous but has no player data yet (first time playing after Google login)
+                      if (!snapshot.exists() || (!isUserAnonymous && !playerData.nickname)) {
+                         savePlayerInitialData(savedDarkMode); // Pass current theme state
                       }
                   })
                   .catch((error) => {
@@ -1322,7 +1358,7 @@
               };
               console.log("Saving initial player data:", initialData);
               database.ref(`players/${playerId}`).set(initialData)
-                  .then(() => { console.log("Initial player data saved for new player."); })
+                  .then(() => { console.log("Initial player data saved for new/updated player."); })
                   .catch((error) => {
                       console.error("Failed to save initial player data:", error);
                       showToast("שגיאה בשמירת נתונים ראשוניים");
@@ -2718,4 +2754,4 @@
       }
     </script>
   </body>
-</html
+</html>
