@@ -32,7 +32,6 @@
         --toast-light-text: white;
         --toast-dark-bg: #e2e8f0;
         --toast-dark-text: #2d3748;
-        /* --- NEW: Lifeline counter variables --- */
         --lifeline-counter-bg: #5a67d8;
         --lifeline-counter-text: white;
       }
@@ -57,7 +56,6 @@
         --toast-light-text: #2d3748;
         --toast-dark-bg: #2d3748;
         --toast-dark-text: white;
-        /* --- NEW: Lifeline counter variables (dark) --- */
         --lifeline-counter-bg: #4299e1;
         --lifeline-counter-text: #1a202c;
       }
@@ -658,6 +656,10 @@
         opacity: 0;
         transition: opacity 0.5s ease-out, transform 0.6s ease-out;
         pointer-events: none;
+        /* --- Added for multi-line --- */
+        white-space: pre-line;
+        text-align: center;
+        line-height: 1.3; /* Adjust line height */
       }
       .score-popup.show {
         opacity: 1;
@@ -665,6 +667,13 @@
       }
       .dark-mode .score-popup {
         background-color: rgba(104, 211, 145, 0.9);
+      }
+      /* --- Added for bonus text --- */
+      .score-popup .bonus-text {
+          display: block; /* Ensure it's on a new line */
+          font-size: 0.9rem; /* Smaller font size for bonus */
+          font-weight: normal; /* Normal weight for bonus */
+          margin-top: 4px; /* Space between score and bonus */
       }
     </style>
   </head>
@@ -776,7 +785,7 @@
             </div>
             <div class="lifeline-container">
                <button id="add-time" class="lifeline-btn">30+</button>
-            </div>
+               <span id="add-time-counter" class="lifeline-counter">1</span> </div>
             <div class="lifeline-container">
                <button id="skip" class="lifeline-btn">דלג</button>
                <span id="skip-counter" class="lifeline-counter">0</span>
@@ -825,9 +834,8 @@
             </div>
           </div>
           <div class="result-card">
-            <h3>⚙️ כלים בשימוש</h3>
-            <p id="tools-used"></p>
-          </div>
+             <h3>⚙️ גלגלי הצלה בשימוש</h3>
+            <p id="tools-used"></p> </div>
           <div class="result-card">
             <h3>📊 דירוג יומי (לפי תשובות נכונות)</h3>
             <div id="ranking">טוען דירוג יומי...</div>
@@ -885,7 +893,16 @@
           // --- Initial Lifeline Counts ---
           const INITIAL_SKIP_COUNT = 4;
           const INITIAL_FIFTY_FIFTY_COUNT = 2;
-          const INITIAL_ADD_TIME_COUNT = 1; // Although only used as a boolean check
+          const INITIAL_ADD_TIME_COUNT = 1; // Now relevant for counter display
+          // --- NEW: Streak and Bonus Constants ---
+          const STREAK_THRESHOLD = 3; // Number of correct answers for streak bonus chance
+          const LIFELINE_BONUS_CHANCE = 0.20; // 20% chance to get *any* lifeline bonus on streak
+          const SKIP_BONUS_PROBABILITY = 0.60; // 60% of the bonus chance (12% overall)
+          const FIFTY_FIFTY_BONUS_PROBABILITY = 0.25; // 25% of the bonus chance (5% overall)
+          // Add Time bonus probability is the remainder (15% or 3% overall)
+          const streakEmojis = ['🔥', '✨', '🎉', '🚀', '💪', '💯'];
+          const lifelineBonusEmojis = ['🎁', '💡', '⭐'];
+
 
           // --- Firebase Initialization ---
           let database;
@@ -901,7 +918,7 @@
 
           // --- DOM Elements ---
           // Declare all element variables here
-          let startScreen, gameScreen, resultScreen, startScreenButtonsContainer, timerTextElement, timerProgressElement, percentageTextIngameElement, percentageProgressElement, questionElement, answersElement, fiftyFiftyButton, addTimeButton, skipButton, restartButton, themeToggle, toolsUsedElement, mistakesElement, sequenceContainer, tagAnalysisElement, resultProgressCircleElement, percentageTextResultElement, scoreElement, accuracyStatsElement, cumulativeScoreDisplayElement, nicknameDisplayElement, rankingElement, overallRankingElement, shareButton, skipCounterElement, fiftyFiftyCounterElement;
+          let startScreen, gameScreen, resultScreen, startScreenButtonsContainer, timerTextElement, timerProgressElement, percentageTextIngameElement, percentageProgressElement, questionElement, answersElement, fiftyFiftyButton, addTimeButton, skipButton, restartButton, themeToggle, toolsUsedElement, mistakesElement, sequenceContainer, tagAnalysisElement, resultProgressCircleElement, percentageTextResultElement, scoreElement, accuracyStatsElement, cumulativeScoreDisplayElement, nicknameDisplayElement, rankingElement, overallRankingElement, shareButton, skipCounterElement, fiftyFiftyCounterElement, addTimeCounterElement; // Added addTimeCounterElement
 
           // Function to get references to DOM elements
           function initializeDOMElements() {
@@ -937,16 +954,17 @@
               // --- Get counter elements ---
               skipCounterElement = document.getElementById("skip-counter");
               fiftyFiftyCounterElement = document.getElementById("fifty-fifty-counter");
+              addTimeCounterElement = document.getElementById("add-time-counter"); // Get new counter element
 
               // Check critical elements
-              const criticalElements = [startScreen, gameScreen, resultScreen, startScreenButtonsContainer, timerTextElement, timerProgressElement, percentageTextIngameElement, percentageProgressElement, questionElement, answersElement, fiftyFiftyButton, addTimeButton, skipButton, restartButton, themeToggle, toolsUsedElement, mistakesElement, sequenceContainer, tagAnalysisElement, resultProgressCircleElement, percentageTextResultElement, scoreElement, accuracyStatsElement, cumulativeScoreDisplayElement, nicknameDisplayElement, rankingElement, overallRankingElement, shareButton, skipCounterElement, fiftyFiftyCounterElement];
+              const criticalElements = [startScreen, gameScreen, resultScreen, startScreenButtonsContainer, timerTextElement, timerProgressElement, percentageTextIngameElement, percentageProgressElement, questionElement, answersElement, fiftyFiftyButton, addTimeButton, skipButton, restartButton, themeToggle, toolsUsedElement, mistakesElement, sequenceContainer, tagAnalysisElement, resultProgressCircleElement, percentageTextResultElement, scoreElement, accuracyStatsElement, cumulativeScoreDisplayElement, nicknameDisplayElement, rankingElement, overallRankingElement, shareButton, skipCounterElement, fiftyFiftyCounterElement, addTimeCounterElement]; // Added addTimeCounterElement
               const missingElement = criticalElements.find(el => !el);
               if (missingElement) {
                   // Try to get the ID of the missing element for better debugging
                   const missingId = criticalElements.reduce((acc, el, index) => {
                       if (!el && !acc) {
                           // Infer ID based on variable name (this is fragile)
-                          const ids = ["start-screen", "game-screen", "result-screen", "start-screen-buttons", "timer-text", "timer-progress", "percentage-text-ingame", "percentage-progress", "question", "answers", "fifty-fifty", "add-time", "skip", "restart", "theme-toggle", "tools-used", "mistakes", "sequence-container", "tag-analysis", "result-progress-circle", "percentage-text-result", "score", "accuracy-stats", "cumulative-score-display", "nickname-display", "ranking", "overall-ranking", "share-result", "skip-counter", "fifty-fifty-counter"];
+                          const ids = ["start-screen", "game-screen", "result-screen", "start-screen-buttons", "timer-text", "timer-progress", "percentage-text-ingame", "percentage-progress", "question", "answers", "fifty-fifty", "add-time", "skip", "restart", "theme-toggle", "tools-used", "mistakes", "sequence-container", "tag-analysis", "result-progress-circle", "percentage-text-result", "score", "accuracy-stats", "cumulative-score-display", "nickname-display", "ranking", "overall-ranking", "share-result", "skip-counter", "fifty-fifty-counter", "add-time-counter"]; // Added add-time-counter
                           return ids[index] || 'unknown';
                       }
                       return acc;
@@ -1099,6 +1117,13 @@
                   fiftyFiftyCounterElement.textContent = availableFiftyFifty;
                   fiftyFiftyCounterElement.classList.toggle('hidden', availableFiftyFifty <= 0);
               }
+              // --- Update Add Time Counter ---
+              if (addTimeCounterElement) {
+                  addTimeCounterElement.textContent = addTimeUsed ? '0' : '1'; // Show 1 if not used, 0 if used
+                  addTimeCounterElement.classList.toggle('hidden', addTimeUsed); // Hide if used
+              }
+              // --- END ---
+
               // Disable buttons based on availability and game state
               if (skipButton) skipButton.disabled = (availableSkips <= 0 || timerExpired || !gameActive);
               if (fiftyFiftyButton) fiftyFiftyButton.disabled = (availableFiftyFifty <= 0 || timerExpired || !gameActive);
@@ -1726,10 +1751,33 @@
               updateSequence(); // Update the sequence display
           }
 
-          function createScorePopup(score) {
+          // --- UPDATED: createScorePopup ---
+          function createScorePopup(score, isStreakBonus = false, lifelineBonusText = null) {
               const popup = document.createElement("div");
               popup.classList.add("score-popup");
-              popup.textContent = `+${score}`; // Simple score display
+
+              let scoreText = "";
+              // Add streak bonus text and emoji if applicable
+              if (isStreakBonus) {
+                  const randomStreakEmoji = streakEmojis[Math.floor(Math.random() * streakEmojis.length)];
+                  scoreText += `${randomStreakEmoji} בונוס רצף! `;
+              }
+              // Add the score in "X+" format
+              scoreText += `${score}+`;
+
+              // Set the main text content
+              popup.textContent = scoreText;
+
+              // Add lifeline bonus text if applicable
+              if (lifelineBonusText) {
+                  const bonusSpan = document.createElement('span');
+                  bonusSpan.className = 'bonus-text';
+                  const randomLifelineEmoji = lifelineBonusEmojis[Math.floor(Math.random() * lifelineBonusEmojis.length)];
+                  bonusSpan.textContent = `${randomLifelineEmoji} ${lifelineBonusText}`;
+                  popup.appendChild(bonusSpan); // Append as a separate element for styling
+              }
+
+
               document.body.appendChild(popup);
 
               // Animate popup
@@ -1745,8 +1793,9 @@
                           popup.parentNode.removeChild(popup);
                       }
                   }, 600); // Wait for fade out transition
-              }, 1000); // Duration popup is visible
+              }, 1500); // Increased duration slightly for multi-line text
           }
+
 
           async function updatePlayerStatsFirebase(playerId, question, isCorrect, scoreGained = 0) {
               if (!playerId || !question) return;
@@ -1842,7 +1891,7 @@
               }
           }
 
-
+          // --- UPDATED: checkAnswer ---
           function checkAnswer(selectedIndex) {
               if (!gameActive || !currentQuestion || !currentQuestion.shuffledAnswers) return;
 
@@ -1868,6 +1917,8 @@
               const isCorrect = selectedAnswerObject.isCorrect;
               const questionNumber = correctCount + wrongCount + 1; // Question number in this game session
               let questionScore = 0;
+              let isStreakScoreBonus = false; // Flag for streak score bonus text
+              let lifelineBonusMessage = null; // Message for lifeline bonus
 
               // Apply styling to buttons based on correctness
               buttons.forEach((btn, idx) => {
@@ -1894,9 +1945,34 @@
                   const timeBonus = Math.max(0, Math.floor((15 - timeTakenSec) / 2)); // Bonus for speed
                   const streakBonus = currentStreak > 1 ? (currentStreak - 1) * STREAK_BONUS_MULTIPLIER : 0;
                   questionScore = BASE_SCORE_PER_QUESTION + timeBonus + streakBonus;
+                  if (streakBonus > 0) { isStreakScoreBonus = true; } // Set flag for popup text
                   currentGameScore += questionScore;
 
-                  createScorePopup(questionScore); // Show score feedback
+                  // --- NEW: Check for Lifeline Bonus ---
+                  if (currentStreak >= STREAK_THRESHOLD && Math.random() < LIFELINE_BONUS_CHANCE) {
+                      const bonusRand = Math.random();
+                      if (bonusRand < SKIP_BONUS_PROBABILITY) { // ~12% overall
+                          availableSkips++;
+                          lifelineBonusMessage = "דילוג בונוס!";
+                          console.log("Awarded Skip Bonus!");
+                      } else if (bonusRand < SKIP_BONUS_PROBABILITY + FIFTY_FIFTY_BONUS_PROBABILITY) { // ~5% overall
+                          availableFiftyFifty++;
+                          lifelineBonusMessage = "50:50 בונוס!";
+                          console.log("Awarded 50:50 Bonus!");
+                      } else { // ~3% overall
+                          if (addTimeUsed) { // Only award if it was used
+                             addTimeUsed = false; // Make it available again
+                             lifelineBonusMessage = "תוספת זמן בונוס!";
+                             console.log("Awarded Add Time Bonus!");
+                          }
+                      }
+                      if (lifelineBonusMessage) {
+                          updateLifelineCounters(); // Update UI immediately if bonus awarded
+                      }
+                  }
+                  // --- END NEW ---
+
+                  createScorePopup(questionScore, isStreakScoreBonus, lifelineBonusMessage); // Show score feedback (potentially with bonus text)
 
                   // Remove from mistaken pool if it was a mistake correction
                   const mistakeIndex = mistakenQuestions.findIndex(mq => mq && mq.question.id === currentQuestion.id);
@@ -2227,7 +2303,7 @@
           function saveGameResult() {
               if (!playerId) return;
               const now = new Date();
-              const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+              const dateStr = now.toISOString().split('T')[0]; //<x_bin_992>-MM-DD format
               const timestamp = now.toISOString();
               const totalQuestions = correctCount + wrongCount;
 
@@ -2442,7 +2518,6 @@
               if (addTimeUsed) {
                   console.log("Resetting addTimeUsed flag because it was used.");
                   addTimeUsed = false; // Reset the flag so it's available next game
-                  // No count to reset here, just the flag
                   lifelinesReset = true; // Consider this a reset for saving purposes
               }
 
@@ -2482,13 +2557,13 @@
                   }, 20); // Animation speed
               }
 
-              // Tools Used Display - UPDATED
+              // Tools Used Display - UPDATED Text
               if (toolsUsedElement) {
                   let toolsTextParts = [];
                   if (fiftyFiftyUsedCount > 0) toolsTextParts.push(`50:50 (${fiftyFiftyUsedCount})`);
-                  if (addTimeUsed) toolsTextParts.push("30+");
+                  if (addTimeUsed) toolsTextParts.push("30+"); // Keep as is, since it's single use per game
                   if (skipUsedCount > 0) toolsTextParts.push(`דילוג (${skipUsedCount})`);
-                  toolsUsedElement.textContent = toolsTextParts.length > 0 ? toolsTextParts.join(', ') : "לא נעשה שימוש בכלים";
+                  toolsUsedElement.textContent = toolsTextParts.length > 0 ? toolsTextParts.join(', ') : "לא נעשה שימוש בגלגלי הצלה"; // Changed text
               }
 
               // Fetch and Display Rankings
@@ -2643,4 +2718,4 @@
       }
     </script>
   </body>
-</html>
+</html
