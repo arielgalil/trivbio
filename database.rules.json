@@ -22,12 +22,11 @@
         ".write": "auth != null && (auth.uid === $playerId || (root.child('admins').child(auth.uid).exists() && root.child('admins').child(auth.uid).val() === true))",
 
         // --- ולידציה ספציפית לשדות ---
-        // (הוסרו חוקי .write מגבילים, מסתמכים על חוק ה-write הכללי למעלה)
         "nickname": {
           // בדיקה שהכינוי הוא מחרוזת לא ריקה באורך תקין
           ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 25"
         },
-        "darkMode": { // <--- שם השדה תוקן כדי להתאים לקוד
+        "darkMode": {
           // בדיקה שהערך הוא בוליאני (true/false)
           ".validate": "newData.isBoolean()"
         },
@@ -36,14 +35,13 @@
           ".validate": "newData.isString()"
         },
         "registrationDate": {
-           // מונע שינוי אחרי יצירה, בודק פורמט תאריך
           ".write": "data.exists() ? false : (auth != null && auth.uid === $playerId)", // אפשר כתיבה רק אם הנתון לא קיים (יצירה) ורק ע"י המשתמש
           ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)" // ולידציה של פורמט YYYY-MM-DD
         },
          "createdAt": {
-             // מונע שינוי אחרי יצירה, בודק שזה חותמת זמן
             ".write": "data.exists() ? false : (auth != null && auth.uid === $playerId)", // אפשר כתיבה רק אם הנתון לא קיים (יצירה) ורק ע"י המשתמש
-            ".validate": "newData.isNumber() && newData.val() === now" // וידוא שזה מספר שהוא חותמת זמן של Firebase
+            // שינוי הולידציה להתאמה ל-ServerValue.TIMESTAMP (או ל-isNumber אם שומרים חותמת זמן רגילה)
+            ".validate": "newData.isNumber()" // מתאים ל-ServerValue.TIMESTAMP או חותמת זמן רגילה
         },
         "cumulativeScore": {
           // בדיקה שהניקוד הוא מספר
@@ -57,11 +55,11 @@
           // בדיקה שהספירה היא מספר
           ".validate": "newData.isNumber()"
         },
-        "availableSkips": { // הוספת ולידציה לגלגלי הצלה
+        "availableSkips": {
             // בדיקה שהמספר לא שלילי
             ".validate": "newData.isNumber() && newData.val() >= 0"
         },
-        "availableFiftyFifty": { // הוספת ולידציה לגלגלי הצלה
+        "availableFiftyFifty": {
             // בדיקה שהמספר לא שלילי
             ".validate": "newData.isNumber() && newData.val() >= 0"
         },
@@ -89,14 +87,12 @@
       // כל משתמש מאומת יכול לקרוא תוצאות
       ".read": "auth != null",
       "$date": {
-        // ניתן להוסיף אינדקס אם תרצה לסנן תוצאות יומיות לפי קריטריון מסוים
-        // ".indexOn": ["correctCount"],
-        "$gameResultId": { // שימוש במזהה תוצאה ייחודי (מ-push) במקום playerId
+        "$gameResultId": {
           ".read": "auth != null",
           // מאפשר יצירה חדשה, ומאפשר עדכון רק אם ה-playerId בתוך התוצאה תואם למשתמש המאומת
           ".write": "auth != null && (!data.exists() || data.child('playerId').val() === auth.uid)",
-          // ולידציה מעודכנת בהתאם לשדות שנשמרים בפונקציה saveGameResult בקוד הלקוח
-          ".validate": "newData.hasChildren(['correctCount', 'totalQuestions', 'longestStreak', 'score', 'timestamp', 'topic', 'tools', 'nickname', 'playerId']) && newData.child('playerId').isString() && newData.child('playerId').val() === auth.uid && newData.child('score').isNumber() && newData.child('correctCount').isNumber() && newData.child('totalQuestions').isNumber() && newData.child('totalQuestions').val() >= newData.child('correctCount').val() && newData.child('longestStreak').isNumber() && newData.child('timestamp').isNumber() && newData.child('topic').isString() && newData.child('nickname').isString() && newData.child('tools').hasChildren(['fiftyFifty', 'addTime', 'skips']) && newData.child('tools/fiftyFifty').isNumber() && newData.child('tools/addTime').isBoolean() && newData.child('tools/skips').isNumber()"
+          // ולידציה מעודכנת עם תיקון ל-timestamp (מחרוזת במקום מספר)
+          ".validate": "newData.hasChildren(['correctCount', 'totalQuestions', 'longestStreak', 'score', 'timestamp', 'topic', 'tools', 'nickname', 'playerId']) && newData.child('playerId').isString() && newData.child('playerId').val() === auth.uid && newData.child('score').isNumber() && newData.child('correctCount').isNumber() && newData.child('totalQuestions').isNumber() && newData.child('totalQuestions').val() >= newData.child('correctCount').val() && newData.child('longestStreak').isNumber() && newData.child('timestamp').isString() && newData.child('topic').isString() && newData.child('nickname').isString() && newData.child('tools').hasChildren(['fiftyFifty', 'addTime', 'skips']) && newData.child('tools/fiftyFifty').isNumber() && newData.child('tools/addTime').isBoolean() && newData.child('tools/skips').isNumber()"
         }
       }
     },
