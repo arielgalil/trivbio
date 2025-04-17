@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>טריווBIO - ניהול</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- General Styles --- */
+        :root {
+            --bg-color: #f5f7fa;
+            --text-color: #2d3748;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --button-bg: #a3bffa;
+            --button-hover-bg: #7f9cf5;
+            --button-text: white;
+            --input-bg: #e2e8f0;
+            --input-border: #cbd5e0;
+            --accent-color: #7f9cf5;
+            --success-color: #48bb78;
+            --danger-color: #f56565;
+            --link-color: #5a67d8;
+            --disabled-bg: #cbd5e0;
+            --disabled-text: #a0aec0;
+            --icon-color: #4a5568;
+            /* Color for icons like refresh */
+            --modal-overlay-bg: rgba(0, 0, 0, 0.6);
+            --preview-item-bg: #edf2f7;
+            --preview-item-border: #cbd5e0;
+            --error-list-item-bg: #fff5f5;
+            --error-list-item-border: #fc8181;
+            --error-list-item-text: #c53030;
+        }
+
+        body.dark-mode {
+            --bg-color: #1a202c;
+            --text-color: #e2e8f0;
+            --card-bg: #2d3748;
+            --card-border: #4a5568;
+            --button-bg: #4a5568;
+            --button-hover-bg: #2d3748;
+            --button-text: #e2e8f0;
+            --input-bg: #4a5568;
+            --input-border: #718096;
+            --accent-color: #63b3ed;
+            --success-color: #68d391;
+            --danger-color: #fc8181;
+            --link-color: #63b3ed;
+            --disabled-bg: #4a5568;
+            --disabled-text: #718096;
+            --icon-color: #a0aec0;
+            /* Icon color in dark mode */
+            --modal-overlay-bg: rgba(0, 0, 0, 0.7);
+            --preview-item-bg: #4a5568;
+            --preview-item-border: #718096;
+            --error-list-item-bg: #4a2121;
+            --error-list-item-border: #fc8181;
+            --error-list-item-text: #fc8181;
+        }
+
+        body {
+            font-family: "Noto Sans Hebrew", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, color 0.3s;
+            line-height: 1.6;
+            box-sizing: border-box;
+        }
+        *, *::before, *::after {
+            box-sizing: inherit;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 15px;
+        }
+
+        header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        h1 { font-size: 1.8rem; margin: 0; order: 2; }
+        header .switch { order: 1; }
+        header #logout-btn { order: 3; }
+
+        /* --- Theme Toggle --- */
+         .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+         .switch input { opacity: 0; width: 0; height: 0; }
+         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 5px; }
+         .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+         input:checked + .slider { background-color: var(--accent-color); }
+         input:checked + .slider:before { transform: translateX(26px); }
+         .theme-icon { width: 20px; height: 20px; transition: opacity 0.4s; }
+         .sun { opacity: 1; } .moon { opacity: 0; }
+         input:checked + .slider .sun { opacity: 0; } input:checked + .slider .moon { opacity: 1; }
+
+        /* --- Buttons --- */
+        button { font-family: "Noto Sans Hebrew", sans-serif; padding: 8px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.95rem; transition: background-color 0.3s, transform 0.1s, opacity 0.2s; margin: 5px; vertical-align: middle; }
+        button:active { transform: scale(0.98); }
+        button:disabled { background-color: var(--disabled-bg) !important; color: var(--disabled-text) !important; cursor: not-allowed; transform: none !important; opacity: 0.7; }
+        .btn-primary { background-color: var(--button-bg); color: var(--button-text); }
+        .btn-primary:hover:not(:disabled) { background-color: var(--button-hover-bg); }
+        .btn-danger { background-color: var(--danger-color); color: white; }
+        .btn-danger:hover:not(:disabled) { opacity: 0.85; }
+        .btn-success { background-color: var(--success-color); color: white; }
+        .btn-success:hover:not(:disabled) { opacity: 0.85; }
+        .btn-secondary { background-color: #a0aec0; color: white; }
+        .btn-secondary:hover:not(:disabled) { background-color: #718096; }
+        body.dark-mode .btn-secondary { background-color: #4a5568; color: var(--button-text); }
+        body.dark-mode .btn-secondary:hover:not(:disabled) { background-color: #2d3748; }
+        .btn-icon { padding: 5px; background-color: transparent; border: 1px solid var(--input-border); color: var(--icon-color); line-height: 1; transition: background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s; margin: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .btn-icon:hover:not(:disabled) { background-color: var(--input-bg); border-color: var(--accent-color); color: var(--accent-color); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-icon svg { vertical-align: middle; width: 16px; height: 16px; }
+        .btn-round { border-radius: 50%; width: 34px; height: 34px; display: inline-flex; justify-content: center; align-items: center; }
+        #refresh-dashboard-btn.refreshing svg { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* --- Auth Section --- */
+        #auth-section { text-align: center; padding: 40px 20px; }
+        #auth-section p { margin-bottom: 20px; font-size: 1.1rem; }
+
+        /* --- Admin Content --- */
+        #admin-content { display: none; }
+        .card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 0; /* Padding removed */ margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow: hidden; }
+        body.dark-mode .card { box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+
+        /* --- Collapsible Section Styles --- */
+        .collapsible-section .card-header-collapsible { display: flex; align-items: center; cursor: pointer; padding: 15px 20px; border-bottom: 1px solid var(--card-border); background-color: var(--card-bg); position: relative; gap: 15px; }
+        .collapsible-section .card-header-collapsible h2 { margin: 0; font-size: 1.2rem; flex-grow: 1; }
+        .collapsible-section#dashboard-overview .card-header-collapsible { /* No specific change needed */ }
+        .collapsible-section .toggle-icon { font-size: 1.6rem; font-weight: bold; line-height: 1; color: var(--icon-color); flex-shrink: 0; width: 20px; text-align: center; order: -1; margin-left: 10px; }
+        .collapsible-section .collapsible-content { display: none; padding: 15px 20px; border-top: none; max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out, padding-top 0.4s ease-out, padding-bottom 0.4s ease-out; background-color: var(--card-bg); }
+        .collapsible-section.is-open .card-header-collapsible { border-bottom-color: transparent; }
+        .collapsible-section.is-open .collapsible-content { display: block; max-height: 2500px; }
+        .collapsible-section .card-header-collapsible > *:not(h2):not(.toggle-icon) { margin-left: auto; flex-shrink: 0; }
+
+        /* --- Dashboard Styles --- */
+        #dashboard-date { font-size: 0.8em; font-weight: normal; color: var(--disabled-text); margin-right: 10px; }
+        #refresh-dashboard-container { /* Sits inside header */ }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; text-align: center; }
+        .stat-item .stat-icon { display: inline-block; margin-left: 8px; font-size: 1.2em; vertical-align: middle; }
+        .stat-item h3 { margin: 0 0 8px 0; font-size: 0.9rem; color: var(--text-color); opacity: 0.8; font-weight: normal; display: flex; align-items: center; justify-content: center; line-height: 1.3; vertical-align: middle; }
+        .stat-item p { margin: 0; font-size: 1.8rem; font-weight: bold; color: var(--accent-color); line-height: 1.1; }
+
+        /* --- Leaderboard Styles --- */
+        .leaderboard-note { font-size: 0.8rem; color: var(--disabled-text); font-weight: normal; margin-left: 5px; }
+        #leaderboard-enhanced-display table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        #leaderboard-enhanced-display th, #leaderboard-enhanced-display td { padding: 10px 8px; text-align: right; border-bottom: 1px solid var(--card-border); vertical-align: middle; }
+        #leaderboard-enhanced-display th { font-weight: bold; background-color: var(--input-bg); white-space: nowrap; }
+        body.dark-mode #leaderboard-enhanced-display th { background-color: #3a475a; }
+        #leaderboard-enhanced-display td.rank-col { width: 40px; text-align: center; font-weight: bold; color: var(--disabled-text); }
+        #leaderboard-enhanced-display td.name-col { font-weight: 500; }
+        #leaderboard-enhanced-display td.score-col, #leaderboard-enhanced-display td.correct-col { width: 90px; text-align: center; font-weight: bold; direction: ltr; }
+        #leaderboard-enhanced-display td.score-col { color: var(--accent-color); }
+        #leaderboard-enhanced-display td.correct-col { color: var(--success-color); }
+        #leaderboard-enhanced-display tr:last-child td { border-bottom: none; }
+        #leaderboard-enhanced-display tr:hover { background-color: var(--input-bg); opacity: 0.9; }
+        body.dark-mode #leaderboard-enhanced-display tr:hover { background-color: #3a475a; }
+
+        /* --- User Management Styles --- */
+        #users-section .card-header-collapsible h2 { margin-bottom: 0; }
+        #user-list-container table { width: 100%; border-collapse: collapse; font-size: 0.95rem; table-layout: fixed; }
+        #user-list-container th, #user-list-container td { padding: 10px 8px; text-align: right; border-bottom: 1px solid var(--card-border); vertical-align: middle; word-wrap: break-word; }
+        #user-list-container th { font-weight: bold; background-color: var(--input-bg); white-space: nowrap; }
+        body.dark-mode #user-list-container th { background-color: #3a475a; }
+        #user-list-container tr:last-child td { border-bottom: none; }
+        #user-list-container tr:hover { background-color: var(--input-bg); opacity: 0.9; }
+        body.dark-mode #user-list-container tr:hover { background-color: #3a475a; }
+        .nickname-cell { width: auto; }
+        .nickname-cell .nickname-edit { display: none; width: calc(100% - 10px); padding: 5px; border: 1px solid var(--input-border); background-color: var(--card-bg); color: var(--text-color); border-radius: 4px; font-size: inherit; box-sizing: border-box; }
+        .nickname-cell.editing .nickname-display { display: none; }
+        .nickname-cell.editing .nickname-edit { display: inline-block; }
+        .uid-cell { width: 160px; font-family: monospace; font-size: 0.8em; color: var(--disabled-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: ltr; text-align: left; padding-right: 10px !important; }
+        #user-list-container th.uid-header { text-align: left; padding-right: 10px !important; width: 160px; }
+        .actions-cell { width: 190px; white-space: nowrap; text-align: left; }
+        .actions-cell button { margin-left: 5px; font-size: 0.85rem; padding: 4px 8px; vertical-align: middle; }
+        .actions-cell .btn-save-user, .actions-cell .btn-cancel-edit-user { display: none; }
+        .actions-cell.editing .btn-edit-user, .actions-cell.editing .btn-delete-user { display: none; }
+        .actions-cell.editing .btn-save-user, .actions-cell.editing .btn-cancel-edit-user { display: inline-block; }
+        #no-users-message { padding: 20px; text-align: center; color: var(--disabled-text); }
+        body.dark-mode #no-users-message { color: var(--disabled-bg); }
+
+        /* --- Questions Section --- */
+        #questions-section .card-header-collapsible #add-question-btn,
+        #questions-section .card-header-collapsible #import-questions-btn { margin-left: 5px; }
+        #filter-controls { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--card-border); padding-bottom: 15px; align-items: flex-end; }
+        #filter-controls > div { flex-grow: 1; }
+        .filter-group-topic-clear { display: flex; align-items: flex-end; gap: 10px; flex-grow: 1; }
+        .topic-select-wrapper { flex-grow: 1; }
+        #filter-controls label { display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: bold; }
+        #filter-controls input[type="search"], #filter-controls select { width: 100%; padding: 8px; border: 1px solid var(--input-border); background-color: var(--input-bg); color: var(--text-color); border-radius: 5px; box-sizing: border-box; font-size: 0.95rem; margin: 0; }
+        #filter-controls button#clear-filters-btn { padding: 8px 12px; white-space: nowrap; margin: 0; flex-shrink: 0; }
+        #questions-list .question-item { border-bottom: 1px solid var(--card-border); padding: 15px 0; }
+        #questions-list .question-item:last-child { border-bottom: none; }
+        .question-summary { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .question-text { flex-grow: 1; font-size: 1rem; margin: 0; }
+        .question-actions button { font-size: 0.85rem; padding: 5px 10px; margin-left: 5px; }
+        .question-actions { flex-shrink: 0; }
+        .question-details { font-size: 0.8rem; color: var(--disabled-text); margin-top: 5px; display: block; direction: rtl; text-align: right; }
+        body.dark-mode .question-details { color: var(--disabled-bg); }
+        .topic-link, .tag-link { color: var(--link-color); cursor: pointer; text-decoration: none; margin: 0 2px; display: inline-block; padding: 1px 4px; border-radius: 4px; transition: background-color 0.2s, color 0.2s; }
+        .topic-link:hover, .tag-link:hover { text-decoration: underline; background-color: var(--input-bg); }
+
+        /* --- Modals (Question Form & Import) --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--modal-overlay-bg); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 15px; box-sizing: border-box; }
+        .modal-container { background-color: var(--card-bg); padding: 25px; border-radius: 10px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; }
+        .modal-container h3 { margin-top: 0; margin-bottom: 20px; text-align: center; }
+        .modal-close-btn { position: absolute; top: 10px; left: 15px; background: none; border: none; font-size: 1.5rem; color: var(--text-color); cursor: pointer; padding: 5px; line-height: 1; }
+        /* Question Form Specific */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input[type="text"], .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--input-border); background-color: var(--input-bg); color: var(--text-color); border-radius: 5px; font-size: 1rem; box-sizing: border-box; }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .answer-group { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .answer-group input[type="text"] { flex-grow: 1; }
+        .answer-group input[type="radio"] { width: 20px; height: 20px; cursor: pointer; margin-left: 5px; flex-shrink: 0; }
+        .answer-group button { padding: 3px 8px !important; font-size: 1rem !important; line-height: 1; margin: 0 5px 0 0 !important; flex-shrink: 0; }
+        .form-actions { text-align: center; margin-top: 20px; }
+        /* Import Modal Specific */
+        #import-modal-container { max-width: 750px; } /* Wider modal */
+        #bulk-import-area { width: 100%; min-height: 250px; /* Taller area */ resize: vertical; font-family: monospace; direction: rtl; text-align: right; padding: 10px; border: 1px solid var(--input-border); background-color: var(--input-bg); color: var(--text-color); border-radius: 5px; box-sizing: border-box; font-size: 0.9rem; line-height: 1.4; white-space: pre; /* Preserve whitespace for placeholder */ }
+        /* Style placeholder specifically */
+        #bulk-import-area::placeholder {
+            white-space: pre-wrap; /* Allow placeholder text to wrap */
+            opacity: 0.6; /* Make placeholder less prominent */
+            font-family: "Noto Sans Hebrew", sans-serif; /* Use standard font for placeholder */
+            direction: rtl;
+            text-align: right;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--disabled-text);
+        }
+        body.dark-mode #bulk-import-area::placeholder {
+            color: var(--disabled-text);
+        }
+
+        #import-feedback, #import-preview { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--card-border); max-height: 250px; overflow-y: auto; }
+        #import-feedback h4, #import-preview h4 { margin: 0 0 10px 0; font-size: 1rem; }
+        #import-error-list { list-style: none; padding: 0; margin: 0; }
+        #import-error-list li { background-color: var(--error-list-item-bg); color: var(--error-list-item-text); border: 1px solid var(--error-list-item-border); padding: 5px 8px; margin-bottom: 5px; border-radius: 4px; font-size: 0.9rem; }
+        #import-preview .preview-item { background-color: var(--preview-item-bg); border: 1px solid var(--preview-item-border); padding: 10px; margin-bottom: 8px; border-radius: 5px; font-size: 0.9rem; }
+        #import-preview .preview-item p { margin: 0 0 5px 0; }
+        #import-preview .preview-item strong { font-weight: bold; }
+        #import-preview .preview-item .correct { color: var(--success-color); font-weight: bold; }
+        #import-preview .preview-item .details { font-size: 0.8rem; color: var(--disabled-text); }
+        .import-actions { margin-top: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+        .import-actions .left-actions { display: flex; gap: 10px; }
+
+
+        /* --- Loading / Messages --- */
+        #loading, #access-denied, #general-error { text-align: center; padding: 30px; font-size: 1.1rem; display: none; }
+        #loading p, #access-denied p, #general-error p { margin: 0; }
+        #no-results-message { padding: 20px; text-align: center; color: var(--disabled-text); display: none; }
+        body.dark-mode #no-results-message { color: var(--disabled-bg); }
+        .error-text { color: var(--danger-color); font-weight: bold; }
+
+        /* --- Pagination Controls --- */
+        .pagination-controls { text-align: center; margin-top: 20px; display: none; }
+        .pagination-controls span { margin: 0 15px; vertical-align: middle; direction: ltr; }
+        .pagination-controls button { padding: 8px 15px; }
+        #user-pagination-controls { margin-top: 15px; }
+
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+             .uid-cell, #user-list-container th.uid-header { width: 120px; font-size: 0.75em; }
+             .actions-cell { width: auto; white-space: normal; }
+             .actions-cell button { margin-bottom: 5px; }
+        }
+        @media (max-width: 700px) {
+             #filter-controls > div { min-width: 100%; }
+             .filter-group-topic-clear { width: 100%; }
+             .dashboard-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; }
+             .stat-item p { font-size: 1.6rem; }
+             .stat-item h3 { font-size: 0.85rem; }
+             #leaderboard-enhanced-display th, #leaderboard-enhanced-display td { padding: 8px 5px; font-size: 0.9rem; }
+             #leaderboard-enhanced-display td.score-col, #leaderboard-enhanced-display td.correct-col { width: 70px; }
+             #user-list-container th, #user-list-container td { padding: 8px 5px; font-size: 0.9rem; }
+             .collapsible-section .card-header-collapsible h2 { font-size: 1.1rem; }
+             #import-modal-container { max-width: 95%; }
+        }
+        @media (max-width: 600px) {
+            h1 { font-size: 1.5rem; }
+            header { justify-content: space-around; }
+            .question-summary { flex-direction: column; align-items: stretch; }
+            .question-actions { text-align: right; margin-top: 10px; }
+            .modal-container { padding: 15px; }
+            .modal-close-btn { top: 5px; left: 10px; }
+            .answer-group label { display: none; }
+            .collapsible-section .card-header-collapsible { padding: 10px 15px; gap: 10px; }
+            .collapsible-section .toggle-icon { font-size: 1.4rem; margin-left: 5px; margin-right: 0; }
+            .collapsible-content { padding: 10px 15px; }
+            .btn-round { width: 30px; height: 30px; }
+            .btn-icon svg { width: 14px; height: 14px; }
+            .pagination-controls span { margin: 0 8px; }
+            .pagination-controls button { padding: 6px 10px; }
+            .actions-cell button { font-size: 0.8rem; padding: 3px 6px; margin-left: 3px; margin-bottom: 3px; }
+            .uid-cell, #user-list-container th.uid-header { width: 90px; font-size: 0.7em; }
+            #user-list-container table { table-layout: auto; }
+            #questions-section .card-header-collapsible #add-question-btn,
+            #questions-section .card-header-collapsible #import-questions-btn { padding: 6px 10px; font-size: 0.9rem; margin-left: 3px; }
+             #bulk-import-area { min-height: 150px; font-size: 0.8rem;}
+             #bulk-import-area::placeholder { font-size: 0.8rem; }
+             .import-actions { flex-direction: column; }
+             .import-actions .left-actions { order: 1; justify-content: center; }
+             #confirm-import-btn { order: 2; width: 100%; }
+        }
+        @media (max-width: 500px) {
+             .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+             .uid-header, .uid-cell { display: none; }
+             #questions-section .card-header-collapsible { flex-wrap: wrap; }
+             #questions-section .card-header-collapsible h2 { width: 100%; margin-bottom: 10px; }
+             #questions-section .card-header-collapsible > *:not(h2):not(.toggle-icon) { margin-left: 0; }
+             #questions-section .card-header-collapsible #add-question-btn,
+             #questions-section .card-header-collapsible #import-questions-btn { margin-left: 5px; }
+        }
+    </style>
+</head>
+<body>
+    <script>
+        // Set theme ASAP
+        const initialDarkMode = localStorage.getItem("darkMode") === "true";
+        document.body.classList.toggle("dark-mode", initialDarkMode);
+    </script>
+
+    <div class="container">
+        <header>
+           <label class="switch">
+                <input type="checkbox" id="theme-toggle" />
+                <span class="slider">
+                    <img src="https://img.icons8.com/ios-glyphs/30/ffffff/sun.png" alt="שמש" class="theme-icon sun"/>
+                    <img src="https://img.icons8.com/ios-glyphs/30/ffffff/moon-symbol.png" alt="ירח" class="theme-icon moon"/>
+                </span>
+              </label>
+            <h1>ניהול טריווBIO</h1>
+            <button id="logout-btn" class="btn-danger" style="display: none;">התנתק</button>
+        </header>
+
+        <main>
+            <div id="auth-section" style="display: none;"> <p>יש להתחבר עם חשבון Google מורשה כדי לגשת לניהול.</p>
+                <button id="login-btn" class="btn-primary">התחבר עם Google</button>
+            </div>
+            <div id="loading"><p>טוען...</p></div>
+            <div id="access-denied"><p>🚫 אינך מורשה לגשת לעמוד זה.</p></div>
+            <div id="general-error"><p>⚠️ שגיאה בטעינת הנתונים. בדוק את החיבור או נסה שוב מאוחר יותר.</p></div>
+
+            <div id="admin-content">
+
+                <section id="dashboard-overview" class="card collapsible-section">
+                    <div class="card-header-collapsible" role="button" tabindex="0" aria-expanded="false" aria-controls="dashboard-content">
+                         <span class="toggle-icon" aria-hidden="true">+</span>
+                        <h2>סקירה כללית <span id="dashboard-date"></span></h2>
+                        <div id="refresh-dashboard-container">
+                            <button id="refresh-dashboard-btn" class="btn-icon btn-round" title="רענן נתונים">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="collapsible-content" id="dashboard-content" role="region" aria-labelledby="dashboard-header" aria-hidden="true">
+                        <div class="dashboard-grid">
+                            <div class="stat-item"><h3><span class="stat-icon" title="סה&quot;כ שאלות">📊</span> סה"כ שאלות</h3><p id="stat-total-questions">?</p></div>
+                            <div class="stat-item"><h3><span class="stat-icon" title="שחקנים רשומים">👥</span> שחקנים רשומים</h3><p id="stat-total-players">?</p></div>
+                            <div class="stat-item"><h3><span class="stat-icon" title="שחקנים פעילים היום">☀️</span> שחקנים פעילים (היום)</h3><p id="stat-active-players-today">?</p></div>
+                            <div class="stat-item"><h3><span class="stat-icon" title="משחקים ששוחקו היום">🎮</span> משחקים ששוחקו (היום)</h3><p id="stat-games-today">?</p></div>
+                            <div class="stat-item"><h3><span class="stat-icon" title="ממוצע ניקוד היום">🎯</span> ממוצע ניקוד (היום)</h3><p id="stat-avg-score-today">?</p></div>
+                            <div class="stat-item"><h3><span class="stat-icon" title="ממוצע תשובות נכונות למשחק (היום)">✅</span> ממוצע נכונות (היום)</h3><p id="stat-avg-correct-today">?</p></div>
+                            <div class="stat-item"><h3><span class="stat-icon" title="שחקנים חדשים היום">✨</span> שחקנים חדשים (היום)</h3><p id="stat-new-players-today">?</p></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="leaderboard-enhanced-section" class="card collapsible-section">
+                     <div class="card-header-collapsible" role="button" tabindex="0" aria-expanded="false" aria-controls="leaderboard-content">
+                         <span class="toggle-icon" aria-hidden="true">+</span>
+                        <h2>לוח דירוג כללי <span class="leaderboard-note">(Top 10)</span></h2>
+                    </div>
+                    <div class="collapsible-content" id="leaderboard-content" role="region" aria-labelledby="leaderboard-header" aria-hidden="true">
+                        <div id="leaderboard-enhanced-display">
+                            <p>טוען דירוג...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="users-section" class="card collapsible-section">
+                     <div class="card-header-collapsible" id="users-section-toggle" role="button" tabindex="0" aria-expanded="false" aria-controls="users-section-content">
+                         <span class="toggle-icon" aria-hidden="true">+</span>
+                        <h2>ניהול משתמשים</h2>
+                    </div>
+                    <div class="collapsible-content" id="users-section-content" role="region" aria-labelledby="users-section-toggle" aria-hidden="true">
+                        <div id="user-list-container">
+                            <p>טוען רשימת משתמשים...</p>
+                        </div>
+                        <p id="no-users-message" style="display: none;">לא נמצאו משתמשים רשומים.</p>
+                        <div id="user-pagination-controls" class="pagination-controls" style="display: none;">
+                            <button id="prev-user-page-btn" class="btn-primary">« קודם</button>
+                            <span id="user-page-info"></span>
+                            <button id="next-user-page-btn" class="btn-primary">הבא »</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="questions-section" class="card collapsible-section">
+                    <div class="card-header-collapsible" role="button" tabindex="0" aria-expanded="false" aria-controls="questions-content">
+                       <span class="toggle-icon" aria-hidden="true">+</span>
+                       <h2>ניהול שאלות</h2>
+                       <button id="import-questions-btn" class="btn-secondary">ייבוא שאלות...</button>
+                       <button id="add-question-btn" class="btn-success">הוסף שאלה +</button>
+                    </div>
+                    <div class="collapsible-content" id="questions-content" role="region" aria-labelledby="questions-header" aria-hidden="true">
+                        <div id="filter-controls">
+                             <div>
+                                 <label for="search-input">חיפוש:</label>
+                                 <input type="search" id="search-input" placeholder="חפש בשאלה, תשובות, נושא, תגיות...">
+                             </div>
+                             <div class="filter-group-topic-clear">
+                                 <div class="topic-select-wrapper">
+                                      <label for="topic-filter">סנן לפי נושא:</label>
+                                     <select id="topic-filter">
+                                         <option value="">כל הנושאים</option>
+                                         <option value="human-body">גוף האדם</option>
+                                         <option value="cell">התא</option>
+                                         <option value="ecology">אקולוגיה</option>
+                                     </select>
+                                 </div>
+                                 <button id="clear-filters-btn" class="btn-danger">נקה סינונים</button>
+                             </div>
+                         </div>
+
+                        <div id="questions-list"></div>
+                        <div id="pagination-controls" class="pagination-controls">
+                            <button id="prev-page-btn" class="btn-primary">« קודם</button>
+                            <span id="page-info"></span>
+                            <button id="next-page-btn" class="btn-primary">הבא »</button>
+                        </div>
+                         <p id="no-results-message" style="display: none;">לא נמצאו שאלות התואמות את הסינון.</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <div id="question-form-modal" class="modal-overlay">
+            <div id="question-form-container" class="modal-container">
+                 <button id="close-modal-btn" class="modal-close-btn" title="סגור">×</button>
+                 <form id="question-form">
+                    <h3 id="form-title">הוסף שאלה חדשה</h3>
+                    <input type="hidden" id="question-id">
+                    <div class="form-group"><label for="question-text-input">טקסט השאלה:</label><textarea id="question-text-input" required></textarea></div>
+                    <div class="form-group"><label>תשובות (סמן את הנכונה):</label><div id="answers-container"></div><button type="button" id="add-answer-btn" class="btn-primary" style="margin-top: 10px;">הוסף תשובה +</button></div>
+                    <div class="form-group"><label for="question-topic">נושא:</label><select id="question-topic" required><option value="" disabled selected>בחר נושא...</option><option value="human-body">גוף האדם</option><option value="cell">התא</option><option value="ecology">אקולוגיה</option></select></div>
+                    <div class="form-group"><label for="question-tags">תגיות (מופרדות בפסיק):</label><input type="text" id="question-tags" placeholder="לדוגמה: מערכת העיכול, אנזימים"></div>
+                    <div class="form-actions"><button type="submit" id="save-question-btn" class="btn-primary">שמור שאלה</button><button type="button" id="cancel-edit-btn" class="btn-secondary">ביטול</button></div>
+                 </form>
+            </div>
+        </div>
+
+        <div id="import-modal" class="modal-overlay">
+            <div id="import-modal-container" class="modal-container">
+                <button id="close-import-modal-btn" class="modal-close-btn" title="סגור">×</button>
+                <h3>ייבוא שאלות מרובות</h3>
+                <div class="form-group">
+                    <label for="bulk-import-area">הדבק שאלות כאן:</label>
+                    <textarea id="bulk-import-area" rows="15"
+                        placeholder="הכנס שאלה אחת או יותר בפורמט הבא (כל שורה בנפרד, שורה ריקה מפרידה בין שאלות):&#10;----------------------------------------------------&#10;טקסט השאלה עצמה?&#10;תשובה אפשרית א&#10;*תשובה נכונה ג (מתחיל בכוכבית)&#10;תשובה אפשרית ד (חובה לפחות 2 תשובות)&#10;נושא (חובה: התא / גוף האדם / אקולוגיה)&#10;תגיות (אופציונלי, מופרדות בפסיק)&#10;&#10;שאלה שניה...&#10;תשובה א לשאלה 2&#10;*תשובה ב נכונה&#10;התא&#10;תגית 1, תגית 2"
+                    ></textarea>
+                </div>
+                 <div class="import-actions">
+                     <div class="left-actions">
+                        <button type="button" id="process-import-btn" class="btn-primary">1. עבד נתונים</button>
+                        <button type="button" id="clear-import-btn" class="btn-secondary">נקה</button>
+                     </div>
+                    <button type="button" id="confirm-import-btn" class="btn-success" style="display: none;">2. ייבא שאלות תקינות</button>
+                </div>
+                 <div id="import-feedback">
+                    </div>
+                 <div id="import-preview">
+                    </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Firebase Config ---
+            const firebaseConfig = { /* --- Your Firebase Config Here --- */
+                apiKey: "AIzaSyAGFC_TB8iEMvS2PyxeASj1HH4i66AW4UA",
+                authDomain: "trivbio.firebaseapp.com",
+                projectId: "trivbio",
+                storageBucket: "trivbio.appspot.com",
+                messagingSenderId: "1097087574583",
+                appId: "1:1097087574583:web:b36c0441537a1f596215b2",
+                measurementId: "G-ZY245YB23E",
+                databaseURL: "https://trivbio-default-rtdb.firebaseio.com/"
+             };
+             try { if (!firebase.apps.length) firebase.initializeApp(firebaseConfig); else firebase.app(); }
+             catch (e) { console.error("FATAL: Firebase init failed!", e); const li=document.getElementById('loading'); if(li)li.innerHTML='<p class="error-text">שגיאת Firebase קריטית!</p>'; return; }
+             const auth = firebase.auth(); const database = firebase.database();
+             console.log("Admin Firebase initialized");
+
+            // --- DOM Elements ---
+            const loginBtn = document.getElementById('login-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const authSect = document.getElementById('auth-section');
+            const adminCont = document.getElementById('admin-content');
+            const loadInd = document.getElementById('loading');
+            const accessDen = document.getElementById('access-denied');
+            const genErr = document.getElementById('general-error');
+            const themeTog = document.getElementById('theme-toggle');
+            const adminContentContainer = document.getElementById('admin-content');
+            const dashboardOverview = document.getElementById('dashboard-overview');
+            const dashboardDate = document.getElementById('dashboard-date');
+            const refreshDashboardBtn = document.getElementById('refresh-dashboard-btn');
+            const statTotalQuestions = document.getElementById('stat-total-questions');
+            const statTotalPlayers = document.getElementById('stat-total-players');
+            const statActivePlayersToday = document.getElementById('stat-active-players-today');
+            const statGamesToday = document.getElementById('stat-games-today');
+            const statAvgScoreToday = document.getElementById('stat-avg-score-today');
+            const statAvgCorrectToday = document.getElementById('stat-avg-correct-today');
+            const statNewPlayersToday = document.getElementById('stat-new-players-today');
+            const leaderboardEnhancedDisplay = document.getElementById('leaderboard-enhanced-display');
+            const usersSection = document.getElementById('users-section');
+            const userListContainer = document.getElementById('user-list-container');
+            const noUsersMessage = document.getElementById('no-users-message');
+            const userPagCont = document.getElementById('user-pagination-controls');
+            const prevUserPBtn = document.getElementById('prev-user-page-btn');
+            const nextUserPBtn = document.getElementById('next-user-page-btn');
+            const userPageInf = document.getElementById('user-page-info');
+            const questionsSection = document.getElementById('questions-section');
+            const qListDiv = document.getElementById('questions-list');
+            const searchIn = document.getElementById('search-input');
+            const topicFil = document.getElementById('topic-filter');
+            const clearFilBtn = document.getElementById('clear-filters-btn');
+            const noResMsg = document.getElementById('no-results-message');
+            const addQBtn = document.getElementById('add-question-btn');
+            const qFormModal = document.getElementById('question-form-modal');
+            const qForm = document.getElementById('question-form');
+            const closeModBtn = document.getElementById('close-modal-btn');
+            const formTit = document.getElementById('form-title');
+            const qIdIn = document.getElementById('question-id');
+            const qTextIn = document.getElementById('question-text-input');
+            const ansCont = document.getElementById('answers-container');
+            const addAnsBtn = document.getElementById('add-answer-btn');
+            const qTopicSel = document.getElementById('question-topic');
+            const qTagsIn = document.getElementById('question-tags');
+            const saveQBtn = document.getElementById('save-question-btn');
+            const cancelEdBtn = document.getElementById('cancel-edit-btn');
+            const pagCont = document.getElementById('pagination-controls');
+            const prevPBtn = document.getElementById('prev-page-btn');
+            const nextPBtn = document.getElementById('next-page-btn');
+            const pageInf = document.getElementById('page-info');
+            const importQuestionsBtn = document.getElementById('import-questions-btn');
+            const importModal = document.getElementById('import-modal');
+            const closeImportModalBtn = document.getElementById('close-import-modal-btn');
+            const bulkImportArea = document.getElementById('bulk-import-area');
+            const clearImportBtn = document.getElementById('clear-import-btn');
+            const processImportBtn = document.getElementById('process-import-btn');
+            const importFeedback = document.getElementById('import-feedback');
+            const importPreview = document.getElementById('import-preview');
+            const confirmImportBtn = document.getElementById('confirm-import-btn');
+            // ... (Check essential elements as before, including new import elements)
+
+            // --- Global State ---
+            let currentAdminUid = null; let allQuestions = {}; let allUsers = {}; let questionsListener = null;
+            let filteredQuestionIds = []; let currentPage = 1; const itemsPerPage = 10;
+            let sortedUserIds = []; let currentUserPage = 1; const usersPerPage = 10;
+            const topicTranslations={"human-body":"גוף האדם","cell":"התא","ecology":"אקולוגיה","unknown":"לא ידוע"};
+            const hebrewTopicMap={"גוף האדם":"human-body","התא":"cell","אקולוגיה":"ecology"};
+            const knownHebrewTopics=Object.keys(hebrewTopicMap);
+            const COLLAPSIBLE_STATE_KEY="adminCollapsibleStates";
+            let validQuestionsForImport=[];
+
+            // --- Helpers ---
+            function showEl(el){if(el)el.style.display='block';} function showFlexEl(el){if(el){el.style.display='flex';document.body.style.overflow='hidden';}} function hideEl(el){if(el)el.style.display='none';} function debounce(f,w){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>f.apply(this,a),w);};} function getTodayDateString(){return new Date().toISOString().split('T')[0];}
+
+            // --- Theme & Auth (Mostly unchanged) ---
+            function setTheme(d){document.body.classList.toggle('dark-mode',d);} themeTog.checked=document.body.classList.contains('dark-mode'); themeTog.addEventListener('change',()=>{const d=themeTog.checked;setTheme(d);localStorage.setItem("darkMode",d.toString());if(currentAdminUid)database.ref(`players/${currentAdminUid}/adminDarkMode`).set(d).catch(e=>console.warn("Pref save err",e));}); function loadThemePref(uid){database.ref(`players/${uid}/adminDarkMode`).once('value').then(s=>{if(s.exists()&&typeof s.val()==='boolean'){const p=s.val();if(themeTog.checked!==p){themeTog.checked=p;setTheme(p);localStorage.setItem("darkMode",p.toString());console.log("Applied FB dark mode pref.");}}}).catch(e=>console.warn("Pref load err",e));}
+            auth.onAuthStateChanged(async(user)=>{hideEl(loadInd);hideEl(accessDen);hideEl(genErr);hideEl(adminCont);hideEl(authSect);hideEl(logoutBtn);if(questionsListener){database.ref('questions').off('value',questionsListener);questionsListener=null;} resetFilters(false);allQuestions={};filteredQuestionIds=[];currentPage=1;allUsers={};sortedUserIds=[];currentUserPage=1;resetDashboardStats();if(userListContainer)userListContainer.innerHTML='<p>טוען...</p>';hideEl(noUsersMessage);hideEl(userPagCont);closeAllCollapsibleSections();closeForm();closeImportModal();if(user){currentAdminUid=user.uid;console.log("Auth: User:",user.uid,"Anon:",user.isAnonymous);if(user.isAnonymous){currentAdminUid=null;showEl(authSect);}else{showEl(loadInd);try{const isAdmin=await checkAdmin(user.uid);hideEl(loadInd);if(isAdmin){showEl(adminCont);showEl(logoutBtn);loadThemePref(user.uid);loadData();loadCollapsibleStates();}else{showEl(accessDen);showEl(logoutBtn);}}catch(e){console.error("Admin check err:",e);hideEl(loadInd);if(genErr)genErr.innerHTML=`<p class="error-text">⚠️ שגיאת אימות.</p>`;showEl(genErr);showEl(logoutBtn);}}}else{currentAdminUid=null;console.log("No user session.");showEl(authSect);}});
+            async function checkAdmin(uid){if(!uid)return false;const s=await database.ref(`admins/${uid}`).once('value');return s.exists()&&s.val()===true;} loginBtn.addEventListener('click',()=>{const p=new firebase.auth.GoogleAuthProvider();showEl(loadInd);hideEl(authSect);hideEl(genErr);auth.signInWithPopup(p).catch(e=>{console.error("Login Err:",e);hideEl(loadInd);if(genErr){if(e.code==='auth/popup-closed-by-user')genErr.innerHTML=`<p>חלון סגור.</p>`;else if(e.code==='auth/network-request-failed')genErr.innerHTML=`<p class="error-text">⚠️ בעיית רשת.</p>`;else genErr.innerHTML=`<p class="error-text">⚠️ כשל.</p>`;showEl(genErr);}showEl(authSect);});}); logoutBtn.addEventListener('click',()=>{auth.signOut().catch(e=>console.error("Logout Err:",e));});
+
+            // --- Data Loading ---
+            function loadData(){console.log("loadData");loadDashboardData();if(usersSection&&usersSection.classList.contains('is-open')){loadUsers();}loadQuestions();}
+
+            // --- Dashboard, Leaderboard, User Management (Mostly unchanged logic) ---
+            async function loadDashboardData(){console.log("loadDashboardData");if(!refreshDashboardBtn)return;resetDashboardStats();refreshDashboardBtn.disabled=true;refreshDashboardBtn.classList.add('refreshing');const tStr=getTodayDateString();if(dashboardDate)dashboardDate.textContent=`(${tStr.split('-').reverse().join('/')})`;const ps=[database.ref('questions').once('value'),database.ref('players').once('value'),database.ref(`gameResults/${tStr}`).once('value'),database.ref('players').orderByChild('registrationDate').equalTo(tStr).once('value'),database.ref('leaderboard').orderByChild('cumulativeScore').limitToLast(10).once('value')];const rs=await Promise.allSettled(ps);console.log("DB fetch results:",rs);if(rs[0].status==='fulfilled'&&rs[0].value.exists())statTotalQuestions.textContent=rs[0].value.numChildren();else{statTotalQuestions.textContent=rs[0].status==='rejected'?'ERR':'0';if(rs[0].reason)console.error("Err Q#",rs[0].reason)} if(rs[1].status==='fulfilled'&&rs[1].value.exists())statTotalPlayers.textContent=rs[1].value.numChildren();else{statTotalPlayers.textContent=rs[1].status==='rejected'?'ERR':'0';if(rs[1].reason)console.error("Err P#",rs[1].reason)} if(rs[2].status==='fulfilled'&&rs[2].value.exists()){const dr=rs[2].value.val();const gids=Object.keys(dr);const gc=gids.length;statGamesToday.textContent=gc;let apids=new Set();let ts=0;let tc=0;gids.forEach(id=>{const res=dr[id];if(res?.playerId)apids.add(res.playerId);if(typeof res?.score==='number')ts+=res.score;if(typeof res?.correctCount==='number')tc+=res.correctCount;});statActivePlayersToday.textContent=apids.size;statAvgScoreToday.textContent=gc>0?(ts/gc).toFixed(1):'0';statAvgCorrectToday.textContent=gc>0?(tc/gc).toFixed(1):'0';}else{statGamesToday.textContent='0';statActivePlayersToday.textContent='0';statAvgScoreToday.textContent='0';statAvgCorrectToday.textContent='0';if(rs[2].status==='rejected'&&rs[2].reason)console.error("Err Daily",rs[2].reason);} if(rs[3].status==='fulfilled'&&rs[3].value.exists())statNewPlayersToday.textContent=rs[3].value.numChildren();else{statNewPlayersToday.textContent=rs[3].status==='rejected'?'ERR':'0';if(rs[3].reason)console.error("Err NewP",rs[3].reason)} if(rs[4].status==='fulfilled'&&rs[4].value.exists())renderEnhancedLeaderboard(rs[4].value.val());else{leaderboardEnhancedDisplay.innerHTML='<p>אין דירוג.</p>';if(rs[4].status==='rejected'&&rs[4].reason)console.error("Err LB",rs[4].reason);} refreshDashboardBtn.disabled=false;refreshDashboardBtn.classList.remove('refreshing');console.log("Dashboard load complete.");}
+            function renderEnhancedLeaderboard(d){const a=Object.entries(d).map(([p,dt])=>({p,n:dt.nickname||`שחקן...${p.substring(p.length-4)}`,s:dt.cumulativeScore||0,c:dt.correctCount}));a.sort((x,y)=>y.s-x.s);if(a.length===0){leaderboardEnhancedDisplay.innerHTML='<p>אין דירוג.</p>';return;}const t=document.createElement('table');const h=t.createTHead();const b=t.createTBody();const hr=h.insertRow();const cs=[{hd:'#',cl:'rank-col'},{hd:'שם',cl:'name-col'},{hd:'ניקוד',cl:'score-col'}];const hc=a.some(p=>typeof p.c==='number');if(hc)cs.push({hd:'נכונות',cl:'correct-col'});cs.forEach(c=>{const th=document.createElement('th');th.textContent=c.hd;th.className=c.cl||'';hr.appendChild(th);});a.forEach((p,i)=>{const r=b.insertRow();const k=i+1;r.insertCell().outerHTML=`<td class="rank-col">${k}</td>`;r.insertCell().outerHTML=`<td class="name-col">${p.n}</td>`;r.insertCell().outerHTML=`<td class="score-col">${(p.s||0).toLocaleString()}</td>`;if(hc)r.insertCell().outerHTML=`<td class="correct-col">${(typeof p.c==='number')?p.c.toLocaleString():'-'}</td>`;});leaderboardEnhancedDisplay.innerHTML='';leaderboardEnhancedDisplay.appendChild(t);}
+            function resetDashboardStats(){if(statTotalQuestions)statTotalQuestions.textContent='?';if(statTotalPlayers)statTotalPlayers.textContent='?';if(statActivePlayersToday)statActivePlayersToday.textContent='?';if(statGamesToday)statGamesToday.textContent='?';if(statAvgScoreToday)statAvgScoreToday.textContent='?';if(statAvgCorrectToday)statAvgCorrectToday.textContent='?';if(statNewPlayersToday)statNewPlayersToday.textContent='?';if(leaderboardEnhancedDisplay)leaderboardEnhancedDisplay.innerHTML='<p>טוען...</p>';if(dashboardDate)dashboardDate.textContent='';}
+            refreshDashboardBtn.addEventListener('click',loadDashboardData);
+            async function loadUsers(){console.log("loadUsers");if(!userListContainer||!usersSection)return;if(usersSection.classList.contains('is-open'))userListContainer.innerHTML='<p>טוען...</p>';hideEl(noUsersMessage);hideEl(userPagCont);try{const s=await database.ref('players').orderByChild('nickname').once('value');if(s.exists()){allUsers=s.val();sortedUserIds=Object.keys(allUsers).sort((a,b)=>(allUsers[a]?.nickname||'').toLowerCase().localeCompare((allUsers[b]?.nickname||'').toLowerCase(),'he'));console.log(`Loaded ${sortedUserIds.length} users.`);currentUserPage=1;if(usersSection.classList.contains('is-open'))renderUserList();}else{allUsers={};sortedUserIds=[];if(usersSection.classList.contains('is-open')){userListContainer.innerHTML='';showEl(noUsersMessage);}hideEl(userPagCont);console.log("No users found.");}}catch(e){console.error("Err load users:",e);if(usersSection.classList.contains('is-open'))userListContainer.innerHTML=`<p class="error-text">שגיאת טעינה.</p>`;allUsers={};sortedUserIds=[];hideEl(noUsersMessage);hideEl(userPagCont);}}
+            function renderUserList(){if(!userListContainer)return;userListContainer.innerHTML='';hideEl(noUsersMessage);hideEl(userPagCont);const tot=sortedUserIds.length;if(tot===0){showEl(noUsersMessage);return;}const totP=Math.ceil(tot/usersPerPage);if(currentUserPage<1)currentUserPage=1;if(currentUserPage>totP&&totP>0)currentUserPage=totP;const start=(currentUserPage-1)*usersPerPage;const end=start+usersPerPage;const ids=sortedUserIds.slice(start,end);console.log(`Render users ${currentUserPage}/${totP}`);const t=document.createElement('table');const h=t.createTHead();const b=t.createTBody();const hr=h.insertRow();const hs=[{t:'שם',cl:'nickname-header'},{t:'מזהה',cl:'uid-header uid-cell'},{t:'פעולות',cl:'actions-header actions-cell'}];hs.forEach(hd=>{const th=document.createElement('th');th.textContent=hd.t;th.className=hd.cl||'';hr.appendChild(th);});ids.forEach(uid=>{const d=allUsers[uid];if(d)b.appendChild(renderUserRow(uid,d));});userListContainer.appendChild(t);updateUserPaginationControls(totP);userListContainer.removeEventListener('click',handleUserActions);userListContainer.addEventListener('click',handleUserActions);}
+            function renderUserRow(uid,d){const r=document.createElement('tr');r.dataset.uid=uid;const n=d.nickname||'';const oN=n||'[לא הוגדר]';const cN=r.insertCell();cN.className='nickname-cell';cN.innerHTML=`<span class="nickname-display">${oN}</span><input type="text" class="nickname-edit" value="${n}" aria-label="ערוך"/>`;cN.querySelector('.nickname-edit').dataset.originalValue=n;const cU=r.insertCell();cU.className='uid-cell';cU.textContent=uid;cU.title=uid;const cA=r.insertCell();cA.className='actions-cell';cA.innerHTML=`<button class="btn-edit-user btn-primary" title="ערוך">ערוך</button><button class="btn-delete-user btn-danger" title="מחק">מחק</button><button class="btn-save-user btn-success" title="שמור">שמור</button><button class="btn-cancel-edit-user btn-secondary" title="בטל">בטל</button>`;return r;}
+            function updateUserPaginationControls(tp){if(!userPagCont||!userPageInf||!prevUserPBtn||!nextUserPBtn)return;if(tp<=1)hideEl(userPagCont);else{userPageInf.textContent=`${currentUserPage}/${tp}`;prevUserPBtn.disabled=(currentUserPage===1);nextUserPBtn.disabled=(currentUserPage===tp);showEl(userPagCont);}}
+            function handleUserActions(ev){const btn=ev.target.closest('button');if(!btn)return;const row=btn.closest('tr');if(!row?.dataset?.uid)return;const uid=row.dataset.uid;const nC=row.querySelector('.nickname-cell');const aC=row.querySelector('.actions-cell');const nI=nC?.querySelector('.nickname-edit');const nD=nC?.querySelector('.nickname-display');if(!nC||!aC||!nI||!nD)return console.error("Row elements missing.");if(btn.classList.contains('btn-edit-user')){nC.classList.add('editing');aC.classList.add('editing');nI.dataset.originalValue=nI.value;nI.focus();nI.select();}else if(btn.classList.contains('btn-cancel-edit-user')){nI.value=nI.dataset.originalValue;nC.classList.remove('editing');aC.classList.remove('editing');}else if(btn.classList.contains('btn-save-user')){const nn=nI.value.trim();const on=nI.dataset.originalValue;if(nn===on){nC.classList.remove('editing');aC.classList.remove('editing');return;}if(!nn){alert("שם לא ריק.");nI.focus();return;}setRowButtonsDisabled(row,true);updateUserNickname(uid,nn).then(()=>{console.log(`Nick updated ${uid}`);nD.textContent=nn||'[לא הוגדר]';nI.value=nn;nI.dataset.originalValue=nn;if(allUsers[uid])allUsers[uid].nickname=nn;nC.classList.remove('editing');aC.classList.remove('editing');const cK=(nn||'').toLowerCase();const oK=(on||'').toLowerCase();if(cK.localeCompare(oK,'he')!==0){console.log("Sort order changed.");sortedUserIds.sort((a,b)=>(allUsers[a]?.nickname||'').toLowerCase().localeCompare((allUsers[b]?.nickname||'').toLowerCase(),'he'));renderUserList();}}).catch(e=>{console.error(`Err update nick ${uid}:`,e);alert(`שגיאה: ${e.message}`);}).finally(()=>{setRowButtonsDisabled(row,false);});}else if(btn.classList.contains('btn-delete-user')){const dn=(nD.textContent!=='[לא הוגדר]'?nD.textContent:'')||`משתמש ${uid.substring(uid.length-5)}`;if(confirm(`למחוק "${dn}" (${uid})?\n⚠️ פעולה זו אינה הפיכה!`)){setRowButtonsDisabled(row,true);deleteUser(uid).then(()=>{console.log(`User ${uid} deleted.`);delete allUsers[uid];sortedUserIds=sortedUserIds.filter(id=>id!==uid);const tp=Math.ceil(sortedUserIds.length/usersPerPage);if(currentUserPage>tp&&tp>0)currentUserPage=tp;renderUserList();if(statTotalPlayers&&!isNaN(parseInt(statTotalPlayers.textContent)))statTotalPlayers.textContent=Math.max(0,parseInt(statTotalPlayers.textContent)-1);}).catch(e=>{console.error(`Err delete ${uid}:`,e);alert(`שגיאה במחיקה: ${e.message}`);setRowButtonsDisabled(row,false);});}}}
+            async function updateUserNickname(uid,nn){if(!uid||typeof nn!=='string')return Promise.reject(new Error("Invalid input"));console.log(`Update nick ${uid} to ${nn}`);return database.ref(`players/${uid}/nickname`).set(nn);}
+            async function deleteUser(uid){if(!uid)return Promise.reject(new Error("Invalid UID"));console.log(`Delete user ${uid}`);return database.ref(`players/${uid}`).remove();}
+            function setRowButtonsDisabled(r,dis){r.querySelectorAll('.actions-cell button').forEach(b=>b.disabled=dis);}
+
+            // --- Questions Loading & Management (Filter/Render logic unchanged) ---
+            function loadQuestions(){if(questionsListener)database.ref('questions').off('value',questionsListener);const ca=document.getElementById('questions-content');if(ca&&questionsSection.classList.contains('is-open'))qListDiv.innerHTML='<p>טוען...</p>';else qListDiv.innerHTML='';hideEl(noResMsg);hideEl(pagCont);const ref=database.ref('questions').orderByKey();console.log("Attach Q listener.");questionsListener=ref.on('value',(s)=>{allQuestions=s.exists()?s.val():{};console.log(`Loaded ${Object.keys(allQuestions).length} Qs.`);if(questionsSection.classList.contains('is-open')){filterAndRender();}else{const st=searchIn.value.toLowerCase().trim();const stpc=topicFil.value;filteredQuestionIds=Object.keys(allQuestions).filter(id=>{/* filter logic */ return true; }).sort((a,b)=>a.localeCompare(b));}},(e)=>{console.error("FB Err load Qs:",e);if(questionsSection.classList.contains('is-open'))qListDiv.innerHTML=`<p class="error-text">שגיאה.</p>`;allQuestions={};filteredQuestionIds=[];hideEl(noResMsg);hideEl(pagCont);if(questionsListener)ref.off('value',questionsListener);questionsListener=null;});}
+            const debouncedFilter=debounce(()=>{currentPage=1;filterAndRender();},350);searchIn.addEventListener('input',debouncedFilter);topicFil.addEventListener('change',()=>{currentPage=1;filterAndRender();});clearFilBtn.addEventListener('click',()=>resetFilters(true));
+            function filterAndRender(){const st=searchIn.value.toLowerCase().trim();const stpc=topicFil.value;filteredQuestionIds=Object.keys(allQuestions).filter(id=>{const d=allQuestions[id];if(!d?.question)return false;let tm=!stpc||d.topic===stpc;if(!tm)return false;if(st){const qt=d.question.toLowerCase();const at=(d.answers||[]).map(a=>String(a).toLowerCase()).join(' ');const tgs=(d.tags||[]).map(t=>String(t).trim().toLowerCase());const tpcT=d.topic?.toLowerCase()||'';const m=qt.includes(st)||at.includes(st)||tpcT.includes(st)||tgs.some(t=>t.includes(st));if(!m)return false;}return true;}).sort((a,b)=>a.localeCompare(b));renderQuestionPage();}
+            function renderQuestionPage(){const tot=filteredQuestionIds.length;const totP=Math.ceil(tot/itemsPerPage);if(currentPage<1)currentPage=1;if(currentPage>totP&&totP>0)currentPage=totP;const start=(currentPage-1)*itemsPerPage;const end=start+itemsPerPage;const ids=filteredQuestionIds.slice(start,end);qListDiv.innerHTML='';hideEl(noResMsg);if(tot===0){if(searchIn.value||topicFil.value)showEl(noResMsg);else qListDiv.innerHTML='<p>אין שאלות.</p>';}else{ids.forEach(id=>renderQuestionItem(id,allQuestions[id]));}updatePaginationControls(totP);}
+            function renderQuestionItem(id,d){if(!d?.question||!id)return;const it=document.createElement('div');it.className='question-item';it.dataset.id=id;const sm=document.createElement('div');sm.className='question-summary';const tx=document.createElement('p');tx.className='question-text';tx.textContent=d.question;const ac=document.createElement('div');ac.className='question-actions';const eb=document.createElement('button');eb.textContent='ערוך';eb.className='btn-primary';eb.onclick=()=>openEditForm(id,d);const db=document.createElement('button');db.textContent='מחק';db.className='btn-danger';db.onclick=()=>deleteQuestion(id);ac.append(eb,db);sm.append(tx,ac);it.append(sm);const dt=document.createElement('span');dt.className='question-details';const tk=d.topic||'unknown';const ht=topicTranslations[tk]||tk;dt.appendChild(document.createTextNode(`נושא: `));const tl=document.createElement('a');tl.href='#';tl.className='topic-link';tl.textContent=ht;tl.dataset.topic=tk;tl.onclick=(e)=>{e.preventDefault();filterByTopic(tk);};dt.appendChild(tl);if(Array.isArray(d.tags)&&d.tags.length>0){const vts=d.tags.map(t=>t?String(t).trim():null).filter(Boolean);if(vts.length>0){dt.appendChild(document.createTextNode(" | תגיות: "));vts.forEach((tt,i)=>{const l=document.createElement('a');l.href='#';l.className='tag-link';l.textContent=tt;l.dataset.tag=tt;l.onclick=(e)=>{e.preventDefault();filterByTag(tt);};dt.appendChild(l);if(i<vts.length-1)dt.appendChild(document.createTextNode(", "));});}}it.appendChild(dt);qListDiv.appendChild(it);}
+            function updatePaginationControls(tp){if(tp<=1){hideEl(pagCont);}else{showEl(pagCont);pageInf.textContent=`${currentPage}/${tp}`;prevPBtn.disabled=(currentPage===1);nextPBtn.disabled=(currentPage===tp);}}
+            function filterByTopic(tk){topicFil.value=tk==='unknown'?'':tk;currentPage=1;filterAndRender();}
+            function filterByTag(t){searchIn.value=t.trim();currentPage=1;filterAndRender();}
+            function resetFilters(r=true){searchIn.value='';topicFil.value='';currentPage=1;if(r&&questionsSection.classList.contains('is-open'))filterAndRender();}
+
+            // --- Question CRUD (Manual Add/Edit - Unchanged) ---
+            addQBtn.addEventListener('click',openAddForm);closeModBtn.addEventListener('click',closeForm);cancelEdBtn.addEventListener('click',closeForm);addAnsBtn.addEventListener('click',()=>addAnswerField());qForm.addEventListener('submit',handleFormSubmit);
+            function openAddForm(){qForm.reset();qIdIn.value='';formTit.textContent='הוסף שאלה';ansCont.innerHTML='';addAnswerField();addAnswerField();qTopicSel.value='';qTagsIn.value='';saveQBtn.textContent='שמור שאלה';cancelEdBtn.textContent='ביטול';showFlexEl(qFormModal);}
+            function openEditForm(id,d){if(!d)return;qForm.reset();formTit.textContent='ערוך שאלה';qIdIn.value=id;qTextIn.value=d.question||'';qTopicSel.value=d.topic||'';qTagsIn.value=Array.isArray(d.tags)?d.tags.join(', '):'';ansCont.innerHTML='';if(Array.isArray(d.answers)){d.answers.forEach((t,i)=>addAnswerField(t,i===d.correct));while(ansCont.children.length<2)addAnswerField();}else{addAnswerField();addAnswerField();}saveQBtn.textContent='שמור שינויים';cancelEdBtn.textContent='ביטול';showFlexEl(qFormModal);}
+            function closeForm(){hideEl(qFormModal);document.body.style.overflow='';}
+            function addAnswerField(t='',c=false){const n=ansCont.children.length;const dv=document.createElement('div');dv.className='answer-group';const r=document.createElement('input');r.type='radio';r.name='correctAnswer';r.value=n;r.checked=c;r.required=true;r.title=`נכונה ${n+1}`;const i=document.createElement('input');i.type='text';i.placeholder=`תשובה ${n+1}`;i.value=t;i.required=true;i.setAttribute('aria-label',`תשובה ${n+1}`);const b=document.createElement('button');b.type='button';b.textContent='×';b.className='btn-danger';b.title='הסר';b.onclick=()=>{if(ansCont.children.length>2)dv.remove();else alert("חובה 2 תשובות.");updateAnswerIndices();};dv.append(r,i,b);ansCont.appendChild(dv);}
+            function updateAnswerIndices(){ansCont.querySelectorAll('.answer-group').forEach((g,x)=>{const r=g.querySelector('input[type="radio"]');if(r)r.value=x;const t=g.querySelector('input[type="text"]');if(t)t.placeholder=`תשובה ${x+1}`;});}
+            async function handleFormSubmit(ev){ev.preventDefault();saveQBtn.disabled=true;saveQBtn.textContent='שומר...';const qid=qIdIn.value;const qt=qTextIn.value.trim();const ans=[];const ins=ansCont.querySelectorAll('.answer-group input[type="text"]');const cr=ansCont.querySelector('input[type="radio"]:checked');function cln(){saveQBtn.disabled=false;saveQBtn.textContent=qid?'שמור שינויים':'שמור שאלה';}if(!qt){alert("חובה שאלה.");return cln();}if(!cr){alert("חובה לסמן נכונה.");return cln();}const ci=parseInt(cr.value,10);let inv=false;ins.forEach(i=>{const v=i.value.trim();if(!v)inv=true;ans.push(v);});if(inv){alert("תשובות לא ריקות.");return cln();}if(ans.length<2){alert("חובה 2 תשובות.");return cln();}if(isNaN(ci)||ci<0||ci>=ans.length){alert("בחירה נכונה שגויה.");return cln();}if(!qTopicSel.value){alert("חובה נושא.");return cln();}const tgs=qTagsIn.value.split(',').map(t=>t.trim()).filter(Boolean);const qd={question:qt,answers:ans,correct:ci,topic:qTopicSel.value,tags:tgs.length?tgs:null};try{const op=qid?database.ref(`questions/${qid}`).set(qd):database.ref('questions').push(qd);await op;console.log("Q Saved!");closeForm();}catch(e){console.error("Save Q Err:",e);alert(`שגיאה: ${e.message}`);}finally{cln();}}
+            async function deleteQuestion(id){if(!id||!confirm(`למחוק שאלה זו? (${id})`))return;console.log("Deleting Q:",id);try{await database.ref(`questions/${id}`).remove();console.log("Q Deleted:",id);}catch(e){console.error("Delete Q Err:",e);alert(`שגיאה: ${e.message}`);}}
+
+            // --- Pagination Listeners (Unchanged) ---
+            prevPBtn.addEventListener('click',()=>{if(currentPage>1){currentPage--;renderQuestionPage();qListDiv.scrollIntoView({behavior:'smooth'});}});nextPBtn.addEventListener('click',()=>{const tp=Math.ceil(filteredQuestionIds.length/itemsPerPage);if(currentPage<tp){currentPage++;renderQuestionPage();qListDiv.scrollIntoView({behavior:'smooth'});}});
+            if(prevUserPBtn&&nextUserPBtn){prevUserPBtn.addEventListener('click',()=>{if(currentUserPage>1){currentUserPage--;renderUserList();userListContainer.scrollIntoView({behavior:'smooth',block:'nearest'});}});nextUserPBtn.addEventListener('click',()=>{const tp=Math.ceil(sortedUserIds.length/usersPerPage);if(currentUserPage<tp){currentUserPage++;renderUserList();userListContainer.scrollIntoView({behavior:'smooth',block:'nearest'});}});}else console.warn("User pagination buttons missing.");
+
+            // --- Import Modal Logic ---
+            importQuestionsBtn.addEventListener('click', openImportModal);
+            closeImportModalBtn.addEventListener('click', closeImportModal);
+            clearImportBtn.addEventListener('click', () => {
+                bulkImportArea.value = ''; importFeedback.innerHTML = ''; importPreview.innerHTML = '';
+                hideEl(confirmImportBtn); validQuestionsForImport = [];
+            });
+            processImportBtn.addEventListener('click', processImportData);
+            confirmImportBtn.addEventListener('click', importValidQuestions);
+
+            function openImportModal() {
+                bulkImportArea.value = ''; importFeedback.innerHTML = ''; importPreview.innerHTML = '';
+                hideEl(confirmImportBtn); validQuestionsForImport = []; showFlexEl(importModal);
+            }
+            function closeImportModal() { hideEl(importModal); document.body.style.overflow = ''; }
+
+            function processImportData() {
+                const text = bulkImportArea.value;
+                importFeedback.innerHTML = '<p>מעבד נתונים...</p>'; importPreview.innerHTML = '';
+                hideEl(confirmImportBtn); validQuestionsForImport = [];
+
+                setTimeout(() => { // Allow UI update
+                    const { validQuestions, errors } = parseBulkQuestions(text);
+                    validQuestionsForImport = validQuestions;
+
+                    // Display Errors
+                    if (errors.length > 0) { importFeedback.innerHTML = `<h4>שגיאות (${errors.length}):</h4><ul id="import-error-list">${errors.map(err => `<li>${err}</li>`).join('')}</ul>`; }
+                    else { importFeedback.innerHTML = '<p style="color: var(--success-color);">✅ לא נמצאו שגיאות בפורמט.</p>'; }
+
+                    // Display Preview
+                    if (validQuestions.length > 0) {
+                        importPreview.innerHTML = `<h4>תצוגה מקדימה (${validQuestions.length} שאלות תקינות):</h4>`;
+                        validQuestions.forEach((q, index) => {
+                            const item = document.createElement('div'); item.className = 'preview-item';
+                            let ansHtml = q.answers.map((ans, idx) => idx === q.correct ? `<li class="correct"><strong>* ${ans}</strong></li>` : `<li>${ans}</li>`).join('');
+                            item.innerHTML = `<p><strong>שאלה ${index + 1}:</strong> ${q.question}</p><ul>${ansHtml}</ul><p class="details"><strong>נושא:</strong> ${topicTranslations[q.topic] || q.topic} | <strong>תגיות:</strong> ${q.tags ? q.tags.join(', ') : '<em>אין</em>'}</p>`;
+                            importPreview.appendChild(item);
+                        });
+                        showEl(confirmImportBtn);
+                    } else {
+                        importPreview.innerHTML = ''; hideEl(confirmImportBtn);
+                        if (errors.length === 0) importFeedback.innerHTML = '<p>לא נמצאו שאלות תקינות לייבוא בקלט שהוזן.</p>';
+                    }
+                }, 10);
+            }
+
+            // *** UPDATED Parsing Function ***
+            function parseBulkQuestions(text) {
+                const blocks = text.trim().split(/\n\s*\n+/); // Split by one or more empty lines
+                const validQuestions = []; const errors = [];
+
+                blocks.forEach((block, blockIndex) => {
+                    const lines = block.trim().split('\n').map(line => line.trim()).filter(line => line.length > 0);
+                    const blockRef = `בלוק #${blockIndex + 1}`;
+
+                    // Need at least Q + 2 Answers + Topic = 4 lines
+                    if (lines.length < 4) {
+                        errors.push(`${blockRef}: לא מספיק שורות (מינימום 4: שאלה, 2 תשובות, נושא).`);
+                        return;
+                    }
+
+                    const question = lines[0];
+                    let topic = '';
+                    let topicKey = '';
+                    let tags = [];
+                    let answers = [];
+                    let correctIndex = -1;
+
+                    // --- Identify Topic (Second to last line) ---
+                    const topicLineIndex = lines.length - 2;
+                    const potentialTopicLine = lines[topicLineIndex];
+                    if (hebrewTopicMap[potentialTopicLine]) {
+                        topic = potentialTopicLine;
+                        topicKey = hebrewTopicMap[topic];
+                    } else {
+                        errors.push(`${blockRef}: נושא לא זוהה או לא תקין בשורה הלפני אחרונה ('${potentialTopicLine}'). הנושאים המותרים: ${knownHebrewTopics.join(', ')}.`);
+                        return; // Cannot proceed without a valid topic in the expected place
+                    }
+
+                    // --- Identify Tags (Last line - Optional) ---
+                    const tagsLineIndex = lines.length - 1;
+                     // Check if the last line exists AND is after the topic line
+                    if (tagsLineIndex > topicLineIndex) {
+                        const potentialTagsLine = lines[tagsLineIndex];
+                        // Assume this line is tags, even if empty
+                        tags = potentialTagsLine.split(',').map(t => t.trim()).filter(Boolean);
+                    } else {
+                        // No line after the topic line, so no tags
+                        tags = [];
+                    }
+
+                    // --- Identify Answers (Lines between Question and Topic) ---
+                    const answerEndIndex = topicLineIndex; // Answers end *before* the topic line
+                    let correctFound = false;
+                    for (let i = 1; i < answerEndIndex; i++) { // Iterate up to (but not including) topic line
+                        let answerText = lines[i];
+                        if (answerText.startsWith('*')) {
+                            if (correctFound) { errors.push(`${blockRef}: נמצאה יותר מתשובה אחת מסומנת ב-*.`); return; }
+                            correctFound = true; correctIndex = answers.length; answerText = answerText.substring(1).trim();
+                        }
+                        if (!answerText && answerText !== "") { // Allow empty answers? For now, let's require text.
+                             errors.push(`${blockRef}: שורת תשובה ${answers.length + 1} ריקה.`); return;
+                        }
+                        answers.push(answerText);
+                    }
+
+                    // --- Final Validations ---
+                    if (answers.length < 2) { errors.push(`${blockRef}: נדרשות לפחות 2 תשובות.`); return; }
+                    if (!correctFound) { errors.push(`${blockRef}: אף תשובה לא סומנה כנכונה (*).`); return; }
+
+                    // If all checks pass
+                    validQuestions.push({ question: question, answers: answers, correct: correctIndex, topic: topicKey, tags: tags.length > 0 ? tags : null });
+                });
+                return { validQuestions, errors };
+            }
+
+             async function importValidQuestions() {
+                 if (validQuestionsForImport.length === 0) { alert("אין שאלות תקינות לייבוא."); return; }
+                 confirmImportBtn.disabled = true; confirmImportBtn.textContent = 'מייבא...';
+                 importFeedback.innerHTML += '<p>מתחיל בייבוא...</p>';
+                 const importPromises = validQuestionsForImport.map(qData => database.ref('questions').push(qData));
+                 try {
+                     const results = await Promise.allSettled(importPromises);
+                     const successCount = results.filter(r => r.status === 'fulfilled').length;
+                     const failureCount = results.length - successCount;
+                     let finalMsg = `<p style="color: var(--success-color);"><strong>ייבוא הושלם!</strong> ${successCount} שאלות נוספו.`;
+                     if (failureCount > 0) { finalMsg += ` <span style="color: var(--danger-color);">${failureCount} נכשלו.</span>`; results.forEach((r, idx)=>{if(r.status==='rejected')console.error(`Import Err Q${idx+1}:`,validQuestionsForImport[idx].question,r.reason);}); }
+                     finalMsg += '</p>'; importFeedback.innerHTML += finalMsg;
+                     validQuestionsForImport = []; hideEl(confirmImportBtn); hideEl(importPreview);
+                 } catch (error) { console.error("Bulk import general error:", error); importFeedback.innerHTML += `<p class="error-text">שגיאה כללית בייבוא.</p>`;
+                 } finally { confirmImportBtn.disabled = false; confirmImportBtn.textContent = '2. ייבא שאלות תקינות'; }
+             }
+
+
+            // --- Collapsible Section Logic ---
+            function saveCollapsibleStates(){const s={};document.querySelectorAll('.collapsible-section').forEach(sec=>{s[sec.id]=sec.classList.contains('is-open');});try{localStorage.setItem(COLLAPSIBLE_STATE_KEY,JSON.stringify(s));}catch(e){console.error("Err save collapse state:",e);}}
+            function loadCollapsibleStates(){let ss;try{ss=JSON.parse(localStorage.getItem(COLLAPSIBLE_STATE_KEY)||'{}');}catch(e){console.error("Err parse collapse state:",e);ss={};}document.querySelectorAll('.collapsible-section').forEach(sec=>{const sid=sec.id;const opn=ss[sid]===true;setCollapsibleState(sec,opn,false);if(opn){if(sid==='users-section'&&sortedUserIds.length===0)loadUsers();if(sid==='questions-section'&&filteredQuestionIds.length===0&&Object.keys(allQuestions).length>0)filterAndRender();}});console.log("Loaded collapse states:",ss);}
+            function setCollapsibleState(sec,opn,save=true){if(!sec)return;const h=sec.querySelector('.card-header-collapsible');const c=sec.querySelector('.collapsible-content');const i=h?.querySelector('.toggle-icon');if(!h||!c||!i)return;sec.classList.toggle('is-open',opn);h.setAttribute('aria-expanded',opn.toString());c.setAttribute('aria-hidden',(!opn).toString());i.textContent=opn?'−':'+';if(save)saveCollapsibleStates();}
+            function closeAllCollapsibleSections(){document.querySelectorAll('.collapsible-section').forEach(sec=>setCollapsibleState(sec,false,false));saveCollapsibleStates();}
+            if(adminContentContainer){adminContentContainer.addEventListener('click',(ev)=>{const h=ev.target.closest('.card-header-collapsible');if(!h)return;const sec=h.closest('.collapsible-section');if(!sec)return;if(ev.target.closest('button')){console.log("Button click in header, ignore toggle.");return;}const opn=!sec.classList.contains('is-open');setCollapsibleState(sec,opn,true);if(opn){if(sec.id==='users-section'){const nl=sortedUserIds.length===0&&!sec.dataset.loading;const nr=sortedUserIds.length>0&&userListContainer.children.length===0;if(nl){console.log("Users open, loading...");sec.dataset.loading='true';loadUsers().finally(()=>{delete sec.dataset.loading;});}else if(nr){console.log("Users open, rendering...");renderUserList();}}else if(sec.id==='questions-section'){if(qListDiv.children.length===0&&filteredQuestionIds.length>0){console.log("Qs open, rendering...");renderQuestionPage();}else if(qListDiv.children.length===0&&Object.keys(allQuestions).length>0&&filteredQuestionIds.length===0){console.log("Qs open, rendering empty filter...");filterAndRender();}}}});}else console.error("Admin container not found.");
+
+            console.log("DOM Content Loaded and script initialized.");
+        }); // --- END OF DOMContentLoaded ---
+    </script>
+
+</body>
+</html>
