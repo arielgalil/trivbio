@@ -35,6 +35,7 @@
         --error-list-item-bg: #fff5f5;
         --error-list-item-border: #fc8181;
         --error-list-item-text: #c53030;
+        --refresh-icon-color: var(--icon-color);
       }
 
       body.dark-mode {
@@ -60,6 +61,7 @@
         --error-list-item-bg: #4a2121;
         --error-list-item-border: #fc8181;
         --error-list-item-text: #fc8181;
+        --refresh-icon-color: var(--icon-color);
       }
 
       body {
@@ -87,74 +89,78 @@
       /* --- Header --- */
       header {
         display: flex;
-        justify-content: center; /* Keeps title centered */
+        justify-content: space-between; /* Push items to edges */
         align-items: center;
         position: relative; /* Needed for absolute positioning of children */
         margin-bottom: 20px;
-        padding: 10px 0; /* Add some padding */
+        padding: 10px 15px; /* Add padding for spacing */
         min-height: 50px; /* Ensure minimum height */
-        /* Remove flex-wrap and gap if not needed with absolute positioning */
-        /* flex-wrap: wrap; */
-        /* gap: 10px; */
+        flex-wrap: wrap; /* Allow wrapping on small screens */
+        gap: 10px; /* Space between items when wrapping */
       }
 
       header h1 {
         font-size: 1.8rem;
         margin: 0;
-        /* Remove order */
-        /* order: 2; */
-        /* Title will center automatically between absolutely positioned elements */
-        padding: 0 50px; /* Add padding to prevent overlap on smaller screens */
+        order: 2; /* Order for flex wrap */
+        flex-grow: 1; /* Allow title to take space */
         text-align: center;
+        padding: 0 10px; /* Padding around title */
       }
 
-      /* --- Theme Toggle (Right) --- */
-      header .switch {
-        position: absolute;
-        right: 15px; /* Position on the right */
-        top: 50%;
-        transform: translateY(-50%);
-        /* Remove order */
-        /* order: 1; */
-        z-index: 2; /* Ensure it's clickable */
-      }
-
-      /* --- User Info Container (Left) --- */
+      /* --- User Info Container (Right in RTL) --- */
       #admin-user-info {
-        position: absolute;
-        left: 15px; /* Position on the left */
-        top: 50%;
-        transform: translateY(-50%);
-        text-align: left; /* Align text to the left */
-        z-index: 2; /* Ensure it's clickable */
+        display: flex; /* Use flex for internal alignment */
+        align-items: center;
+        gap: 10px; /* Space between username and logout */
+        order: 1; /* Position on the right in RTL */
+        flex-shrink: 0; /* Prevent shrinking */
       }
 
       #admin-username-display {
         font-size: 0.9rem;
         font-weight: bold;
         color: var(--text-color);
-        display: block; /* Make it a block element */
-        margin-bottom: 4px; /* Space between username and button */
-        max-width: 180px; /* Prevent very long emails from breaking layout */
+        max-width: 180px; /* Prevent very long names/emails breaking layout */
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        order: 2; /* Username after logout button in flex */
       }
 
       #admin-user-info #logout-btn {
-        /* Remove order */
-        /* order: 3; */
-        display: block; /* Make button block level */
-        margin: 0; /* Remove default button margin */
+        order: 1; /* Logout button first in flex */
         padding: 5px 10px; /* Adjust padding if needed */
         font-size: 0.85rem; /* Slightly smaller font */
+        margin: 0; /* Remove default button margin */
+        white-space: nowrap; /* Prevent wrapping */
+      }
+
+      /* --- Theme Toggle (Left in RTL) --- */
+      header .switch {
+        order: 3; /* Position on the left in RTL */
+        flex-shrink: 0; /* Prevent shrinking */
       }
 
       /* --- Responsive Adjustments for Header --- */
       @media (max-width: 700px) {
+        header {
+          justify-content: space-between;
+        }
         header h1 {
           font-size: 1.5rem;
-          padding: 0 40px; /* Adjust padding */
+          order: 1; /* Title first */
+          width: 100%; /* Full width */
+          text-align: center; /* Center title */
+          margin-bottom: 10px; /* Space below title */
+          flex-grow: 0;
+        }
+        #admin-user-info {
+          order: 2; /* User info below title */
+          justify-content: flex-start; /* Align items start */
+        }
+        header .switch {
+          order: 3; /* Theme toggle last */
         }
         #admin-username-display {
           font-size: 0.8rem;
@@ -164,61 +170,52 @@
           padding: 4px 8px;
           font-size: 0.8rem;
         }
-        header .switch {
-          right: 10px;
-        }
-        #admin-user-info {
-          left: 10px;
-        }
       }
 
       @media (max-width: 500px) {
         header {
-          min-height: 70px; /* Increase height to accommodate elements potentially wrapping */
-          padding-top: 15px;
-          padding-bottom: 15px;
+          padding: 10px; /* Reduce padding */
+          gap: 8px;
         }
         header h1 {
           font-size: 1.3rem;
-          padding: 0 10px; /* Reduce padding further */
-          position: relative; /* Allow slight adjustment */
-          top: 10px; /* Push title down slightly if needed */
-          width: 100%; /* Take full width below buttons */
-          order: 2; /* Ensure title is below */
         }
-        header .switch {
-          top: 10px; /* Position near top */
-          transform: none;
-          right: 10px;
-          order: 1; /* Slider first */
+         /* Move theme toggle to top right */
+         .switch {
+            position: absolute;
+            top: 10px;
+            left: 10px; /* RTL: left */
+            order: initial; /* Reset order */
+            z-index: 10;
         }
+
+        /* Move user info/logout to top left */
         #admin-user-info {
-          top: 10px; /* Position near top */
-          transform: none;
-          left: 10px;
-          order: 0; /* User info first */
+            position: absolute;
+            top: 10px;
+            right: 10px; /* RTL: right */
+            order: initial; /* Reset order */
+            z-index: 10;
+            flex-direction: row-reverse; /* Show username before logout on small */
+            gap: 8px;
         }
-        #admin-username-display {
-          max-width: 100px;
-        }
+         #admin-user-info #logout-btn {
+             order: 1;
+         }
+         #admin-username-display {
+             order: 2;
+             max-width: 80px;
+         }
+        /* Add padding to main title to avoid overlap */
+         header h1 {
+            width: 100%;
+            text-align: center;
+            padding-top: 45px; /* Space below absolute elements */
+            margin-bottom: 0;
+         }
       }
 
       /* --- Ensure existing styles for .switch, .slider, .theme-icon remain the same --- */
-      /* ... (keep existing styles for the switch appearance) ... */
-
-      h1 {
-        font-size: 1.8rem;
-        margin: 0;
-        order: 2;
-      }
-      header .switch {
-        order: 1;
-      }
-      header #logout-btn {
-        order: 3;
-      }
-
-      /* --- Theme Toggle --- */
       .switch {
         position: relative;
         display: inline-block;
@@ -341,12 +338,15 @@
         padding: 5px;
         background-color: transparent;
         border: 1px solid var(--input-border);
-        color: var(--icon-color);
+        color: var(--refresh-icon-color); /* Use variable */
         line-height: 1;
         transition: background-color 0.2s, border-color 0.2s, color 0.2s,
           box-shadow 0.2s;
         margin: 0;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        display: inline-flex; /* Needed for alignment */
+        justify-content: center;
+        align-items: center;
       }
       .btn-icon:hover:not(:disabled) {
         background-color: var(--input-bg);
@@ -363,11 +363,9 @@
         border-radius: 50%;
         width: 34px;
         height: 34px;
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
       }
-      #refresh-dashboard-btn.refreshing svg {
+      /* Refresh button animation */
+      .refresh-btn.refreshing svg {
         animation: spin 1s linear infinite;
       }
       @keyframes spin {
@@ -415,12 +413,17 @@
         border-bottom: 1px solid var(--card-border);
         background-color: var(--card-bg);
         position: relative;
-        gap: 15px;
+        gap: 10px; /* Space between elements */
+        flex-wrap: nowrap; /* Prevent wrapping within header */
       }
       .collapsible-section .card-header-collapsible h2 {
         margin: 0;
         font-size: 1.2rem;
-        flex-grow: 1;
+        flex-grow: 1; /* Take available space */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-inline-end: 10px; /* Space before buttons/icon */
       }
       .collapsible-section .toggle-icon {
         font-size: 1.6rem;
@@ -430,39 +433,49 @@
         flex-shrink: 0;
         width: 20px;
         text-align: center;
-        order: -1;
-        margin-left: 10px;
-      } /* RTL: margin-left */
+        order: -1; /* Icon first (left in LTR, right in RTL) */
+        margin-inline-end: 10px; /* Space after icon */
+      }
+      .collapsible-section .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px; /* Space between buttons in header */
+        flex-shrink: 0; /* Prevent shrinking */
+        margin-inline-start: auto; /* Push actions to the end (right in LTR, left in RTL) */
+      }
+      .collapsible-section .header-actions button {
+          margin: 0; /* Remove default button margins */
+      }
       .collapsible-section .collapsible-content {
-        display: none;
+        /* display: none; */ /* Controlled by max-height */
         padding: 15px 20px;
         border-top: none;
         max-height: 0;
         overflow: hidden;
         transition: max-height 0.4s ease-out, padding-top 0.4s ease-out,
-          padding-bottom 0.4s ease-out;
+          padding-bottom 0.4s ease-out, visibility 0s 0.4s;
         background-color: var(--card-bg);
+        visibility: hidden;
       }
       .collapsible-section.is-open .card-header-collapsible {
         border-bottom-color: transparent;
       }
       .collapsible-section.is-open .collapsible-content {
-        display: block;
-        max-height: 2500px;
+        /* display: block; */ /* Controlled by max-height */
+        max-height: 2500px; /* Adjust as needed */
+        visibility: visible;
+        transition: max-height 0.4s ease-in, padding-top 0.4s ease-in,
+          padding-bottom 0.4s ease-in, visibility 0s 0s;
       }
-      .collapsible-section
-        .card-header-collapsible
-        > *:not(h2):not(.toggle-icon) {
-        margin-right: auto;
-        flex-shrink: 0;
-      } /* RTL: margin-right */
+
 
       /* --- Dashboard Styles --- */
       #dashboard-date {
         font-size: 0.8em;
         font-weight: normal;
         color: var(--disabled-text);
-        margin-right: 10px;
+        margin-right: 10px; /* RTL: margin-right is correct */
+        white-space: nowrap;
       }
       .dashboard-grid {
         display: grid;
@@ -472,7 +485,7 @@
       }
       .stat-item .stat-icon {
         display: inline-block;
-        margin-left: 8px;
+        margin-left: 8px; /* RTL: icon on the left */
         font-size: 1.2em;
         vertical-align: middle;
       }
@@ -501,8 +514,9 @@
         font-size: 0.8rem;
         color: var(--disabled-text);
         font-weight: normal;
-        margin-right: 5px;
-      } /* RTL: margin-right */
+        margin-right: 5px; /* RTL: margin-right */
+        white-space: nowrap;
+      }
       #leaderboard-enhanced-display table {
         width: 100%;
         border-collapse: collapse;
@@ -511,7 +525,7 @@
       #leaderboard-enhanced-display th,
       #leaderboard-enhanced-display td {
         padding: 10px 8px;
-        text-align: right;
+        text-align: right; /* RTL default */
         border-bottom: 1px solid var(--card-border);
         vertical-align: middle;
       }
@@ -569,7 +583,7 @@
       #user-filter-controls > div {
         flex-grow: 1;
         min-width: 150px;
-      } /* Ensure filters don't get too small */
+      }
       #user-filter-controls label {
         display: block;
         margin-bottom: 5px;
@@ -603,7 +617,7 @@
       #user-list-container th,
       #user-list-container td {
         padding: 10px 8px;
-        text-align: right;
+        text-align: right; /* RTL default */
         border-bottom: 1px solid var(--card-border);
         vertical-align: middle;
         word-wrap: break-word;
@@ -612,8 +626,8 @@
         font-weight: bold;
         background-color: var(--input-bg);
         white-space: nowrap;
-        font-family: "Noto Sans Hebrew", sans-serif; /* Ensure consistent font */
-        font-size: 0.95rem; /* Ensure consistent font */
+        font-family: "Noto Sans Hebrew", sans-serif;
+        font-size: 0.95rem;
       }
       body.dark-mode #user-list-container th {
         background-color: #3a475a;
@@ -634,14 +648,14 @@
         /* Default text-align: right from general th */
       }
       #user-list-container th.uid-header {
-        text-align: left;
-        padding-right: 10px !important;
+        text-align: left; /* Keep UID LTR */
+        padding-right: 10px !important; /* Add padding */
         width: 160px;
-      } /* RTL: Still align UID left */
+      }
       #user-list-container th.actions-header {
-        text-align: left;
+        text-align: left; /* Align actions left */
         width: 190px;
-      } /* RTL: Align actions left */
+      }
 
       /* Specific Data Cells */
       .nickname-cell {
@@ -674,20 +688,26 @@
         white-space: nowrap;
         direction: ltr; /* Keep LTR for UID */
         text-align: left; /* Keep left align for UID */
-        padding-right: 10px !important; /* RTL: Match header padding */
+        padding-right: 10px !important; /* Match header padding */
         vertical-align: middle; /* Ensure vertical alignment */
       }
       .actions-cell {
         width: 190px;
         white-space: nowrap;
-        text-align: left;
-      } /* RTL: Keep actions aligned left */
+        text-align: left; /* Align buttons left */
+      }
       .actions-cell button {
-        margin-right: 5px;
+        margin-left: 5px; /* LTR: space between buttons */
+        margin-right: 0; /* LTR: Reset margin */
         font-size: 0.85rem;
         padding: 4px 8px;
         vertical-align: middle;
-      } /* RTL: margin-right */
+      }
+      /* RTL specific override for button margin */
+      html[dir="rtl"] .actions-cell button {
+        margin-left: 0;
+        margin-right: 5px;
+      }
       .actions-cell .btn-save-user,
       .actions-cell .btn-cancel-edit-user {
         display: none;
@@ -710,12 +730,6 @@
       }
 
       /* --- Questions Section --- */
-      #questions-section .card-header-collapsible #add-question-btn,
-      #questions-section .card-header-collapsible #import-questions-btn {
-        margin-left: 5px;
-        margin-right: auto;
-      } /* RTL */
-
       #filter-controls {
         display: flex;
         flex-wrap: wrap;
@@ -782,8 +796,8 @@
       .question-actions button {
         font-size: 0.85rem;
         padding: 5px 10px;
-        margin-right: 5px;
-      } /* RTL */
+        margin-inline-start: 5px; /* Space between buttons */
+      }
       .question-actions {
         flex-shrink: 0;
       }
@@ -792,7 +806,6 @@
         color: var(--disabled-text);
         margin-top: 5px;
         display: block;
-        direction: rtl;
         text-align: right;
       }
       body.dark-mode .question-details {
@@ -817,7 +830,7 @@
       .creation-date {
         font-size: 0.75em;
         color: var(--disabled-text);
-        margin-right: 5px;
+        margin-inline-start: 5px; /* RTL: start is right */
         opacity: 0.8;
         display: inline-block;
         direction: ltr;
@@ -856,7 +869,8 @@
       .modal-close-btn {
         position: absolute;
         top: 10px;
-        left: 15px;
+        left: 15px; /* LTR: left */
+        right: auto; /* LTR */
         background: none;
         border: none;
         font-size: 1.5rem;
@@ -865,6 +879,11 @@
         padding: 5px;
         line-height: 1;
         z-index: 1;
+      }
+       /* RTL override for close button */
+      html[dir="rtl"] .modal-close-btn {
+        left: auto;
+        right: 15px;
       }
       /* Question Form Specific */
       .form-group {
@@ -904,16 +923,17 @@
         width: 20px;
         height: 20px;
         cursor: pointer;
-        margin-left: 5px;
+        margin-inline-end: 5px; /* Space between radio and text */
         flex-shrink: 0;
-      } /* RTL */
+      }
       .answer-group button {
         padding: 3px 8px !important;
         font-size: 1rem !important;
         line-height: 1;
-        margin: 0 0 0 5px !important;
+        margin: 0 !important; /* Reset margin */
+        margin-inline-start: 5px !important; /* Space before remove button */
         flex-shrink: 0;
-      } /* RTL */
+      }
       .form-actions {
         text-align: center;
         margin-top: 20px;
@@ -927,7 +947,7 @@
         min-height: 250px;
         resize: vertical;
         font-family: monospace;
-        direction: rtl; /* Keep LTR for code-like input */
+        direction: rtl; /* Keep RTL for code-like input */
         text-align: right;
         padding: 10px;
         border: 1px solid var(--input-border);
@@ -1068,12 +1088,22 @@
         }
         #user-list-container th.actions-header,
         .actions-cell {
-          width: auto;
-          white-space: normal;
+          width: auto; /* Allow actions cell to shrink/grow */
+          white-space: normal; /* Allow buttons to wrap if needed */
+        }
+        .actions-cell {
+          text-align: left; /* Keep buttons left aligned */
         }
         .actions-cell button {
-          margin-bottom: 5px;
+            margin-bottom: 5px; /* Add bottom margin if buttons wrap */
+            margin-inline-start: 5px; /* Ensure spacing */
         }
+        /* Override RTL button margin */
+        html[dir="rtl"] .actions-cell button {
+            margin-inline-start: 0;
+            margin-inline-end: 5px;
+        }
+
         #user-filter-controls {
           flex-direction: column;
           align-items: stretch;
@@ -1083,6 +1113,21 @@
           align-self: center;
           width: 50%;
         }
+         .collapsible-section .header-actions {
+            gap: 5px;
+         }
+         .collapsible-section .header-actions button {
+            font-size: 0.85rem;
+            padding: 5px 10px;
+         }
+         .btn-round {
+            width: 30px;
+            height: 30px;
+         }
+         .btn-icon svg {
+            width: 14px;
+            height: 14px;
+         }
       }
       @media (max-width: 700px) {
         #filter-controls > div {
@@ -1123,49 +1168,60 @@
         }
       }
       @media (max-width: 600px) {
-        h1 {
-          font-size: 1.5rem;
-        }
-        header {
-          justify-content: space-around;
-        }
         .question-summary {
           flex-direction: column;
           align-items: stretch;
         }
         .question-actions {
-          text-align: right;
+          text-align: right; /* RTL: right */
           margin-top: 10px;
+        }
+         /* Override LTR action button alignment */
+        html[dir="ltr"] .question-actions {
+          text-align: left;
         }
         .modal-container {
           padding: 15px;
         }
         .modal-close-btn {
           top: 5px;
-          left: 10px;
         }
+        /* RTL override for close button position */
+        html[dir="rtl"] .modal-close-btn {
+           right: 10px; left: auto;
+        }
+        html[dir="ltr"] .modal-close-btn {
+            left: 10px; right: auto;
+        }
+
         .answer-group label {
           display: none;
         }
         .collapsible-section .card-header-collapsible {
           padding: 10px 15px;
           gap: 10px;
+          /* flex-wrap: wrap; /* Allow header items to wrap */
         }
-        .collapsible-section .toggle-icon {
-          font-size: 1.4rem;
-          margin-left: 5px;
-          margin-right: 0;
-        } /* RTL */
+         .collapsible-section .card-header-collapsible h2 {
+             /* width: 100%; /* Title takes full width */
+             /* order: 1; /* Title first */
+             margin-bottom: 5px; /* Space below title */
+             text-align: right; /* RTL */
+         }
+         html[dir="ltr"] .collapsible-section .card-header-collapsible h2 {
+             text-align: left;
+         }
+         .collapsible-section .toggle-icon {
+             font-size: 1.4rem;
+             /* order: 0; /* Icon absolute first */
+             margin-inline-end: 0; /* Reset margin */
+         }
+         .collapsible-section .header-actions {
+             /* order: 2; /* Actions after title */
+             margin-inline-start: 0; /* Reset margin */
+         }
         .collapsible-content {
           padding: 10px 15px;
-        }
-        .btn-round {
-          width: 30px;
-          height: 30px;
-        }
-        .btn-icon svg {
-          width: 14px;
-          height: 14px;
         }
         .pagination-controls span {
           margin: 0 8px;
@@ -1176,24 +1232,22 @@
         .actions-cell button {
           font-size: 0.8rem;
           padding: 3px 6px;
-          margin-right: 3px;
           margin-bottom: 3px;
-        } /* RTL */
+          margin-inline-start: 3px;
+        }
+        /* Override RTL button margin */
+        html[dir="rtl"] .actions-cell button {
+            margin-inline-start: 0;
+            margin-inline-end: 3px;
+        }
         #user-list-container th.uid-header,
         .uid-cell {
           width: 90px;
           font-size: 0.7em;
-        } /* Adjust width if needed */
+        }
         #user-list-container table {
-          table-layout: auto;
-        } /* Let table decide layout on small screens */
-        #questions-section .card-header-collapsible #add-question-btn,
-        #questions-section .card-header-collapsible #import-questions-btn {
-          padding: 6px 10px;
-          font-size: 0.9rem;
-          margin-right: 5px;
-          margin-left: 0;
-        } /* RTL */
+          table-layout: auto; /* Let table decide layout on small screens */
+        }
         #bulk-import-area {
           min-height: 150px;
           font-size: 0.8rem;
@@ -1213,44 +1267,20 @@
           width: 100%;
         }
       }
-      @media (max-width: 500px) {
-        .dashboard-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-        /* Keep UID visible based on earlier request, remove display:none */
-        #user-list-container th.uid-header {
-          /* display: none; */
-        }
-        .uid-cell {
-          display: table-cell !important; /* Ensure it stays visible */
-          width: auto; /* Allow flexible width */
-          font-size: 0.75em; /* Keep smaller size */
-          white-space: nowrap; /* Prevent wrapping */
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        #questions-section .card-header-collapsible {
-          flex-wrap: wrap;
-        }
-        #questions-section .card-header-collapsible h2 {
-          width: 100%;
-          margin-bottom: 10px;
-          order: 1;
-        }
-        #questions-section .card-header-collapsible .toggle-icon {
-          order: 0;
-        }
-        #questions-section
-          .card-header-collapsible
-          > *:not(h2):not(.toggle-icon) {
-          margin-right: 0;
-          order: 2;
-        }
-        #questions-section .card-header-collapsible #add-question-btn,
-        #questions-section .card-header-collapsible #import-questions-btn {
-          margin-right: 5px;
-        } /* RTL */
-      }
+       @media (max-width: 500px) {
+           /* Further adjustments if needed */
+           .dashboard-grid {
+               grid-template-columns: repeat(2, 1fr);
+           }
+           .uid-cell {
+              display: table-cell !important; /* Ensure it stays visible */
+              width: auto; /* Allow flexible width */
+              font-size: 0.75em; /* Keep smaller size */
+              white-space: nowrap; /* Prevent wrapping */
+              overflow: hidden;
+              text-overflow: ellipsis;
+           }
+       }
     </style>
   </head>
   <body>
@@ -1281,10 +1311,10 @@
         <h1>ניהול טריווBIO</h1>
 
         <div id="admin-user-info" style="display: none">
-          <div id="admin-username-display">טוען...</div>
           <button id="logout-btn" class="btn-danger" style="display: none">
             התנתק
           </button>
+          <div id="admin-username-display">טוען...</div>
         </div>
       </header>
 
@@ -1310,26 +1340,15 @@
             >
               <span class="toggle-icon" aria-hidden="true">+</span>
               <h2>סקירה כללית <span id="dashboard-date"></span></h2>
-              <div id="refresh-dashboard-container">
+              <div class="header-actions">
                 <button
                   id="refresh-dashboard-btn"
-                  class="btn-icon btn-round"
-                  title="רענן נתונים"
+                  class="btn-icon btn-round refresh-btn"
+                  title="רענן סקירה כללית"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    fill="currentColor"
-                    viewBox="0 0 16 16"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"
-                    />
-                    <path
-                      d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"
-                    />
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
                   </svg>
                 </button>
               </div>
@@ -1342,67 +1361,18 @@
               aria-hidden="true"
             >
               <div class="dashboard-grid">
-                <div class="stat-item">
-                  <h3>
-                    <span class="stat-icon" title='סה"כ שאלות'>📊</span> סה"כ
-                    שאלות
-                  </h3>
-                  <p id="stat-total-questions">?</p>
-                </div>
-                <div class="stat-item">
-                  <h3>
-                    <span class="stat-icon" title="שחקנים רשומים">👥</span>
-                    שחקנים רשומים
-                  </h3>
-                  <p id="stat-total-players">?</p>
-                </div>
-                <div class="stat-item">
-                  <h3>
-                    <span class="stat-icon" title="שחקנים פעילים היום">☀️</span>
-                    שחקנים פעילים (היום)
-                  </h3>
-                  <p id="stat-active-players-today">?</p>
-                </div>
-                <div class="stat-item">
-                  <h3>
-                    <span class="stat-icon" title="משחקים ששוחקו היום">🎮</span>
-                    משחקים ששוחקו (היום)
-                  </h3>
-                  <p id="stat-games-today">?</p>
-                </div>
-                <div class="stat-item">
-                  <h3>
-                    <span class="stat-icon" title="ממוצע ניקוד היום">🎯</span>
-                    ממוצע ניקוד (היום)
-                  </h3>
-                  <p id="stat-avg-score-today">?</p>
-                </div>
-                <div class="stat-item">
-                  <h3>
-                    <span
-                      class="stat-icon"
-                      title="ממוצע תשובות נכונות למשחק (היום)"
-                      >✅</span
-                    >
-                    ממוצע נכונות (היום)
-                  </h3>
-                  <p id="stat-avg-correct-today">?</p>
-                </div>
-                <div class="stat-item">
-                  <h3>
-                    <span class="stat-icon" title="שחקנים חדשים היום">✨</span>
-                    שחקנים חדשים (היום)
-                  </h3>
-                  <p id="stat-new-players-today">?</p>
-                </div>
+                <div class="stat-item"><h3><span class="stat-icon" title='סה"כ שאלות'>📊</span> סה"כ שאלות</h3><p id="stat-total-questions">?</p></div>
+                <div class="stat-item"><h3><span class="stat-icon" title="שחקנים רשומים">👥</span> שחקנים רשומים</h3><p id="stat-total-players">?</p></div>
+                <div class="stat-item"><h3><span class="stat-icon" title="שחקנים פעילים היום">☀️</span> שחקנים פעילים (היום)</h3><p id="stat-active-players-today">?</p></div>
+                <div class="stat-item"><h3><span class="stat-icon" title="משחקים ששוחקו היום">🎮</span> משחקים ששוחקו (היום)</h3><p id="stat-games-today">?</p></div>
+                <div class="stat-item"><h3><span class="stat-icon" title="ממוצע ניקוד היום">🎯</span> ממוצע ניקוד (היום)</h3><p id="stat-avg-score-today">?</p></div>
+                <div class="stat-item"><h3><span class="stat-icon" title="ממוצע תשובות נכונות למשחק (היום)">✅</span> ממוצע נכונות (היום)</h3><p id="stat-avg-correct-today">?</p></div>
+                <div class="stat-item"><h3><span class="stat-icon" title="שחקנים חדשים היום">✨</span> שחקנים חדשים (היום)</h3><p id="stat-new-players-today">?</p></div>
               </div>
             </div>
           </section>
 
-          <section
-            id="leaderboard-enhanced-section"
-            class="card collapsible-section"
-          >
+          <section id="leaderboard-enhanced-section" class="card collapsible-section">
             <div
               class="card-header-collapsible"
               role="button"
@@ -1411,9 +1381,16 @@
               aria-controls="leaderboard-content"
             >
               <span class="toggle-icon" aria-hidden="true">+</span>
-              <h2>
-                לוח דירוג כללי <span class="leaderboard-note">(Top 10)</span>
-              </h2>
+              <h2>לוח דירוג כללי <span class="leaderboard-note">(Top 10)</span></h2>
+              <div class="header-actions">
+                 <button
+                  id="refresh-leaderboard-btn"
+                  class="btn-icon btn-round refresh-btn"
+                  title="רענן דירוג"
+                >
+                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"> <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/> <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/> </svg>
+                </button>
+              </div>
             </div>
             <div
               class="collapsible-content"
@@ -1439,6 +1416,15 @@
             >
               <span class="toggle-icon" aria-hidden="true">+</span>
               <h2>ניהול משתמשים</h2>
+              <div class="header-actions">
+                 <button
+                  id="refresh-users-btn"
+                  class="btn-icon btn-round refresh-btn"
+                  title="רענן משתמשים"
+                >
+                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"> <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/> <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/> </svg>
+                </button>
+              </div>
             </div>
             <div
               class="collapsible-content"
@@ -1448,44 +1434,16 @@
               aria-hidden="true"
             >
               <div id="user-filter-controls">
-                <div style="flex-grow: 1">
-                  <label for="user-search-input">חיפוש משתמש:</label>
-                  <input
-                    type="search"
-                    id="user-search-input"
-                    placeholder="חפש לפי שם, UID..."
-                  />
-                </div>
-                <div style="flex-grow: 1">
-                  <label for="user-role-filter">סנן לפי סטטוס:</label>
-                  <select id="user-role-filter">
-                    <option value="">הכל</option>
-                    <option value="admin">אדמין</option>
-                    <option value="verified">מאומת (Google)</option>
-                  </select>
-                </div>
-                <button id="clear-user-filters-btn" class="btn-danger">
-                  נקה סינונים
-                </button>
+                <div style="flex-grow: 1"><label for="user-search-input">חיפוש משתמש:</label><input type="search" id="user-search-input" placeholder="חפש לפי שם, UID..."/></div>
+                <div style="flex-grow: 1"><label for="user-role-filter">סנן לפי סטטוס:</label><select id="user-role-filter"><option value="">הכל</option><option value="admin">אדמין</option><option value="verified">מאומת (Google)</option></select></div>
+                <button id="clear-user-filters-btn" class="btn-danger">נקה סינונים</button>
               </div>
-              <div id="user-list-container">
-                <p>טוען רשימת משתמשים...</p>
-              </div>
-              <p id="no-users-message" style="display: none">
-                לא נמצאו משתמשים רשומים.
-              </p>
-              <div
-                id="user-pagination-controls"
-                class="pagination-controls"
-                style="display: none"
-              >
-                <button id="prev-user-page-btn" class="btn-primary">
-                  « קודם
-                </button>
+              <div id="user-list-container"><p>טוען רשימת משתמשים...</p></div>
+              <p id="no-users-message" style="display: none">לא נמצאו משתמשים רשומים.</p>
+              <div id="user-pagination-controls" class="pagination-controls" style="display: none">
+                <button id="prev-user-page-btn" class="btn-primary">« קודם</button>
                 <span id="user-page-info"></span>
-                <button id="next-user-page-btn" class="btn-primary">
-                  הבא »
-                </button>
+                <button id="next-user-page-btn" class="btn-primary">הבא »</button>
               </div>
             </div>
           </section>
@@ -1500,12 +1458,21 @@
             >
               <span class="toggle-icon" aria-hidden="true">+</span>
               <h2>ניהול שאלות</h2>
-              <button id="import-questions-btn" class="btn-secondary">
-                ייבוא שאלות...
-              </button>
-              <button id="add-question-btn" class="btn-success">
-                הוסף שאלה +
-              </button>
+              <div class="header-actions">
+                 <button id="import-questions-btn" class="btn-secondary">
+                  ייבוא
+                </button>
+                <button id="add-question-btn" class="btn-success">
+                  הוסף
+                </button>
+                <button
+                  id="refresh-questions-btn"
+                  class="btn-icon btn-round refresh-btn"
+                  title="רענן שאלות"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"> <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/> <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/> </svg>
+                </button>
+              </div>
             </div>
             <div
               class="collapsible-content"
@@ -1515,27 +1482,10 @@
               aria-hidden="true"
             >
               <div id="filter-controls">
-                <div>
-                  <label for="search-input">חיפוש:</label>
-                  <input
-                    type="search"
-                    id="search-input"
-                    placeholder="חפש בשאלה, תשובות, נושא, תגיות..."
-                  />
-                </div>
+                <div><label for="search-input">חיפוש:</label><input type="search" id="search-input" placeholder="חפש בשאלה, תשובות, נושא, תגיות..."/></div>
                 <div class="filter-group-topic-clear">
-                  <div class="topic-select-wrapper">
-                    <label for="topic-filter">סנן לפי נושא:</label>
-                    <select id="topic-filter">
-                      <option value="">כל הנושאים</option>
-                      <option value="human-body">גוף האדם</option>
-                      <option value="cell">התא</option>
-                      <option value="ecology">אקולוגיה</option>
-                    </select>
-                  </div>
-                  <button id="clear-filters-btn" class="btn-danger">
-                    נקה סינונים
-                  </button>
+                  <div class="topic-select-wrapper"><label for="topic-filter">סנן לפי נושא:</label><select id="topic-filter"><option value="">כל הנושאים</option><option value="human-body">גוף האדם</option><option value="cell">התא</option><option value="ecology">אקולוגיה</option></select></div>
+                  <button id="clear-filters-btn" class="btn-danger">נקה סינונים</button>
                 </div>
               </div>
 
@@ -1545,9 +1495,7 @@
                 <span id="page-info"></span>
                 <button id="next-page-btn" class="btn-primary">הבא »</button>
               </div>
-              <p id="no-results-message" style="display: none">
-                לא נמצאו שאלות התואמות את הסינון.
-              </p>
+              <p id="no-results-message" style="display: none">לא נמצאו שאלות התואמות את הסינון.</p>
             </div>
           </section>
         </div>
@@ -1555,51 +1503,21 @@
 
       <div id="question-form-modal" class="modal-overlay">
         <div id="question-form-container" class="modal-container">
-          <button id="close-modal-btn" class="modal-close-btn" title="סגור">
-            ×
-          </button>
+          <button id="close-modal-btn" class="modal-close-btn" title="סגור">×</button>
           <form id="question-form">
             <h3 id="form-title">הוסף שאלה חדשה</h3>
-            <input type="hidden" id="question-id" />
-            <div class="form-group">
-              <label for="question-text-input">טקסט השאלה:</label
-              ><textarea id="question-text-input" required></textarea>
-            </div>
+            <input type="hidden" id="question-id"/>
+            <div class="form-group"><label for="question-text-input">טקסט השאלה:</label><textarea id="question-text-input" required></textarea></div>
             <div class="form-group">
               <label>תשובות (סמן את הנכונה):</label>
               <div id="answers-container"></div>
-              <button
-                type="button"
-                id="add-answer-btn"
-                class="btn-primary"
-                style="margin-top: 10px"
-              >
-                הוסף תשובה +
-              </button>
+              <button type="button" id="add-answer-btn" class="btn-primary" style="margin-top: 10px">הוסף תשובה +</button>
             </div>
-            <div class="form-group">
-              <label for="question-topic">נושא:</label
-              ><select id="question-topic" required>
-                <option value="" disabled selected>בחר נושא...</option>
-                <option value="human-body">גוף האדם</option>
-                <option value="cell">התא</option>
-                <option value="ecology">אקולוגיה</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="question-tags">תגיות (מופרדות בפסיק):</label
-              ><input
-                type="text"
-                id="question-tags"
-                placeholder="לדוגמה: מערכת העיכול, אנזימים"
-              />
-            </div>
+            <div class="form-group"><label for="question-topic">נושא:</label><select id="question-topic" required><option value="" disabled selected>בחר נושא...</option><option value="human-body">גוף האדם</option><option value="cell">התא</option><option value="ecology">אקולוגיה</option></select></div>
+            <div class="form-group"><label for="question-tags">תגיות (מופרדות בפסיק):</label><input type="text" id="question-tags" placeholder="לדוגמה: מערכת העיכול, אנזימים"/></div>
             <div class="form-actions">
-              <button type="submit" id="save-question-btn" class="btn-primary">
-                שמור שאלה</button
-              ><button type="button" id="cancel-edit-btn" class="btn-secondary">
-                ביטול
-              </button>
+              <button type="submit" id="save-question-btn" class="btn-primary">שמור שאלה</button>
+              <button type="button" id="cancel-edit-btn" class="btn-secondary">ביטול</button>
             </div>
           </form>
         </div>
@@ -1607,49 +1525,18 @@
 
       <div id="import-modal" class="modal-overlay">
         <div id="import-modal-container" class="modal-container">
-          <button
-            id="close-import-modal-btn"
-            class="modal-close-btn"
-            title="סגור"
-          >
-            ×
-          </button>
+          <button id="close-import-modal-btn" class="modal-close-btn" title="סגור">×</button>
           <h3>ייבוא שאלות מרובות</h3>
           <div class="form-group">
             <label for="bulk-import-area">הדבק שאלות כאן:</label>
-            <textarea
-              id="bulk-import-area"
-              rows="15"
-              placeholder="הכנס שאלה אחת או יותר לפי הפורמט הבא:
-              שאלה 1
-              תשובה א
-              תשובה ב
-              *תשובה ג (הכוכבית מסמנת תשובה נכונה)
-              תשובה ד
-              נושא (חייב להיות או התא, או גוף האדם או אקולוגיה)
-              תגית א, תגית ב, תגית ג
-              
-              שאלה 2
-              ..."
-            ></textarea>
+            <textarea id="bulk-import-area" rows="15" placeholder="הכנס שאלה אחת או יותר לפי הפורמט הבא:&#10;שאלה 1&#10;תשובה א&#10;תשובה ב&#10;*תשובה ג (הכוכבית מסמנת תשובה נכונה)&#10;תשובה ד&#10;נושא (חייב להיות אחד מ: גוף האדם, התא, אקולוגיה)&#10;תגית א, תגית ב, תגית ג&#10;&#10;שאלה 2&#10;..."></textarea>
           </div>
           <div class="import-actions">
             <div class="left-actions">
-              <button type="button" id="process-import-btn" class="btn-primary">
-                1. עבד נתונים
-              </button>
-              <button type="button" id="clear-import-btn" class="btn-secondary">
-                נקה
-              </button>
+              <button type="button" id="process-import-btn" class="btn-primary">1. עבד נתונים</button>
+              <button type="button" id="clear-import-btn" class="btn-secondary">נקה</button>
             </div>
-            <button
-              type="button"
-              id="confirm-import-btn"
-              class="btn-success"
-              style="display: none"
-            >
-              2. ייבא שאלות תקינות
-            </button>
+            <button type="button" id="confirm-import-btn" class="btn-success" style="display: none">2. ייבא שאלות תקינות</button>
           </div>
           <div id="import-feedback"></div>
           <div id="import-preview"></div>
@@ -1664,17 +1551,32 @@
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         // --- Firebase Config ---
-        const firebaseConfig = {
-          apiKey: "AIzaSyAGFC_TB8iEMvS2PyxeASj1HH4i66AW4UA", // Replace with your actual API key
-          authDomain: "trivbio.firebaseapp.com",
-          projectId: "trivbio",
-          storageBucket: "trivbio.appspot.com", // Corrected bucket name if necessary
-          messagingSenderId: "1097087574583",
-          appId: "1:1097087574583:web:b36c0441537a1f596215b2",
-          measurementId: "G-ZY245YB23E",
-          databaseURL: "https://trivbio-default-rtdb.firebaseio.com/", // Often helpful to include
-        };
+        // !!! IMPORTANT: Replace with your actual Firebase configuration !!!
+        const firebaseConfig = { apiKey: "AIzaSyAGFC_TB8iEMvS2PyxeASj1HH4i66AW4UA", authDomain: "trivbio.firebaseapp.com", projectId: "trivbio", storageBucket: "trivbio.firebasestorage.app", messagingSenderId: "1097087574583", appId: "1:1097087574583:web:b36c0441537a1f596215b2", measurementId: "G-ZY245YB23E", };
+
         try {
+          // Simple check if placeholder values are still present
+           if (firebaseConfig.apiKey === "YOUR_API_KEY" || firebaseConfig.projectId === "YOUR_PROJECT_ID") {
+                console.warn("Firebase config not replaced. Using placeholder values.");
+                // Display a warning to the user on the page itself
+                const body = document.body;
+                const warningDiv = document.createElement('div');
+                warningDiv.textContent = 'אזהרה: הגדרות Firebase אינן מוגדרות כראוי. הפונקציונליות מוגבלת.';
+                warningDiv.style.backgroundColor = 'red';
+                warningDiv.style.color = 'white';
+                warningDiv.style.padding = '10px';
+                warningDiv.style.textAlign = 'center';
+                warningDiv.style.fontWeight = 'bold';
+                warningDiv.style.position = 'fixed';
+                warningDiv.style.top = '0';
+                warningDiv.style.left = '0';
+                warningDiv.style.width = '100%';
+                warningDiv.style.zIndex = '2000';
+                body.prepend(warningDiv);
+                const loginBtn = document.getElementById('login-btn');
+                if (loginBtn) loginBtn.disabled = true;
+           }
+
           if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
           else firebase.app();
         } catch (e) {
@@ -1682,11 +1584,26 @@
           const li = document.getElementById("loading");
           if (li)
             li.innerHTML = '<p class="error-text">שגיאת Firebase קריטית!</p>';
-          return;
+          // Display a warning to the user on the page itself
+          const body = document.body;
+          const errorDiv = document.createElement('div');
+          errorDiv.textContent = 'שגיאה קריטית בחיבור ל-Firebase. לא ניתן לטעון את הפאנל.';
+          errorDiv.style.backgroundColor = 'darkred';
+          errorDiv.style.color = 'white';
+          errorDiv.style.padding = '10px';
+          errorDiv.style.textAlign = 'center';
+          errorDiv.style.fontWeight = 'bold';
+          errorDiv.style.position = 'fixed';
+          errorDiv.style.top = '0';
+          errorDiv.style.left = '0';
+          errorDiv.style.width = '100%';
+          errorDiv.style.zIndex = '2000';
+          body.prepend(errorDiv);
+          return; // Stop execution if Firebase fails critically
         }
         const auth = firebase.auth();
         const database = firebase.database();
-        console.log("Admin Firebase initialized");
+        console.log("Admin Firebase initialized (potentially with placeholders)");
 
         // --- DOM Elements ---
         const loginBtn = document.getElementById("login-btn");
@@ -1698,38 +1615,29 @@
         const genErr = document.getElementById("general-error");
         const themeTog = document.getElementById("theme-toggle");
         const adminContentContainer = document.getElementById("admin-content");
+        const adminUserInfo = document.getElementById("admin-user-info");
+        const adminUsernameDisplay = document.getElementById("admin-username-display");
+
         // Dashboard
         const dashboardOverview = document.getElementById("dashboard-overview");
         const dashboardDate = document.getElementById("dashboard-date");
-        const refreshDashboardBtn = document.getElementById(
-          "refresh-dashboard-btn"
-        );
-        const statTotalQuestions = document.getElementById(
-          "stat-total-questions"
-        );
+        const refreshDashboardBtn = document.getElementById("refresh-dashboard-btn");
+        const statTotalQuestions = document.getElementById("stat-total-questions");
         const statTotalPlayers = document.getElementById("stat-total-players");
-        const statActivePlayersToday = document.getElementById(
-          "stat-active-players-today"
-        );
+        const statActivePlayersToday = document.getElementById("stat-active-players-today");
         const statGamesToday = document.getElementById("stat-games-today");
-        const statAvgScoreToday = document.getElementById(
-          "stat-avg-score-today"
-        );
-        const statAvgCorrectToday = document.getElementById(
-          "stat-avg-correct-today"
-        );
-        const statNewPlayersToday = document.getElementById(
-          "stat-new-players-today"
-        );
+        const statAvgScoreToday = document.getElementById("stat-avg-score-today");
+        const statAvgCorrectToday = document.getElementById("stat-avg-correct-today");
+        const statNewPlayersToday = document.getElementById("stat-new-players-today");
+
         // Leaderboard
-        const leaderboardEnhancedDisplay = document.getElementById(
-          "leaderboard-enhanced-display"
-        );
+        const leaderboardSection = document.getElementById("leaderboard-enhanced-section");
+        const leaderboardEnhancedDisplay = document.getElementById("leaderboard-enhanced-display");
+        const refreshLeaderboardBtn = document.getElementById("refresh-leaderboard-btn");
+
         // Users
         const usersSection = document.getElementById("users-section");
-        const userListContainer = document.getElementById(
-          "user-list-container"
-        );
+        const userListContainer = document.getElementById("user-list-container");
         const noUsersMessage = document.getElementById("no-users-message");
         const userPagCont = document.getElementById("user-pagination-controls");
         const prevUserPBtn = document.getElementById("prev-user-page-btn");
@@ -1737,21 +1645,24 @@
         const userPageInf = document.getElementById("user-page-info");
         const userSearchInput = document.getElementById("user-search-input");
         const userRoleFilter = document.getElementById("user-role-filter");
-        const clearUserFiltersBtn = document.getElementById(
-          "clear-user-filters-btn"
-        );
+        const clearUserFiltersBtn = document.getElementById("clear-user-filters-btn");
+        const refreshUsersBtn = document.getElementById("refresh-users-btn");
+
         // Questions
         const questionsSection = document.getElementById("questions-section");
         const qListDiv = document.getElementById("questions-list");
-        const searchIn = document.getElementById("search-input"); // Question search
-        const topicFil = document.getElementById("topic-filter"); // Question topic filter
-        const clearFilBtn = document.getElementById("clear-filters-btn"); // Question filter clear
-        const noResMsg = document.getElementById("no-results-message"); // Question no results
+        const searchIn = document.getElementById("search-input");
+        const topicFil = document.getElementById("topic-filter");
+        const clearFilBtn = document.getElementById("clear-filters-btn");
+        const noResMsg = document.getElementById("no-results-message");
         const addQBtn = document.getElementById("add-question-btn");
-        const pagCont = document.getElementById("pagination-controls"); // Question pagination
+        const pagCont = document.getElementById("pagination-controls");
         const prevPBtn = document.getElementById("prev-page-btn");
         const nextPBtn = document.getElementById("next-page-btn");
         const pageInf = document.getElementById("page-info");
+        const importQuestionsBtn = document.getElementById("import-questions-btn");
+        const refreshQuestionsBtn = document.getElementById("refresh-questions-btn");
+
         // Question Form Modal
         const qFormModal = document.getElementById("question-form-modal");
         const qForm = document.getElementById("question-form");
@@ -1765,14 +1676,10 @@
         const qTagsIn = document.getElementById("question-tags");
         const saveQBtn = document.getElementById("save-question-btn");
         const cancelEdBtn = document.getElementById("cancel-edit-btn");
+
         // Import Modal
-        const importQuestionsBtn = document.getElementById(
-          "import-questions-btn"
-        );
         const importModal = document.getElementById("import-modal");
-        const closeImportModalBtn = document.getElementById(
-          "close-import-modal-btn"
-        );
+        const closeImportModalBtn = document.getElementById("close-import-modal-btn");
         const bulkImportArea = document.getElementById("bulk-import-area");
         const clearImportBtn = document.getElementById("clear-import-btn");
         const processImportBtn = document.getElementById("process-import-btn");
@@ -1780,26 +1687,23 @@
         const importPreview = document.getElementById("import-preview");
         const confirmImportBtn = document.getElementById("confirm-import-btn");
 
-        const adminUserInfo = document.getElementById("admin-user-info"); // New
-        const adminUsernameDisplay = document.getElementById(
-          "admin-username-display"
-        ); // New
 
         // --- Global State ---
         let currentAdminUid = null;
-        let allQuestions = {}; // Holds all question data fetched
-        let allUsers = {}; // Holds all user data fetched
-        let adminUids = {}; // Holds UIDs of admins {uid: true}
-        let questionsListener = null; // Firebase listener for questions
-        let usersListener = null; // Potentially add a listener for users if real-time updates needed
-        let filteredQuestionIds = []; // Array of question IDs matching current filters
-        let currentQuestionPage = 1; // Current page for question pagination
-        const questionsPerPage = 10; // Items per page for questions
-        let allUserIds = []; // Array of all user IDs, sorted by join date
-        let currentUserPage = 1; // Current page for user pagination
-        const usersPerPage = 10; // Items per page for users
-        let userSearchValue = ""; // Current user search term
-        let userRoleFilterValue = ""; // Current user role filter
+        let currentAdminNickname = null;
+        let allQuestions = {};
+        let allUsers = {};
+        let adminUids = {};
+        let questionsListener = null;
+        let usersListener = null; // Not actively used for real-time updates in this version
+        let filteredQuestionIds = [];
+        let currentQuestionPage = 1;
+        const questionsPerPage = 10;
+        let allUserIds = []; // Sorted newest first
+        let currentUserPage = 1;
+        const usersPerPage = 10;
+        let userSearchValue = "";
+        let userRoleFilterValue = "";
         const topicTranslations = {
           "human-body": "גוף האדם",
           cell: "התא",
@@ -1813,1690 +1717,453 @@
         };
         const knownHebrewTopics = Object.keys(hebrewTopicMap);
         const COLLAPSIBLE_STATE_KEY = "adminCollapsibleStates";
-        let validQuestionsForImport = []; // Holds questions parsed from import modal
+        let validQuestionsForImport = [];
 
         // --- Helpers ---
-        function showEl(el) {
-          if (el) el.style.display = "block";
-        }
+        function showEl(el) { if (el) el.style.display = "block"; }
         function showFlexEl(el) {
-          if (el) {
-            el.style.display = "flex";
-            document.body.style.overflow = "hidden";
-          }
+             if (el) {
+                el.style.display = "flex";
+                // Optionally prevent body scroll when modal is open
+                // document.body.style.overflow = "hidden";
+             }
         }
-        function hideEl(el) {
-          if (el) el.style.display = "none";
-        }
-        function debounce(func, wait) {
-          let timeout;
-          return function executedFunction(...args) {
-            const later = () => {
-              clearTimeout(timeout);
-              func.apply(this, args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-          };
-        }
-        function getTodayDateString() {
-          return new Date().toISOString().split("T")[0];
-        }
-        function formatDate(timestamp) {
-          if (!timestamp) return "-";
-          try {
-            const date = new Date(timestamp);
-            // Format as YYYY-MM-DD HH:MM
-            return (
-              date.toLocaleDateString("sv-SE") +
-              " " +
-              date.toLocaleTimeString("sv-SE", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            );
-          } catch (e) {
-            return "-";
-          }
+        function hideEl(el) { if (el) el.style.display = "none"; }
+        function debounce(func, wait) { let timeout; return function executedFunction(...args) { const later = () => { clearTimeout(timeout); func.apply(this, args); }; clearTimeout(timeout); timeout = setTimeout(later, wait); }; }
+        function getTodayDateString() { return new Date().toISOString().split("T")[0]; }
+        function formatDate(timestamp) { if (!timestamp) return "-"; try { const date = new Date(timestamp); return (date.toLocaleDateString("sv-SE") + " " + date.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit", })); } catch (e) { return "-"; } }
+        async function fetchUserNickname(uid) {
+             if (!uid) return null;
+             try {
+                 const snapshot = await database.ref(`players/${uid}/nickname`).once('value');
+                 return snapshot.exists() ? snapshot.val() : null;
+             } catch (error) {
+                 console.error("Error fetching nickname for", uid, error);
+                 return null;
+             }
         }
 
         // --- Theme & Auth ---
-        function setTheme(isDarkMode) {
-          document.body.classList.toggle("dark-mode", isDarkMode);
-        }
+        function setTheme(isDarkMode) { document.body.classList.toggle("dark-mode", isDarkMode); }
         themeTog.checked = document.body.classList.contains("dark-mode");
-        themeTog.addEventListener("change", () => {
-          const isDarkMode = themeTog.checked;
-          setTheme(isDarkMode);
-          localStorage.setItem("darkMode", isDarkMode.toString());
-          // Save theme preference for admin in DB (optional, requires appropriate rules)
-          // if (currentAdminUid) database.ref(`players/${currentAdminUid}/adminDarkMode`).set(isDarkMode).catch(e => console.warn("Theme preference save error", e));
-        });
-
-        // --- Load Admin Theme Preference (Optional) ---
-        // function loadThemePref(uid) { ... } // As before, if needed
+        themeTog.addEventListener("change", () => { const isDarkMode = themeTog.checked; setTheme(isDarkMode); localStorage.setItem("darkMode", isDarkMode.toString()); });
 
         auth.onAuthStateChanged(async (user) => {
           // --- Reset UI State ---
-          hideEl(loadInd);
-          hideEl(accessDen);
-          hideEl(genErr);
-          hideEl(adminCont);
-          hideEl(authSect);
-          hideEl(logoutBtn);
-          hideEl(adminUserInfo); // Hide new container too
-          if (adminUsernameDisplay) adminUsernameDisplay.textContent = ""; // Clear username
+          hideEl(loadInd); hideEl(accessDen); hideEl(genErr); hideEl(adminCont); hideEl(authSect);
+          hideEl(logoutBtn); hideEl(adminUserInfo);
+          if (adminUsernameDisplay) adminUsernameDisplay.textContent = "";
 
           // --- Listener Cleanup ---
-          if (questionsListener) {
-            database.ref("questions").off("value", questionsListener);
-            questionsListener = null;
-          }
-          if (usersListener) {
-            database.ref("players").off("value", usersListener);
-            usersListener = null;
-          }
+          if (questionsListener) { database.ref("questions").off("value", questionsListener); questionsListener = null; }
+          // No active users listener to remove
 
           // --- Reset Global State ---
-          currentAdminUid = null;
-          allQuestions = {};
-          allUsers = {};
-          adminUids = {};
-          filteredQuestionIds = [];
-          currentQuestionPage = 1;
-          allUserIds = [];
-          currentUserPage = 1;
-          userSearchValue = "";
-          userRoleFilterValue = "";
-          validQuestionsForImport = [];
+          currentAdminUid = null; currentAdminNickname = null; allQuestions = {}; allUsers = {}; adminUids = {};
+          filteredQuestionIds = []; currentQuestionPage = 1; allUserIds = []; currentUserPage = 1;
+          userSearchValue = ""; userRoleFilterValue = ""; validQuestionsForImport = [];
 
           // --- Reset UI Components ---
-          resetFilters(false);
-          resetUserFilters(false);
-          resetDashboardStats();
-          if (userListContainer) userListContainer.innerHTML = "";
-          hideEl(noUsersMessage);
-          hideEl(userPagCont);
-          if (qListDiv) qListDiv.innerHTML = "";
-          hideEl(noResMsg);
-          hideEl(pagCont);
-          closeAllCollapsibleSections();
-          closeForm();
-          closeImportModal();
+          resetFilters(false); resetUserFilters(false); resetDashboardStats();
+          if (userListContainer) userListContainer.innerHTML = ""; hideEl(noUsersMessage); hideEl(userPagCont);
+          if (qListDiv) qListDiv.innerHTML = ""; hideEl(noResMsg); hideEl(pagCont);
+          if (leaderboardEnhancedDisplay) leaderboardEnhancedDisplay.innerHTML = ""; // Clear leaderboard too
+          closeAllCollapsibleSections(false); // Close all, don't save state yet
+          closeForm(); closeImportModal();
           // --- End Reset ---
 
           if (user) {
             currentAdminUid = user.uid;
-            console.log(
-              "Auth: User:",
-              user.uid,
-              "Email:",
-              user.email,
-              "Anon:",
-              user.isAnonymous
-            );
+            console.log("Auth: User:", user.uid, "Email:", user.email, "Anon:", user.isAnonymous);
 
             if (user.isAnonymous) {
-              currentAdminUid = null; // Anonymous users cannot access admin
-              showEl(authSect); // Show login prompt
+              currentAdminUid = null;
+              showEl(authSect);
             } else {
-              showEl(loadInd); // Show loading while checking admin status
+              showEl(loadInd);
               try {
-                const isAdmin = await checkAdmin(user.uid);
+                const [isAdmin, nickname] = await Promise.all([
+                    checkAdmin(user.uid),
+                    fetchUserNickname(user.uid) // Fetch nickname simultaneously
+                ]);
                 hideEl(loadInd);
+                currentAdminNickname = nickname; // Store fetched nickname
 
                 if (isAdmin) {
-                  showEl(adminCont); // Show main admin content
-                  showEl(adminUserInfo); // Show the user info container
-                  if (adminUsernameDisplay) {
-                    adminUsernameDisplay.textContent = user.email || user.uid; // Display email or UID
-                    adminUsernameDisplay.title = user.email || user.uid; // Add title for long emails
-                  }
-                  showEl(logoutBtn); // Show logout button inside the container
-                  // loadThemePref(user.uid); // Optional
-                  loadInitialData(); // Load dashboard, users, questions etc.
-                  loadCollapsibleStates(); // Restore UI state
+                  showEl(adminCont);
+                  showEl(adminUserInfo);
+                  const displayName = currentAdminNickname || user.email || user.uid; // Use nickname if available
+                  adminUsernameDisplay.textContent = displayName;
+                  adminUsernameDisplay.title = displayName; // Tooltip for long names
+                  showEl(logoutBtn);
+                  loadInitialData();
+                  loadCollapsibleStates(); // Restore UI state (including dashboard default)
                 } else {
-                  showEl(accessDen); // Show access denied message
-                  showEl(adminUserInfo); // Still show user info container
-                  if (adminUsernameDisplay)
-                    adminUsernameDisplay.textContent = user.email || user.uid; // Display email
-                  showEl(logoutBtn); // Allow logout even if denied access
+                  showEl(accessDen);
+                  showEl(adminUserInfo);
+                  const displayName = currentAdminNickname || user.email || user.uid;
+                  adminUsernameDisplay.textContent = displayName;
+                  showEl(logoutBtn);
                 }
               } catch (e) {
                 console.error("Admin check or data load error:", e);
                 hideEl(loadInd);
-                if (genErr)
-                  genErr.innerHTML = `<p class="error-text">⚠️ שגיאת אימות או טעינת נתונים.</p>`;
+                if (genErr) genErr.innerHTML = `<p class="error-text">⚠️ שגיאת אימות או טעינת נתונים.</p>`;
                 showEl(genErr);
-                // Optionally show user info and logout even on error
                 showEl(adminUserInfo);
-                if (adminUsernameDisplay)
-                  adminUsernameDisplay.textContent = user.email || "שגיאה";
+                if (adminUsernameDisplay) adminUsernameDisplay.textContent = user.email || "שגיאה";
                 showEl(logoutBtn);
               }
             }
           } else {
-            // No user is signed in
             console.log("No user session.");
-            hideEl(adminUserInfo); // Hide user info container
-            showEl(authSect); // Show login prompt section
+            hideEl(adminUserInfo);
+            showEl(authSect);
           }
         });
-        async function checkAdmin(uid) {
-          if (!uid) return false;
-          const snapshot = await database.ref(`admins/${uid}`).once("value");
-          return snapshot.exists() && snapshot.val() === true;
-        }
 
-        loginBtn.addEventListener("click", () => {
-          const provider = new firebase.auth.GoogleAuthProvider();
-          showEl(loadInd);
-          hideEl(authSect);
-          hideEl(genErr);
-          auth.signInWithPopup(provider).catch((error) => {
-            console.error("Login Error:", error);
-            hideEl(loadInd);
-            if (genErr) {
-              if (error.code === "auth/popup-closed-by-user")
-                genErr.innerHTML = `<p>חלון ההתחברות נסגר.</p>`;
-              else if (error.code === "auth/network-request-failed")
-                genErr.innerHTML = `<p class="error-text">⚠️ בעיית רשת. נסה שוב.</p>`;
-              else
-                genErr.innerHTML = `<p class="error-text">⚠️ כשל בתהליך ההתחברות.</p>`;
-              showEl(genErr);
-            }
-            showEl(authSect);
-          });
-        });
+        async function checkAdmin(uid) { if (!uid) return false; const snapshot = await database.ref(`admins/${uid}`).once("value"); return snapshot.exists() && snapshot.val() === true; }
 
-        logoutBtn.addEventListener("click", () => {
-          auth.signOut().catch((e) => console.error("Logout Error:", e));
-        });
+        loginBtn.addEventListener("click", () => { const provider = new firebase.auth.GoogleAuthProvider(); showEl(loadInd); hideEl(authSect); hideEl(genErr); auth.signInWithPopup(provider).catch((error) => { console.error("Login Error:", error); hideEl(loadInd); if (genErr) { if (error.code === 'auth/popup-closed-by-user') genErr.innerHTML = `<p>חלון ההתחברות נסגר.</p>`; else if (error.code === 'auth/network-request-failed') genErr.innerHTML = `<p class="error-text">⚠️ בעיית רשת. נסה שוב.</p>`; else genErr.innerHTML = `<p class="error-text">⚠️ כשל בתהליך ההתחברות.</p>`; showEl(genErr); } showEl(authSect); }); });
+        logoutBtn.addEventListener("click", () => { auth.signOut().catch(e => console.error("Logout Error:", e)); });
+
+        // --- Generic Refresh Logic ---
+         async function handleRefresh(button, loadFunction) {
+             if (!button || button.disabled) return;
+             button.disabled = true;
+             button.classList.add('refreshing');
+             try {
+                 await loadFunction();
+             } catch (error) {
+                 console.error(`Error refreshing section:`, error);
+                 // Optionally show a visual error indicator near the button or section
+             } finally {
+                 button.disabled = false;
+                 button.classList.remove('refreshing');
+             }
+         }
 
         // --- Data Loading ---
         function loadInitialData() {
           console.log("loadInitialData called");
-          loadDashboardData();
+          handleRefresh(refreshDashboardBtn, loadDashboardData); // Load dashboard initially
           fetchAdminUids().then(() => {
-            // Fetch admins first for filtering
-            if (usersSection && usersSection.classList.contains("is-open")) {
-              loadUsers(); // Load users if section is already open
-            }
+             if (usersSection && usersSection.classList.contains("is-open")) {
+               handleRefresh(refreshUsersBtn, loadUsers); // Load users if open
+             }
           });
-          loadQuestions(); // Load questions listener
+          handleRefresh(refreshQuestionsBtn, loadQuestions); // Start loading questions
+          // Leaderboard is loaded as part of dashboard data initially
         }
 
         // --- Dashboard ---
         async function loadDashboardData() {
-          console.log("loadDashboardData");
-          if (!refreshDashboardBtn) return;
-          resetDashboardStats();
-          refreshDashboardBtn.disabled = true;
-          refreshDashboardBtn.classList.add("refreshing");
-          const todayStr = getTodayDateString();
-          if (dashboardDate)
-            dashboardDate.textContent = `(${todayStr
-              .split("-")
-              .reverse()
-              .join("/")})`;
+            console.log("loadDashboardData");
+            resetDashboardStats(); // Clear existing stats
+            const todayStr = getTodayDateString();
+            if (dashboardDate) dashboardDate.textContent = `(${todayStr.split('-').reverse().join('/')})`;
 
-          const playersRef = database.ref("players");
-          const questionsRef = database.ref("questions");
-          const dailyResultsRef = database.ref(`gameResults/${todayStr}`);
-          const leaderboardRef = database
-            .ref("leaderboard")
-            .orderByChild("cumulativeScore")
-            .limitToLast(10);
+            const playersRef = database.ref("players");
+            const questionsRef = database.ref("questions");
+            const dailyResultsRef = database.ref(`gameResults/${todayStr}`);
+            const leaderboardRef = database.ref("leaderboard").orderByChild("cumulativeScore").limitToLast(10); // Fetch top 10
 
-          try {
-            const [qSnap, pSnap, dSnap, lSnap] = await Promise.all([
-              questionsRef.once("value"),
-              playersRef.once("value"),
-              dailyResultsRef.once("value"),
-              leaderboardRef.once("value"),
-            ]);
+            try {
+                const [qSnap, pSnap, dSnap, lSnap] = await Promise.all([
+                    questionsRef.once("value"),
+                    playersRef.once("value"),
+                    dailyResultsRef.once("value"),
+                    leaderboardRef.once("value")
+                ]);
 
-            // Total Questions
-            statTotalQuestions.textContent = qSnap.exists()
-              ? qSnap.numChildren()
-              : "0";
+                // Total Questions
+                statTotalQuestions.textContent = qSnap.exists() ? qSnap.numChildren() : "0";
 
-            // Total Players & New Players Today
-            let totalPlayersCount = 0;
-            let newPlayersTodayCount = 0;
-            if (pSnap.exists()) {
-              totalPlayersCount = pSnap.numChildren();
-              pSnap.forEach((playerSnap) => {
-                // Check registrationDate if available, otherwise check createdAt
-                const regDate = playerSnap.child("registrationDate").val();
-                const createdAt = playerSnap.child("createdAt").val();
-                const playerDate =
-                  regDate ||
-                  (createdAt
-                    ? new Date(createdAt).toISOString().split("T")[0]
-                    : null);
-                if (playerDate === todayStr) {
-                  newPlayersTodayCount++;
+                // Total Players & New Players Today
+                let totalPlayersCount = 0;
+                let newPlayersTodayCount = 0;
+                if (pSnap.exists()) {
+                    totalPlayersCount = pSnap.numChildren();
+                    pSnap.forEach(playerSnap => {
+                        const regDate = playerSnap.child("registrationDate").val();
+                        const createdAt = playerSnap.child("createdAt").val();
+                        const playerDate = regDate || (createdAt ? new Date(createdAt).toISOString().split('T')[0] : null);
+                        if (playerDate === todayStr) { newPlayersTodayCount++; }
+                    });
                 }
-              });
+                statTotalPlayers.textContent = totalPlayersCount;
+                statNewPlayersToday.textContent = newPlayersTodayCount;
+
+                // Daily Stats
+                let gamesTodayCount = 0; let activePlayersTodayIds = new Set(); let totalScoreToday = 0;
+                let totalCorrectToday = 0; let totalQuestionsToday = 0;
+                if (dSnap.exists()) {
+                    gamesTodayCount = dSnap.numChildren();
+                    dSnap.forEach(gameSnap => {
+                        const gameData = gameSnap.val();
+                        if (gameData?.playerId) activePlayersTodayIds.add(gameData.playerId);
+                        if (typeof gameData?.score === 'number') totalScoreToday += gameData.score;
+                        if (typeof gameData?.correctCount === 'number') totalCorrectToday += gameData.correctCount;
+                        if (typeof gameData?.totalQuestions === 'number') totalQuestionsToday += gameData.totalQuestions;
+                    });
+                }
+                statGamesToday.textContent = gamesTodayCount;
+                statActivePlayersToday.textContent = activePlayersTodayIds.size;
+                statAvgScoreToday.textContent = gamesTodayCount > 0 ? (totalScoreToday / gamesTodayCount).toFixed(1) : "0";
+                statAvgCorrectToday.textContent = totalQuestionsToday > 0 ? ((totalCorrectToday / totalQuestionsToday) * 100).toFixed(1) + "%" : "0%";
+
+                // Leaderboard (also loaded here)
+                if (lSnap.exists()) renderEnhancedLeaderboard(lSnap.val());
+                else leaderboardEnhancedDisplay.innerHTML = "<p>אין נתוני דירוג.</p>";
+
+            } catch (error) {
+                console.error("Error loading dashboard data:", error);
+                [statTotalQuestions, statTotalPlayers, statActivePlayersToday, statGamesToday, statAvgScoreToday, statAvgCorrectToday, statNewPlayersToday]
+                    .forEach(el => { if (el) el.textContent = "ERR"; });
+                if (leaderboardEnhancedDisplay) leaderboardEnhancedDisplay.innerHTML = '<p class="error-text">שגיאה בטעינת דירוג.</p>';
             }
-            statTotalPlayers.textContent = totalPlayersCount;
-            statNewPlayersToday.textContent = newPlayersTodayCount;
-
-            // Daily Stats
-            let gamesTodayCount = 0;
-            let activePlayersTodayIds = new Set();
-            let totalScoreToday = 0;
-            let totalCorrectToday = 0;
-            let totalQuestionsToday = 0; // Count questions in games played today
-
-            if (dSnap.exists()) {
-              gamesTodayCount = dSnap.numChildren();
-              dSnap.forEach((gameSnap) => {
-                const gameData = gameSnap.val();
-                if (gameData?.playerId)
-                  activePlayersTodayIds.add(gameData.playerId);
-                if (typeof gameData?.score === "number")
-                  totalScoreToday += gameData.score;
-                if (typeof gameData?.correctCount === "number")
-                  totalCorrectToday += gameData.correctCount;
-                if (typeof gameData?.totalQuestions === "number")
-                  totalQuestionsToday += gameData.totalQuestions;
-              });
-            }
-            statGamesToday.textContent = gamesTodayCount;
-            statActivePlayersToday.textContent = activePlayersTodayIds.size;
-            statAvgScoreToday.textContent =
-              gamesTodayCount > 0
-                ? (totalScoreToday / gamesTodayCount).toFixed(1)
-                : "0";
-            // Avg Correct % Today = Total Correct Answers / Total Questions Answered in today's games
-            statAvgCorrectToday.textContent =
-              totalQuestionsToday > 0
-                ? ((totalCorrectToday / totalQuestionsToday) * 100).toFixed(1) +
-                  "%"
-                : "0%";
-
-            // Leaderboard
-            if (lSnap.exists()) renderEnhancedLeaderboard(lSnap.val());
-            else
-              leaderboardEnhancedDisplay.innerHTML = "<p>אין נתוני דירוג.</p>";
-          } catch (error) {
-            console.error("Error loading dashboard data:", error);
-            // Display error indicators
-            [
-              statTotalQuestions,
-              statTotalPlayers,
-              statActivePlayersToday,
-              statGamesToday,
-              statAvgScoreToday,
-              statAvgCorrectToday,
-              statNewPlayersToday,
-            ].forEach((el) => {
-              if (el) el.textContent = "ERR";
-            });
-            if (leaderboardEnhancedDisplay)
-              leaderboardEnhancedDisplay.innerHTML =
-                '<p class="error-text">שגיאה בטעינת דירוג.</p>';
-          } finally {
-            refreshDashboardBtn.disabled = false;
-            refreshDashboardBtn.classList.remove("refreshing");
             console.log("Dashboard load complete.");
-          }
         }
 
-        function renderEnhancedLeaderboard(data) {
-          /* As before */
-          const arr = Object.entries(data).map(([playerId, playerData]) => ({
-            playerId,
-            nickname:
-              playerData.nickname ||
-              `שחקן...${playerId.substring(playerId.length - 4)}`,
-            cumulativeScore: playerData.cumulativeScore || 0,
-            // correctCount: playerData.correctCount // Add if needed/available
-          }));
-          arr.sort((a, b) => b.cumulativeScore - a.cumulativeScore); // Sort descending
-
-          if (arr.length === 0) {
-            leaderboardEnhancedDisplay.innerHTML = "<p>אין נתוני דירוג.</p>";
-            return;
-          }
-          const table = document.createElement("table");
-          const thead = table.createTHead();
-          const tbody = table.createTBody();
-          const headerRow = thead.insertRow();
-          const columns = [
-            { header: "#", className: "rank-col" },
-            { header: "שם", className: "name-col" },
-            { header: "ניקוד", className: "score-col" },
-            // Add more columns if needed
-          ];
-          columns.forEach((col) => {
-            const th = document.createElement("th");
-            th.textContent = col.header;
-            th.className = col.className || "";
-            headerRow.appendChild(th);
-          });
-          arr.forEach((player, index) => {
-            const rank = index + 1;
-            const row = tbody.insertRow();
-            row.insertCell().outerHTML = `<td class="rank-col">${rank}</td>`;
-            row.insertCell().outerHTML = `<td class="name-col">${player.nickname}</td>`;
-            row.insertCell().outerHTML = `<td class="score-col">${(
-              player.cumulativeScore || 0
-            ).toLocaleString()}</td>`;
-            // Add more cells if needed
-          });
-          leaderboardEnhancedDisplay.innerHTML = "";
-          leaderboardEnhancedDisplay.appendChild(table);
+        // --- Leaderboard (Separate Load Function) ---
+        async function loadLeaderboardData() {
+            console.log("loadLeaderboardData");
+            if (!leaderboardEnhancedDisplay) return;
+            leaderboardEnhancedDisplay.innerHTML = "<p>טוען דירוג...</p>";
+            const leaderboardRef = database.ref("leaderboard").orderByChild("cumulativeScore").limitToLast(10);
+            try {
+                const lSnap = await leaderboardRef.once("value");
+                 if (lSnap.exists()) renderEnhancedLeaderboard(lSnap.val());
+                 else leaderboardEnhancedDisplay.innerHTML = "<p>אין נתוני דירוג.</p>";
+            } catch(error) {
+                 console.error("Error loading leaderboard data:", error);
+                 leaderboardEnhancedDisplay.innerHTML = '<p class="error-text">שגיאה בטעינת דירוג.</p>';
+            }
+             console.log("Leaderboard load complete.");
         }
 
-        function resetDashboardStats() {
-          /* As before */
-          if (statTotalQuestions) statTotalQuestions.textContent = "?";
-          if (statTotalPlayers) statTotalPlayers.textContent = "?";
-          if (statActivePlayersToday) statActivePlayersToday.textContent = "?";
-          if (statGamesToday) statGamesToday.textContent = "?";
-          if (statAvgScoreToday) statAvgScoreToday.textContent = "?";
-          if (statAvgCorrectToday) statAvgCorrectToday.textContent = "?";
-          if (statNewPlayersToday) statNewPlayersToday.textContent = "?";
-          if (leaderboardEnhancedDisplay)
-            leaderboardEnhancedDisplay.innerHTML = "<p>טוען...</p>";
-          if (dashboardDate) dashboardDate.textContent = "";
-        }
 
-        refreshDashboardBtn.addEventListener("click", loadDashboardData);
+        function renderEnhancedLeaderboard(data) { const arr = Object.entries(data).map(([playerId, playerData]) => ({ playerId, nickname: playerData.nickname || `שחקן...${playerId.substring(playerId.length - 4)}`, cumulativeScore: playerData.cumulativeScore || 0, })); arr.sort((a, b) => b.cumulativeScore - a.cumulativeScore); if (arr.length === 0) { leaderboardEnhancedDisplay.innerHTML = "<p>אין נתוני דירוג.</p>"; return; } const table = document.createElement("table"); const thead = table.createTHead(); const tbody = table.createTBody(); const headerRow = thead.insertRow(); const columns = [{ header: "#", className: "rank-col" }, { header: "שם", className: "name-col" }, { header: "ניקוד", className: "score-col" }, ]; columns.forEach(col => { const th = document.createElement("th"); th.textContent = col.header; th.className = col.className || ""; headerRow.appendChild(th); }); arr.forEach((player, index) => { const rank = index + 1; const row = tbody.insertRow(); row.insertCell().outerHTML = `<td class="rank-col">${rank}</td>`; row.insertCell().outerHTML = `<td class="name-col">${player.nickname}</td>`; row.insertCell().outerHTML = `<td class="score-col">${(player.cumulativeScore || 0).toLocaleString()}</td>`; }); leaderboardEnhancedDisplay.innerHTML = ""; leaderboardEnhancedDisplay.appendChild(table); }
 
-        // --- User Management (Sorted, Filtered, UID Visible/Truncated) ---
-        async function fetchAdminUids() {
-          try {
-            const adminSnapshot = await database.ref("admins").once("value");
-            adminUids = adminSnapshot.exists() ? adminSnapshot.val() : {};
-            console.log("Admin UIDs fetched:", Object.keys(adminUids));
-          } catch (e) {
-            console.error("Error fetching admin UIDs:", e);
-            adminUids = {}; // Reset on error
-          }
-        }
+        function resetDashboardStats() { if (statTotalQuestions) statTotalQuestions.textContent = "?"; if (statTotalPlayers) statTotalPlayers.textContent = "?"; if (statActivePlayersToday) statActivePlayersToday.textContent = "?"; if (statGamesToday) statGamesToday.textContent = "?"; if (statAvgScoreToday) statAvgScoreToday.textContent = "?"; if (statAvgCorrectToday) statAvgCorrectToday.textContent = "?"; if (statNewPlayersToday) statNewPlayersToday.textContent = "?"; if (leaderboardEnhancedDisplay) leaderboardEnhancedDisplay.innerHTML = "<p>טוען...</p>"; if (dashboardDate) dashboardDate.textContent = ""; }
+
+        // --- User Management ---
+        async function fetchAdminUids() { try { const adminSnapshot = await database.ref("admins").once("value"); adminUids = adminSnapshot.exists() ? adminSnapshot.val() : {}; console.log("Admin UIDs fetched:", Object.keys(adminUids)); } catch (e) { console.error("Error fetching admin UIDs:", e); adminUids = {}; } }
 
         async function loadUsers() {
           console.log("loadUsers");
           if (!userListContainer || !usersSection) return;
-          if (usersSection.classList.contains("is-open") && userListContainer) {
+          // Show loading message only if the section is already visually open
+          if (usersSection.classList.contains("is-open")) {
             userListContainer.innerHTML = "<p>טוען משתמשים...</p>";
           }
-          hideEl(noUsersMessage);
-          hideEl(userPagCont);
+          hideEl(noUsersMessage); hideEl(userPagCont);
 
           try {
-            // Fetch users ordered by createdAt (oldest first)
-            const snapshot = await database
-              .ref("players")
-              .orderByChild("createdAt")
-              .once("value");
+            // Fetch users ordered by createdAt (oldest first), then reverse for newest first display
+            const snapshot = await database.ref("players").orderByChild("createdAt").once("value");
             if (snapshot.exists()) {
               allUsers = snapshot.val();
-              // Reverse keys to get newest first for default display
-              allUserIds = Object.keys(allUsers).reverse();
-              console.log(
-                `Loaded ${allUserIds.length} users, sorted newest first.`
-              );
+              allUserIds = Object.keys(allUsers).reverse(); // Newest first
+              console.log(`Loaded ${allUserIds.length} users, sorted newest first.`);
               currentUserPage = 1;
               if (usersSection.classList.contains("is-open")) {
-                filterAndRenderUsers(); // Apply filters (if any) and render
+                filterAndRenderUsers();
               }
             } else {
-              allUsers = {};
-              allUserIds = [];
+              allUsers = {}; allUserIds = [];
               if (usersSection.classList.contains("is-open")) {
-                userListContainer.innerHTML = "";
-                showEl(noUsersMessage);
+                userListContainer.innerHTML = ""; showEl(noUsersMessage);
               }
-              hideEl(userPagCont);
-              console.log("No users found.");
+              hideEl(userPagCont); console.log("No users found.");
             }
           } catch (e) {
             console.error("Error loading users:", e);
-            if (
-              usersSection.classList.contains("is-open") &&
-              userListContainer
-            ) {
+            if (usersSection.classList.contains("is-open") && userListContainer) {
               userListContainer.innerHTML = `<p class="error-text">שגיאה בטעינת משתמשים.</p>`;
             }
-            allUsers = {};
-            allUserIds = [];
-            hideEl(noUsersMessage);
-            hideEl(userPagCont);
+            allUsers = {}; allUserIds = []; hideEl(noUsersMessage); hideEl(userPagCont);
           }
         }
 
-        function filterAndRenderUsers() {
-          userSearchValue = userSearchInput
-            ? userSearchInput.value.toLowerCase().trim()
-            : "";
-          userRoleFilterValue = userRoleFilter ? userRoleFilter.value : "";
+        function filterAndRenderUsers() { userSearchValue = userSearchInput ? userSearchInput.value.toLowerCase().trim() : ""; userRoleFilterValue = userRoleFilter ? userRoleFilter.value : ""; const filteredUserIds = allUserIds.filter(uid => { const user = allUsers[uid]; if (!user) return false; if (userRoleFilterValue) { const isAdmin = adminUids[uid] === true; if (userRoleFilterValue === "admin" && !isAdmin) return false; if (userRoleFilterValue === "verified" && isAdmin) return false; } if (userSearchValue) { const nicknameMatch = user.nickname && user.nickname.toLowerCase().includes(userSearchValue); const uidMatch = uid.toLowerCase().includes(userSearchValue); if (!nicknameMatch && !uidMatch) { return false; } } return true; }); renderUserList(filteredUserIds); }
 
-          // Filter the globally sorted (newest first) list of all user IDs
-          const filteredUserIds = allUserIds.filter((uid) => {
-            const user = allUsers[uid];
-            if (!user) return false;
+        function renderUserList(filteredIds) { if (!userListContainer) return; userListContainer.innerHTML = ""; hideEl(noUsersMessage); hideEl(userPagCont); const totalFiltered = filteredIds.length; if (totalFiltered === 0) { if (userSearchValue || userRoleFilterValue) { userListContainer.innerHTML = "<p>לא נמצאו משתמשים התואמים לסינון.</p>"; } else { showEl(noUsersMessage); } return; } const totalPages = Math.ceil(totalFiltered / usersPerPage); if (currentUserPage < 1) currentUserPage = 1; if (currentUserPage > totalPages && totalPages > 0) currentUserPage = totalPages; const startIndex = (currentUserPage - 1) * usersPerPage; const endIndex = startIndex + usersPerPage; const idsToDisplay = filteredIds.slice(startIndex, endIndex); console.log(`Render users page ${currentUserPage}/${totalPages} (from ${totalFiltered} filtered)`); const table = document.createElement("table"); const thead = table.createTHead(); const tbody = table.createTBody(); const headerRow = thead.insertRow(); const headers = [{ text: "שם", className: "nickname-header" }, { text: "מזהה (UID)", className: "uid-header" }, { text: "פעולות", className: "actions-header" }, ]; headers.forEach(hd => { const th = document.createElement("th"); th.textContent = hd.text; th.className = hd.className || ""; headerRow.appendChild(th); }); idsToDisplay.forEach(uid => { const userData = allUsers[uid]; if (userData) tbody.appendChild(renderUserRow(uid, userData)); }); userListContainer.appendChild(table); updateUserPaginationControls(totalPages, totalFiltered); userListContainer.removeEventListener("click", handleUserActions); userListContainer.addEventListener("click", handleUserActions); }
 
-            // Role Filter
-            if (userRoleFilterValue) {
-              const isAdmin = adminUids[uid] === true;
-              if (userRoleFilterValue === "admin" && !isAdmin) return false;
-              // Simple 'verified' = logged in with Google (implies not an admin in this logic)
-              // This isn't strictly accurate as an admin IS verified via Google,
-              // adjust if a different definition of 'verified' is needed.
-              if (userRoleFilterValue === "verified" && isAdmin) return false;
-              // Add more complex logic here if needed, e.g., checking if user.providerData exists
+        function renderUserRow(uid, userData) { const row = document.createElement("tr"); row.dataset.uid = uid; const nickname = userData.nickname || ""; const originalNicknameDisplay = nickname || "[לא הוגדר]"; const nicknameCell = row.insertCell(); nicknameCell.className = "nickname-cell"; nicknameCell.innerHTML = `<span class="nickname-display">${originalNicknameDisplay}</span><input type="text" class="nickname-edit" value="${nickname}" aria-label="ערוך שם משתמש" />`; nicknameCell.querySelector(".nickname-edit").dataset.originalValue = nickname; const uidCell = row.insertCell(); uidCell.className = "uid-cell"; const shortUid = uid.length > 8 ? `${uid.substring(0, 4)}...${uid.substring(uid.length - 4)}` : uid; uidCell.textContent = shortUid; uidCell.title = uid; const actionsCell = row.insertCell(); actionsCell.className = "actions-cell"; actionsCell.innerHTML = `<button class="btn-edit-user btn-primary" title="ערוך">ערוך</button><button class="btn-delete-user btn-danger" title="מחק">מחק</button><button class="btn-save-user btn-success" title="שמור" style="display: none;">שמור</button><button class="btn-cancel-edit-user btn-secondary" title="בטל" style="display: none;">בטל</button>`; return row; }
+
+        function updateUserPaginationControls(totalPages, totalFiltered) { if (!userPagCont || !userPageInf || !prevUserPBtn || !nextUserPBtn) return; if (totalPages <= 1) { hideEl(userPagCont); } else { userPageInf.textContent = `עמוד ${currentUserPage}/${totalPages}`; prevUserPBtn.disabled = currentUserPage === 1; nextUserPBtn.disabled = currentUserPage === totalPages; showEl(userPagCont); } }
+
+        function handleUserActions(event) { const button = event.target.closest("button"); if (!button) return; const row = button.closest("tr"); if (!row?.dataset?.uid) return; const uid = row.dataset.uid; const nicknameCell = row.querySelector(".nickname-cell"); const actionsCell = row.querySelector(".actions-cell"); const nicknameInput = nicknameCell?.querySelector(".nickname-edit"); const nicknameDisplay = nicknameCell?.querySelector(".nickname-display"); const saveButton = actionsCell?.querySelector(".btn-save-user"); const cancelButton = actionsCell?.querySelector(".btn-cancel-edit-user"); const editButton = actionsCell?.querySelector(".btn-edit-user"); const deleteButton = actionsCell?.querySelector(".btn-delete-user"); if (!nicknameCell || !actionsCell || !nicknameInput || !nicknameDisplay || !saveButton || !cancelButton || !editButton || !deleteButton) { console.error("Missing elements in user row for actions."); return; } if (button.classList.contains("btn-edit-user")) { nicknameCell.classList.add("editing"); actionsCell.classList.add("editing"); editButton.style.display = "none"; deleteButton.style.display = "none"; saveButton.style.display = "inline-block"; cancelButton.style.display = "inline-block"; nicknameInput.dataset.originalValue = nicknameInput.value; nicknameInput.focus(); nicknameInput.select(); } else if (button.classList.contains("btn-cancel-edit-user")) { nicknameInput.value = nicknameInput.dataset.originalValue; nicknameCell.classList.remove("editing"); actionsCell.classList.remove("editing"); editButton.style.display = "inline-block"; deleteButton.style.display = "inline-block"; saveButton.style.display = "none"; cancelButton.style.display = "none"; } else if (button.classList.contains("btn-save-user")) { const newNickname = nicknameInput.value.trim(); const originalNickname = nicknameInput.dataset.originalValue; if (newNickname === originalNickname) { nicknameCell.classList.remove("editing"); actionsCell.classList.remove("editing"); editButton.style.display = "inline-block"; deleteButton.style.display = "inline-block"; saveButton.style.display = "none"; cancelButton.style.display = "none"; return; } if (!newNickname) { alert("שם המשתמש אינו יכול להיות ריק."); nicknameInput.focus(); return; } if (newNickname.length > 25) { alert("שם המשתמש ארוך מדי (מקסימום 25 תווים)."); nicknameInput.focus(); return; } setRowButtonsDisabled(row, true); updateUserNickname(uid, newNickname).then(() => { console.log(`Nickname updated for ${uid}`); nicknameDisplay.textContent = newNickname; nicknameInput.value = newNickname; nicknameInput.dataset.originalValue = newNickname; if (allUsers[uid]) allUsers[uid].nickname = newNickname; nicknameCell.classList.remove("editing"); actionsCell.classList.remove("editing"); editButton.style.display = "inline-block"; deleteButton.style.display = "inline-block"; saveButton.style.display = "none"; cancelButton.style.display = "none"; }).catch((error) => { console.error(`Error updating nickname for ${uid}:`, error); alert(`שגיאה בעדכון שם המשתמש: ${error.message}`); }).finally(() => { setRowButtonsDisabled(row, false); }); } else if (button.classList.contains("btn-delete-user")) { const displayName = (nicknameDisplay.textContent !== "[לא הוגדר]" ? nicknameDisplay.textContent : "") || `משתמש ${uid.substring(uid.length - 5)}`; if (confirm(`האם אתה בטוח שברצונך למחוק את המשתמש "${displayName}" (${uid})?\n⚠️ פעולה זו תמחק את כל נתוני המשתמש והיא אינה הפיכה!`)) { setRowButtonsDisabled(row, true); deleteUser(uid).then(() => { console.log(`User ${uid} deleted.`); delete allUsers[uid]; allUserIds = allUserIds.filter(id => id !== uid); filterAndRenderUsers(); if (statTotalPlayers && !isNaN(parseInt(statTotalPlayers.textContent))) { statTotalPlayers.textContent = Math.max(0, parseInt(statTotalPlayers.textContent) - 1); } }).catch((error) => { console.error(`Error deleting user ${uid}:`, error); alert(`שגיאה במחיקת המשתמש: ${error.message}`); setRowButtonsDisabled(row, false); }); } } }
+
+        async function updateUserNickname(uid, newNickname) { if (!uid || typeof newNickname !== 'string') return Promise.reject(new Error("Invalid input")); if (newNickname.length > 25) return Promise.reject(new Error("Nickname too long")); console.log(`Updating nickname for ${uid} to "${newNickname}"`); await database.ref(`players/${uid}/nickname`).set(newNickname); await database.ref(`leaderboard/${uid}/nickname`).set(newNickname).catch(e => console.warn("Leaderboard nick update fail:", e)); }
+        async function deleteUser(uid) { if (!uid) return Promise.reject(new Error("Invalid UID")); console.log(`Deleting user ${uid}`); await database.ref(`leaderboard/${uid}`).remove().catch(e => console.warn("Leaderboard delete fail:", e)); return database.ref(`players/${uid}`).remove(); }
+        function setRowButtonsDisabled(row, disabled) { row.querySelectorAll(".actions-cell button").forEach(button => button.disabled = disabled); }
+
+        if (userSearchInput) userSearchInput.addEventListener("input", debounce(() => { currentUserPage = 1; filterAndRenderUsers(); }, 350));
+        if (userRoleFilter) userRoleFilter.addEventListener("change", () => { currentUserPage = 1; filterAndRenderUsers(); });
+        if (clearUserFiltersBtn) clearUserFiltersBtn.addEventListener("click", () => resetUserFilters(true));
+        function resetUserFilters(render = true) { if (userSearchInput) userSearchInput.value = ""; if (userRoleFilter) userRoleFilter.value = ""; userSearchValue = ""; userRoleFilterValue = ""; if (render && usersSection.classList.contains("is-open")) { currentUserPage = 1; filterAndRenderUsers(); } }
+
+        // --- Questions Management ---
+        async function loadQuestions() {
+            console.log("Loading Questions (once)...");
+            if (questionsListener) database.ref("questions").off("value", questionsListener); // Detach previous listener if any
+            const contentArea = document.getElementById("questions-content");
+            if (questionsSection.classList.contains("is-open") && qListDiv) {
+                qListDiv.innerHTML = "<p>טוען שאלות...</p>";
+            } else if (qListDiv) {
+                qListDiv.innerHTML = ""; // Clear if not open
             }
+            hideEl(noResMsg); hideEl(pagCont);
 
-            // Search Filter (Nickname or UID)
-            if (userSearchValue) {
-              const nicknameMatch =
-                user.nickname &&
-                user.nickname.toLowerCase().includes(userSearchValue);
-              const uidMatch = uid.toLowerCase().includes(userSearchValue);
-              if (!nicknameMatch && !uidMatch) {
-                return false;
-              }
+            const ref = database.ref("questions").orderByChild("createdAt");
+            try {
+                const snapshot = await ref.once("value");
+                allQuestions = snapshot.exists() ? snapshot.val() : {};
+                console.log(`Loaded ${Object.keys(allQuestions).length} questions.`);
+                if (questionsSection.classList.contains("is-open")) {
+                     filterAndRenderQuestions();
+                }
+            } catch (error) {
+                 console.error("Firebase Error loading questions:", error);
+                 if (questionsSection.classList.contains("is-open") && qListDiv) {
+                     qListDiv.innerHTML = `<p class="error-text">שגיאה בטעינת שאלות.</p>`;
+                 }
+                 allQuestions = {}; filteredQuestionIds = []; hideEl(noResMsg); hideEl(pagCont);
             }
-            return true; // Include user if all filters pass
-          });
-          renderUserList(filteredUserIds); // Pass the filtered list to render
         }
 
-        function renderUserList(filteredIds) {
-          if (!userListContainer) return;
-          userListContainer.innerHTML = "";
-          hideEl(noUsersMessage);
-          hideEl(userPagCont);
-          const totalFiltered = filteredIds.length;
-
-          if (totalFiltered === 0) {
-            if (userSearchValue || userRoleFilterValue) {
-              userListContainer.innerHTML =
-                "<p>לא נמצאו משתמשים התואמים לסינון.</p>";
-            } else {
-              showEl(noUsersMessage); // "לא נמצאו משתמשים רשומים."
-            }
-            return;
-          }
-
-          const totalPages = Math.ceil(totalFiltered / usersPerPage);
-          if (currentUserPage < 1) currentUserPage = 1;
-          if (currentUserPage > totalPages && totalPages > 0)
-            currentUserPage = totalPages;
-          const startIndex = (currentUserPage - 1) * usersPerPage;
-          const endIndex = startIndex + usersPerPage;
-          const idsToDisplay = filteredIds.slice(startIndex, endIndex);
-
-          console.log(
-            `Render users page ${currentUserPage}/${totalPages} (from ${totalFiltered} filtered)`
-          );
-          const table = document.createElement("table");
-          const thead = table.createTHead();
-          const tbody = table.createTBody();
-          const headerRow = thead.insertRow();
-          // Define headers
-          const headers = [
-            { text: "שם", className: "nickname-header" },
-            { text: "מזהה (UID)", className: "uid-header" }, // Corrected header text
-            { text: "פעולות", className: "actions-header" },
-          ];
-          headers.forEach((hd) => {
-            const th = document.createElement("th");
-            th.textContent = hd.text;
-            th.className = hd.className || "";
-            headerRow.appendChild(th);
-          });
-
-          // Create rows
-          idsToDisplay.forEach((uid) => {
-            const userData = allUsers[uid];
-            if (userData) tbody.appendChild(renderUserRow(uid, userData));
-          });
-
-          userListContainer.appendChild(table);
-          updateUserPaginationControls(totalPages, totalFiltered);
-          // Re-attach listener after rebuilding table content
-          userListContainer.removeEventListener("click", handleUserActions);
-          userListContainer.addEventListener("click", handleUserActions);
-        }
-
-        function renderUserRow(uid, userData) {
-          const row = document.createElement("tr");
-          row.dataset.uid = uid;
-          const nickname = userData.nickname || "";
-          const originalNicknameDisplay = nickname || "[לא הוגדר]";
-
-          // Nickname Cell
-          const nicknameCell = row.insertCell();
-          nicknameCell.className = "nickname-cell";
-          nicknameCell.innerHTML = `
-                    <span class="nickname-display">${originalNicknameDisplay}</span>
-                    <input type="text" class="nickname-edit" value="${nickname}" aria-label="ערוך שם משתמש" />`;
-          nicknameCell.querySelector(".nickname-edit").dataset.originalValue =
-            nickname;
-
-          // UID Cell (Truncated)
-          const uidCell = row.insertCell();
-          uidCell.className = "uid-cell";
-          const shortUid =
-            uid.length > 8
-              ? `${uid.substring(0, 4)}...${uid.substring(uid.length - 4)}`
-              : uid;
-          uidCell.textContent = shortUid;
-          uidCell.title = uid; // Full UID on hover
-
-          // Actions Cell
-          const actionsCell = row.insertCell();
-          actionsCell.className = "actions-cell";
-          actionsCell.innerHTML = `
-                    <button class="btn-edit-user btn-primary" title="ערוך">ערוך</button>
-                    <button class="btn-delete-user btn-danger" title="מחק">מחק</button>
-                    <button class="btn-save-user btn-success" title="שמור" style="display: none;">שמור</button>
-                    <button class="btn-cancel-edit-user btn-secondary" title="בטל" style="display: none;">בטל</button>`;
-          return row;
-        }
-
-        function updateUserPaginationControls(totalPages, totalFiltered) {
-          if (!userPagCont || !userPageInf || !prevUserPBtn || !nextUserPBtn)
-            return;
-          if (totalPages <= 1) {
-            hideEl(userPagCont);
-          } else {
-            userPageInf.textContent = `עמוד ${currentUserPage}/${totalPages}`;
-            prevUserPBtn.disabled = currentUserPage === 1;
-            nextUserPBtn.disabled = currentUserPage === totalPages;
-            showEl(userPagCont);
-          }
-        }
-
-        // --- User Action Handling (Edit/Delete Nickname) ---
-        function handleUserActions(event) {
-          /* Mostly as before */
-          const button = event.target.closest("button");
-          if (!button) return;
-          const row = button.closest("tr");
-          if (!row?.dataset?.uid) return;
-
-          const uid = row.dataset.uid;
-          const nicknameCell = row.querySelector(".nickname-cell");
-          const actionsCell = row.querySelector(".actions-cell");
-          const nicknameInput = nicknameCell?.querySelector(".nickname-edit");
-          const nicknameDisplay =
-            nicknameCell?.querySelector(".nickname-display");
-          const saveButton = actionsCell?.querySelector(".btn-save-user");
-          const cancelButton = actionsCell?.querySelector(
-            ".btn-cancel-edit-user"
-          );
-          const editButton = actionsCell?.querySelector(".btn-edit-user");
-          const deleteButton = actionsCell?.querySelector(".btn-delete-user");
-
-          if (
-            !nicknameCell ||
-            !actionsCell ||
-            !nicknameInput ||
-            !nicknameDisplay ||
-            !saveButton ||
-            !cancelButton ||
-            !editButton ||
-            !deleteButton
-          ) {
-            console.error("Missing elements in user row for actions.");
-            return;
-          }
-
-          if (button.classList.contains("btn-edit-user")) {
-            nicknameCell.classList.add("editing");
-            actionsCell.classList.add("editing");
-            editButton.style.display = "none";
-            deleteButton.style.display = "none";
-            saveButton.style.display = "inline-block";
-            cancelButton.style.display = "inline-block";
-            nicknameInput.dataset.originalValue = nicknameInput.value; // Store original value
-            nicknameInput.focus();
-            nicknameInput.select();
-          } else if (button.classList.contains("btn-cancel-edit-user")) {
-            nicknameInput.value = nicknameInput.dataset.originalValue; // Restore original value
-            nicknameCell.classList.remove("editing");
-            actionsCell.classList.remove("editing");
-            editButton.style.display = "inline-block";
-            deleteButton.style.display = "inline-block";
-            saveButton.style.display = "none";
-            cancelButton.style.display = "none";
-          } else if (button.classList.contains("btn-save-user")) {
-            const newNickname = nicknameInput.value.trim();
-            const originalNickname = nicknameInput.dataset.originalValue;
-
-            if (newNickname === originalNickname) {
-              // No change, just exit edit mode
-              nicknameCell.classList.remove("editing");
-              actionsCell.classList.remove("editing");
-              editButton.style.display = "inline-block";
-              deleteButton.style.display = "inline-block";
-              saveButton.style.display = "none";
-              cancelButton.style.display = "none";
-              return;
-            }
-            if (!newNickname) {
-              alert("שם המשתמש אינו יכול להיות ריק.");
-              nicknameInput.focus();
-              return;
-            }
-            if (newNickname.length > 25) {
-              alert("שם המשתמש ארוך מדי (מקסימום 25 תווים).");
-              nicknameInput.focus();
-              return;
-            }
-
-            setRowButtonsDisabled(row, true);
-            updateUserNickname(uid, newNickname)
-              .then(() => {
-                console.log(`Nickname updated for ${uid}`);
-                nicknameDisplay.textContent = newNickname;
-                nicknameInput.value = newNickname;
-                nicknameInput.dataset.originalValue = newNickname; // Update original value state
-                if (allUsers[uid]) allUsers[uid].nickname = newNickname; // Update local cache
-
-                nicknameCell.classList.remove("editing");
-                actionsCell.classList.remove("editing");
-                editButton.style.display = "inline-block";
-                deleteButton.style.display = "inline-block";
-                saveButton.style.display = "none";
-                cancelButton.style.display = "none";
-
-                // Check if sorting needs update (optional, might be complex)
-                // For simplicity, we might skip re-sorting here or trigger a full refresh
-                // filterAndRenderUsers(); // Re-filter and render to potentially re-sort
-              })
-              .catch((error) => {
-                console.error(`Error updating nickname for ${uid}:`, error);
-                alert(`שגיאה בעדכון שם המשתמש: ${error.message}`);
-              })
-              .finally(() => {
-                setRowButtonsDisabled(row, false);
-              });
-          } else if (button.classList.contains("btn-delete-user")) {
-            const displayName =
-              (nicknameDisplay.textContent !== "[לא הוגדר]"
-                ? nicknameDisplay.textContent
-                : "") || `משתמש ${uid.substring(uid.length - 5)}`;
-            if (
-              confirm(
-                `האם אתה בטוח שברצונך למחוק את המשתמש "${displayName}" (${uid})?\n⚠️ פעולה זו תמחק את כל נתוני המשתמש והיא אינה הפיכה!`
-              )
-            ) {
-              setRowButtonsDisabled(row, true);
-              deleteUser(uid)
-                .then(() => {
-                  console.log(`User ${uid} deleted.`);
-                  delete allUsers[uid]; // Remove from local cache
-                  allUserIds = allUserIds.filter((id) => id !== uid); // Remove from ID list
-
-                  // Re-render the current page
-                  filterAndRenderUsers();
-
-                  // Update dashboard stats (optional, could be done on next refresh)
-                  if (
-                    statTotalPlayers &&
-                    !isNaN(parseInt(statTotalPlayers.textContent))
-                  ) {
-                    statTotalPlayers.textContent = Math.max(
-                      0,
-                      parseInt(statTotalPlayers.textContent) - 1
-                    );
-                  }
-                })
-                .catch((error) => {
-                  console.error(`Error deleting user ${uid}:`, error);
-                  alert(`שגיאה במחיקת המשתמש: ${error.message}`);
-                  setRowButtonsDisabled(row, false);
-                });
-            }
-          }
-        }
-
-        async function updateUserNickname(uid, newNickname) {
-          /* As before */
-          if (!uid || typeof newNickname !== "string")
-            return Promise.reject(
-              new Error("Invalid input for nickname update")
-            );
-          if (newNickname.length > 25)
-            return Promise.reject(new Error("Nickname too long"));
-          console.log(`Updating nickname for ${uid} to "${newNickname}"`);
-          // Update player node
-          await database.ref(`players/${uid}/nickname`).set(newNickname);
-          // Also update leaderboard node for consistency
-          await database
-            .ref(`leaderboard/${uid}/nickname`)
-            .set(newNickname)
-            .catch((e) =>
-              console.warn("Leaderboard nickname update failed:", e)
-            );
-        }
-        async function deleteUser(uid) {
-          /* As before */
-          if (!uid)
-            return Promise.reject(new Error("Invalid UID for deletion"));
-          console.log(`Deleting user ${uid}`);
-          // Add deletion from leaderboard as well
-          await database
-            .ref(`leaderboard/${uid}`)
-            .remove()
-            .catch((e) => console.warn("Leaderboard deletion failed:", e));
-          // Delete daily results? Might be complex, skip for now unless required.
-          // await database.ref(`gameResults/${getTodayDateString()}/${uid}`).remove().catch(e => console.warn("Daily result deletion failed:", e));
-          // Delete main player data
-          return database.ref(`players/${uid}`).remove();
-        }
-        function setRowButtonsDisabled(row, disabled) {
-          /* As before */
-          row
-            .querySelectorAll(".actions-cell button")
-            .forEach((button) => (button.disabled = disabled));
-        }
-
-        // Attach User Filter Listeners
-        if (userSearchInput)
-          userSearchInput.addEventListener(
-            "input",
-            debounce(() => {
-              currentUserPage = 1;
-              filterAndRenderUsers();
-            }, 350)
-          );
-        if (userRoleFilter)
-          userRoleFilter.addEventListener("change", () => {
-            currentUserPage = 1;
-            filterAndRenderUsers();
-          });
-        if (clearUserFiltersBtn)
-          clearUserFiltersBtn.addEventListener("click", () =>
-            resetUserFilters(true)
-          );
-
-        function resetUserFilters(render = true) {
-          if (userSearchInput) userSearchInput.value = "";
-          if (userRoleFilter) userRoleFilter.value = "";
-          userSearchValue = "";
-          userRoleFilterValue = "";
-          if (render && usersSection.classList.contains("is-open")) {
-            currentUserPage = 1;
-            filterAndRenderUsers();
-          }
-        }
-
-        // --- Questions Management (Sorted by createdAt) ---
-        function loadQuestions() {
-          if (questionsListener)
-            database.ref("questions").off("value", questionsListener);
-          const contentArea = document.getElementById("questions-content");
-          if (
-            contentArea &&
-            questionsSection.classList.contains("is-open") &&
-            qListDiv
-          ) {
-            qListDiv.innerHTML = "<p>טוען שאלות...</p>";
-          } else if (qListDiv) {
-            qListDiv.innerHTML = ""; // Clear if not open
-          }
-          hideEl(noResMsg);
-          hideEl(pagCont);
-
-          // Fetch questions ordered by createdAt (oldest first from Firebase)
-          const ref = database.ref("questions").orderByChild("createdAt");
-          console.log("Attaching Question listener ordered by createdAt.");
-
-          questionsListener = ref.on(
-            "value",
-            (snapshot) => {
-              allQuestions = snapshot.exists() ? snapshot.val() : {};
-              console.log(
-                `Loaded ${Object.keys(allQuestions).length} questions.`
-              );
-              // Keys are now naturally ordered oldest to newest by Firebase
-              // We will reverse them after filtering for display
-
-              if (questionsSection.classList.contains("is-open")) {
-                filterAndRenderQuestions(); // Apply filters and render
-              }
-            },
-            (error) => {
-              console.error("Firebase Error loading questions:", error);
-              if (questionsSection.classList.contains("is-open") && qListDiv) {
-                qListDiv.innerHTML = `<p class="error-text">שגיאה בטעינת שאלות.</p>`;
-              }
-              allQuestions = {};
-              filteredQuestionIds = [];
-              hideEl(noResMsg);
-              hideEl(pagCont);
-              if (questionsListener) ref.off("value", questionsListener);
-              questionsListener = null;
-            }
-          );
-        }
-
-        const debouncedQuestionFilter = debounce(() => {
-          currentQuestionPage = 1;
-          filterAndRenderQuestions();
-        }, 350);
+        const debouncedQuestionFilter = debounce(() => { currentQuestionPage = 1; filterAndRenderQuestions(); }, 350);
         searchIn.addEventListener("input", debouncedQuestionFilter);
-        topicFil.addEventListener("change", () => {
-          currentQuestionPage = 1;
-          filterAndRenderQuestions();
-        });
+        topicFil.addEventListener("change", () => { currentQuestionPage = 1; filterAndRenderQuestions(); });
         clearFilBtn.addEventListener("click", () => resetFilters(true));
 
-        function filterAndRenderQuestions() {
-          const searchTerm = searchIn.value.toLowerCase().trim();
-          const selectedTopic = topicFil.value;
+        function filterAndRenderQuestions() { const searchTerm = searchIn.value.toLowerCase().trim(); const selectedTopic = topicFil.value; let keys = Object.keys(allQuestions); const filteredKeys = keys.filter(id => { const qData = allQuestions[id]; if (!qData?.question) return false; if (selectedTopic && qData.topic !== selectedTopic) { return false; } if (searchTerm) { const questionText = qData.question.toLowerCase(); const answersText = (qData.answers || []).map(a => String(a).toLowerCase()).join(" "); const tagsText = (qData.tags || []).map(t => String(t).trim().toLowerCase()); const topicText = qData.topic?.toLowerCase() || ""; const found = questionText.includes(searchTerm) || answersText.includes(searchTerm) || topicText.includes(searchTerm) || tagsText.some(tag => tag.includes(searchTerm)); if (!found) return false; } return true; }); filteredQuestionIds = filteredKeys.sort((a, b) => { const timeA = allQuestions[a]?.createdAt || 0; const timeB = allQuestions[b]?.createdAt || 0; return timeB - timeA; }); renderQuestionPage(); }
 
-          // Get keys from the potentially ordered allQuestions object
-          let keys = Object.keys(allQuestions);
+        function renderQuestionPage() { if (!qListDiv) return; const totalFiltered = filteredQuestionIds.length; const totalPages = Math.ceil(totalFiltered / questionsPerPage); if (currentQuestionPage < 1) currentQuestionPage = 1; if (currentQuestionPage > totalPages && totalPages > 0) currentQuestionPage = totalPages; const startIndex = (currentQuestionPage - 1) * questionsPerPage; const endIndex = startIndex + questionsPerPage; const idsToDisplay = filteredQuestionIds.slice(startIndex, endIndex); qListDiv.innerHTML = ""; hideEl(noResMsg); if (totalFiltered === 0) { if (searchIn.value || topicFil.value) showEl(noResMsg); else qListDiv.innerHTML = "<p>אין שאלות במערכת.</p>"; } else { idsToDisplay.forEach(id => renderQuestionItem(id, allQuestions[id])); } updateQuestionPaginationControls(totalPages); }
 
-          // Filter logic
-          const filteredKeys = keys.filter((id) => {
-            const qData = allQuestions[id];
-            if (!qData?.question) return false;
+        function renderQuestionItem(id, qData) { if (!qData?.question || !id) return; const itemDiv = document.createElement("div"); itemDiv.className = "question-item"; itemDiv.dataset.id = id; const summaryDiv = document.createElement("div"); summaryDiv.className = "question-summary"; const textP = document.createElement("p"); textP.className = "question-text"; textP.textContent = qData.question; const actionsDiv = document.createElement("div"); actionsDiv.className = "question-actions"; const editBtn = document.createElement("button"); editBtn.textContent = "ערוך"; editBtn.className = "btn-primary"; editBtn.onclick = () => openEditForm(id, qData); const deleteBtn = document.createElement("button"); deleteBtn.textContent = "מחק"; deleteBtn.className = "btn-danger"; deleteBtn.onclick = () => deleteQuestion(id); actionsDiv.append(editBtn, deleteBtn); summaryDiv.append(textP, actionsDiv); itemDiv.append(summaryDiv); const detailsSpan = document.createElement("span"); detailsSpan.className = "question-details"; if (qData.createdAt) { const dateSpan = document.createElement("span"); dateSpan.className = "creation-date"; dateSpan.textContent = `(${formatDate(qData.createdAt)})`; dateSpan.title = new Date(qData.createdAt).toLocaleString(); detailsSpan.appendChild(dateSpan); } const topicKey = qData.topic || "unknown"; const topicHebrew = topicTranslations[topicKey] || topicKey; detailsSpan.appendChild(document.createTextNode(`נושא: `)); const topicLink = document.createElement("a"); topicLink.href = "#"; topicLink.className = "topic-link"; topicLink.textContent = topicHebrew; topicLink.dataset.topic = topicKey; topicLink.onclick = (e) => { e.preventDefault(); filterByTopic(topicKey); }; detailsSpan.appendChild(topicLink); if (Array.isArray(qData.tags) && qData.tags.length > 0) { const validTags = qData.tags.map(t => t ? String(t).trim() : null).filter(Boolean); if (validTags.length > 0) { detailsSpan.appendChild(document.createTextNode(" | תגיות: ")); validTags.forEach((tagText, index) => { const tagLink = document.createElement("a"); tagLink.href = "#"; tagLink.className = "tag-link"; tagLink.textContent = tagText; tagLink.dataset.tag = tagText; tagLink.onclick = (e) => { e.preventDefault(); filterByTag(tagText); }; detailsSpan.appendChild(tagLink); if (index < validTags.length - 1) detailsSpan.appendChild(document.createTextNode(", ")); }); } } itemDiv.appendChild(detailsSpan); qListDiv.appendChild(itemDiv); }
 
-            // Topic filter
-            if (selectedTopic && qData.topic !== selectedTopic) {
-              return false;
-            }
+        function updateQuestionPaginationControls(totalPages) { if (totalPages <= 1) { hideEl(pagCont); } else { showEl(pagCont); pageInf.textContent = `עמוד ${currentQuestionPage}/${totalPages}`; prevPBtn.disabled = currentQuestionPage === 1; nextPBtn.disabled = currentQuestionPage === totalPages; } }
+        function filterByTopic(topicKey) { topicFil.value = topicKey === "unknown" ? "" : topicKey; currentQuestionPage = 1; filterAndRenderQuestions(); }
+        function filterByTag(tag) { searchIn.value = tag.trim(); currentQuestionPage = 1; filterAndRenderQuestions(); }
+        function resetFilters(render = true) { searchIn.value = ""; topicFil.value = ""; if (render && questionsSection.classList.contains("is-open")) { currentQuestionPage = 1; filterAndRenderQuestions(); } }
 
-            // Search term filter (in question, answers, tags, topic)
-            if (searchTerm) {
-              const questionText = qData.question.toLowerCase();
-              const answersText = (qData.answers || [])
-                .map((a) => String(a).toLowerCase())
-                .join(" ");
-              const tagsText = (qData.tags || []).map((t) =>
-                String(t).trim().toLowerCase()
-              );
-              const topicText = qData.topic?.toLowerCase() || "";
-
-              const found =
-                questionText.includes(searchTerm) ||
-                answersText.includes(searchTerm) ||
-                topicText.includes(searchTerm) ||
-                tagsText.some((tag) => tag.includes(searchTerm));
-              if (!found) return false;
-            }
-            return true;
-          });
-
-          // Sort the FILTERED keys DESCENDING (newest first) based on the 'createdAt' field
-          filteredQuestionIds = filteredKeys.sort((a, b) => {
-            const timeA = allQuestions[a]?.createdAt || 0;
-            const timeB = allQuestions[b]?.createdAt || 0;
-            return timeB - timeA; // Sort descending (newest timestamp first)
-          });
-
-          renderQuestionPage();
-        }
-
-        function renderQuestionPage() {
-          if (!qListDiv) return;
-          const totalFiltered = filteredQuestionIds.length;
-          const totalPages = Math.ceil(totalFiltered / questionsPerPage);
-
-          if (currentQuestionPage < 1) currentQuestionPage = 1;
-          if (currentQuestionPage > totalPages && totalPages > 0)
-            currentQuestionPage = totalPages;
-
-          const startIndex = (currentQuestionPage - 1) * questionsPerPage;
-          const endIndex = startIndex + questionsPerPage;
-          const idsToDisplay = filteredQuestionIds.slice(startIndex, endIndex);
-
-          qListDiv.innerHTML = "";
-          hideEl(noResMsg);
-
-          if (totalFiltered === 0) {
-            if (searchIn.value || topicFil.value)
-              showEl(noResMsg); // "לא נמצאו שאלות..."
-            else qListDiv.innerHTML = "<p>אין שאלות במערכת.</p>";
-          } else {
-            idsToDisplay.forEach((id) =>
-              renderQuestionItem(id, allQuestions[id])
-            );
-          }
-          updateQuestionPaginationControls(totalPages);
-        }
-
-        function renderQuestionItem(id, qData) {
-          if (!qData?.question || !id) return;
-          const itemDiv = document.createElement("div");
-          itemDiv.className = "question-item";
-          itemDiv.dataset.id = id;
-
-          const summaryDiv = document.createElement("div");
-          summaryDiv.className = "question-summary";
-
-          const textP = document.createElement("p");
-          textP.className = "question-text";
-          textP.textContent = qData.question;
-
-          const actionsDiv = document.createElement("div");
-          actionsDiv.className = "question-actions";
-          const editBtn = document.createElement("button");
-          editBtn.textContent = "ערוך";
-          editBtn.className = "btn-primary";
-          editBtn.onclick = () => openEditForm(id, qData);
-          const deleteBtn = document.createElement("button");
-          deleteBtn.textContent = "מחק";
-          deleteBtn.className = "btn-danger";
-          deleteBtn.onclick = () => deleteQuestion(id);
-          actionsDiv.append(editBtn, deleteBtn);
-
-          summaryDiv.append(textP, actionsDiv);
-          itemDiv.append(summaryDiv);
-
-          const detailsSpan = document.createElement("span");
-          detailsSpan.className = "question-details";
-
-          // Add Creation Date
-          if (qData.createdAt) {
-            const dateSpan = document.createElement("span");
-            dateSpan.className = "creation-date";
-            dateSpan.textContent = `(${formatDate(qData.createdAt)})`;
-            dateSpan.title = new Date(qData.createdAt).toLocaleString();
-            detailsSpan.appendChild(dateSpan);
-          }
-
-          // Topic Link
-          const topicKey = qData.topic || "unknown";
-          const topicHebrew = topicTranslations[topicKey] || topicKey;
-          detailsSpan.appendChild(document.createTextNode(`נושא: `));
-          const topicLink = document.createElement("a");
-          topicLink.href = "#";
-          topicLink.className = "topic-link";
-          topicLink.textContent = topicHebrew;
-          topicLink.dataset.topic = topicKey;
-          topicLink.onclick = (e) => {
-            e.preventDefault();
-            filterByTopic(topicKey);
-          };
-          detailsSpan.appendChild(topicLink);
-
-          // Tags Links
-          if (Array.isArray(qData.tags) && qData.tags.length > 0) {
-            const validTags = qData.tags
-              .map((t) => (t ? String(t).trim() : null))
-              .filter(Boolean);
-            if (validTags.length > 0) {
-              detailsSpan.appendChild(document.createTextNode(" | תגיות: "));
-              validTags.forEach((tagText, index) => {
-                const tagLink = document.createElement("a");
-                tagLink.href = "#";
-                tagLink.className = "tag-link";
-                tagLink.textContent = tagText;
-                tagLink.dataset.tag = tagText;
-                tagLink.onclick = (e) => {
-                  e.preventDefault();
-                  filterByTag(tagText);
-                };
-                detailsSpan.appendChild(tagLink);
-                if (index < validTags.length - 1)
-                  detailsSpan.appendChild(document.createTextNode(", "));
-              });
-            }
-          }
-          itemDiv.appendChild(detailsSpan);
-          qListDiv.appendChild(itemDiv);
-        }
-
-        function updateQuestionPaginationControls(totalPages) {
-          if (totalPages <= 1) {
-            hideEl(pagCont);
-          } else {
-            showEl(pagCont);
-            pageInf.textContent = `עמוד ${currentQuestionPage}/${totalPages}`;
-            prevPBtn.disabled = currentQuestionPage === 1;
-            nextPBtn.disabled = currentQuestionPage === totalPages;
-          }
-        }
-
-        function filterByTopic(topicKey) {
-          topicFil.value = topicKey === "unknown" ? "" : topicKey;
-          currentQuestionPage = 1;
-          filterAndRenderQuestions();
-        }
-        function filterByTag(tag) {
-          searchIn.value = tag.trim();
-          currentQuestionPage = 1;
-          filterAndRenderQuestions();
-        }
-        function resetFilters(render = true) {
-          searchIn.value = "";
-          topicFil.value = "";
-          if (render && questionsSection.classList.contains("is-open")) {
-            currentQuestionPage = 1;
-            filterAndRenderQuestions();
-          }
-        }
-
-        // --- Question CRUD (Add/Edit/Delete) ---
+        // --- Question CRUD ---
         addQBtn.addEventListener("click", openAddForm);
         closeModBtn.addEventListener("click", closeForm);
         cancelEdBtn.addEventListener("click", closeForm);
         addAnsBtn.addEventListener("click", () => addAnswerField());
         qForm.addEventListener("submit", handleFormSubmit);
 
-        function openAddForm() {
-          /* As before */
-          qForm.reset();
-          qIdIn.value = "";
-          formTit.textContent = "הוסף שאלה חדשה";
-          ansCont.innerHTML = "";
-          addAnswerField();
-          addAnswerField(); // Start with 2 answers
-          qTopicSel.value = "";
-          qTagsIn.value = "";
-          saveQBtn.textContent = "שמור שאלה";
-          cancelEdBtn.textContent = "ביטול";
-          showFlexEl(qFormModal);
-        }
-        function openEditForm(id, qData) {
-          /* As before */
-          if (!qData) return;
-          qForm.reset();
-          formTit.textContent = "ערוך שאלה";
-          qIdIn.value = id;
-          qTextIn.value = qData.question || "";
-          qTopicSel.value = qData.topic || "";
-          qTagsIn.value = Array.isArray(qData.tags)
-            ? qData.tags.join(", ")
-            : "";
-          ansCont.innerHTML = "";
-          if (Array.isArray(qData.answers)) {
-            qData.answers.forEach((text, index) =>
-              addAnswerField(text, index === qData.correct)
-            );
-            while (ansCont.children.length < 2) addAnswerField(); // Ensure at least 2
-          } else {
-            addAnswerField();
-            addAnswerField();
-          } // Default if no answers array
-          saveQBtn.textContent = "שמור שינויים";
-          cancelEdBtn.textContent = "ביטול";
-          showFlexEl(qFormModal);
-        }
-        function closeForm() {
-          /* As before */
-          hideEl(qFormModal);
-          document.body.style.overflow = "";
-        }
-        function addAnswerField(text = "", isCorrect = false) {
-          /* As before */
-          const currentIndex = ansCont.children.length;
-          const div = document.createElement("div");
-          div.className = "answer-group";
-          const radio = document.createElement("input");
-          radio.type = "radio";
-          radio.name = "correctAnswer";
-          radio.value = currentIndex;
-          radio.checked = isCorrect;
-          radio.required = true;
-          radio.title = `סמן כתשובה נכונה ${currentIndex + 1}`;
-          const input = document.createElement("input");
-          input.type = "text";
-          input.placeholder = `תשובה ${currentIndex + 1}`;
-          input.value = text;
-          input.required = true;
-          input.setAttribute("aria-label", `תשובה ${currentIndex + 1}`);
-          const removeBtn = document.createElement("button");
-          removeBtn.type = "button";
-          removeBtn.textContent = "×";
-          removeBtn.className = "btn-danger";
-          removeBtn.title = "הסר תשובה";
-          removeBtn.onclick = () => {
-            if (ansCont.children.length > 2) div.remove();
-            else alert("חובה לפחות 2 תשובות.");
-            updateAnswerIndices(); // Renumber remaining answers
-          };
-          div.append(radio, input, removeBtn);
-          ansCont.appendChild(div);
-        }
-        function updateAnswerIndices() {
-          /* As before */
-          ansCont.querySelectorAll(".answer-group").forEach((group, index) => {
-            const radio = group.querySelector('input[type="radio"]');
-            if (radio) radio.value = index;
-            const input = group.querySelector('input[type="text"]');
-            if (input) input.placeholder = `תשובה ${index + 1}`;
-          });
-        }
+        function openAddForm() { qForm.reset(); qIdIn.value = ""; formTit.textContent = "הוסף שאלה חדשה"; ansCont.innerHTML = ""; addAnswerField(); addAnswerField(); qTopicSel.value = ""; qTagsIn.value = ""; saveQBtn.textContent = "שמור שאלה"; cancelEdBtn.textContent = "ביטול"; showFlexEl(qFormModal); }
+        function openEditForm(id, qData) { if (!qData) return; qForm.reset(); formTit.textContent = "ערוך שאלה"; qIdIn.value = id; qTextIn.value = qData.question || ""; qTopicSel.value = qData.topic || ""; qTagsIn.value = Array.isArray(qData.tags) ? qData.tags.join(", ") : ""; ansCont.innerHTML = ""; if (Array.isArray(qData.answers)) { qData.answers.forEach((text, index) => addAnswerField(text, index === qData.correct)); while (ansCont.children.length < 2) addAnswerField(); } else { addAnswerField(); addAnswerField(); } saveQBtn.textContent = "שמור שינויים"; cancelEdBtn.textContent = "ביטול"; showFlexEl(qFormModal); }
+        function closeForm() { hideEl(qFormModal); /* document.body.style.overflow = ""; */ } // Don't change body overflow on close
+        function addAnswerField(text = "", isCorrect = false) { const currentIndex = ansCont.children.length; const div = document.createElement("div"); div.className = "answer-group"; const radio = document.createElement("input"); radio.type = "radio"; radio.name = "correctAnswer"; radio.value = currentIndex; radio.checked = isCorrect; radio.required = true; radio.title = `סמן כתשובה נכונה ${currentIndex + 1}`; const input = document.createElement("input"); input.type = "text"; input.placeholder = `תשובה ${currentIndex + 1}`; input.value = text; input.required = true; input.setAttribute("aria-label", `תשובה ${currentIndex + 1}`); const removeBtn = document.createElement("button"); removeBtn.type = "button"; removeBtn.textContent = "×"; removeBtn.className = "btn-danger"; removeBtn.title = "הסר תשובה"; removeBtn.onclick = () => { if (ansCont.children.length > 2) div.remove(); else alert("חובה לפחות 2 תשובות."); updateAnswerIndices(); }; div.append(radio, input, removeBtn); ansCont.appendChild(div); }
+        function updateAnswerIndices() { ansCont.querySelectorAll(".answer-group").forEach((group, index) => { const radio = group.querySelector('input[type="radio"]'); if (radio) radio.value = index; const input = group.querySelector('input[type="text"]'); if (input) input.placeholder = `תשובה ${index + 1}`; }); }
 
-        async function handleFormSubmit(event) {
-          event.preventDefault();
-          saveQBtn.disabled = true;
-          saveQBtn.textContent = "שומר...";
-
-          const questionId = qIdIn.value;
-          const questionText = qTextIn.value.trim();
-          const topicValue = qTopicSel.value;
-          const tagsValue = qTagsIn.value
-            .split(",")
-            .map((t) => t.trim())
-            .filter(Boolean);
-          const answerInputs = ansCont.querySelectorAll(
-            '.answer-group input[type="text"]'
-          );
-          const correctAnswerRadio = ansCont.querySelector(
-            'input[type="radio"]:checked'
-          );
-
-          function cleanup() {
-            saveQBtn.disabled = false;
-            saveQBtn.textContent = questionId ? "שמור שינויים" : "שמור שאלה";
-          }
-
-          if (!questionText) {
-            alert("טקסט השאלה הוא שדה חובה.");
-            return cleanup();
-          }
-          if (!topicValue) {
-            alert("יש לבחור נושא לשאלה.");
-            return cleanup();
-          }
-          if (!correctAnswerRadio) {
-            alert("חובה לסמן תשובה נכונה.");
-            return cleanup();
-          }
-
-          const correctIndex = parseInt(correctAnswerRadio.value, 10);
-          const answers = [];
-          let invalidAnswer = false;
-          answerInputs.forEach((input) => {
-            const value = input.value.trim();
-            if (!value) invalidAnswer = true;
-            answers.push(value);
-          });
-
-          if (invalidAnswer) {
-            alert("כל שדות התשובה חייבים להכיל טקסט.");
-            return cleanup();
-          }
-          if (answers.length < 2) {
-            alert("חובה לפחות 2 תשובות.");
-            return cleanup();
-          }
-          if (
-            isNaN(correctIndex) ||
-            correctIndex < 0 ||
-            correctIndex >= answers.length
-          ) {
-            alert("הבחירה בתשובה נכונה אינה תקינה.");
-            return cleanup();
-          }
-
-          // Prepare question data object
-          const questionData = {
-            question: questionText,
-            answers: answers,
-            correct: correctIndex,
-            topic: topicValue,
-            tags: tagsValue.length > 0 ? tagsValue : null, // Store null if no tags
-          };
-
-          try {
-            let saveOperation;
-            if (questionId) {
-              // Editing existing question - Don't update createdAt
-              saveOperation = database
-                .ref(`questions/${questionId}`)
-                .update(questionData);
-            } else {
-              // Adding new question - Add createdAt
-              questionData.createdAt = firebase.database.ServerValue.TIMESTAMP;
-              saveOperation = database.ref("questions").push(questionData);
-            }
-            await saveOperation;
-            console.log("Question saved successfully!");
-            closeForm();
-            // Optionally, you might want to refresh the question list here
-            // filterAndRenderQuestions(); // Or wait for the listener to update
-          } catch (error) {
-            console.error("Error saving question:", error);
-            alert(`שגיאה בשמירת השאלה: ${error.message}`);
-          } finally {
-            cleanup();
-          }
-        }
-
-        async function deleteQuestion(id) {
-          /* As before */
-          if (!id) return;
-          const qText =
-            allQuestions[id]?.question || `שאלה ${id.substring(id.length - 5)}`;
-          if (
-            !confirm(
-              `האם אתה בטוח שברצונך למחוק את השאלה:\n"${qText}" (${id})?`
-            )
-          )
-            return;
-          console.log("Deleting Question:", id);
-          try {
-            await database.ref(`questions/${id}`).remove();
-            console.log("Question Deleted:", id);
-            // List will update via listener
-          } catch (error) {
-            console.error("Delete Question Error:", error);
-            alert(`שגיאה במחיקת השאלה: ${error.message}`);
-          }
-        }
+        async function handleFormSubmit(event) { event.preventDefault(); saveQBtn.disabled = true; saveQBtn.textContent = "שומר..."; const questionId = qIdIn.value; const questionText = qTextIn.value.trim(); const topicValue = qTopicSel.value; const tagsValue = qTagsIn.value.split(",").map(t => t.trim()).filter(Boolean); const answerInputs = ansCont.querySelectorAll('.answer-group input[type="text"]'); const correctAnswerRadio = ansCont.querySelector('input[type="radio"]:checked'); function cleanup() { saveQBtn.disabled = false; saveQBtn.textContent = questionId ? "שמור שינויים" : "שמור שאלה"; } if (!questionText) { alert("טקסט השאלה הוא שדה חובה."); return cleanup(); } if (!topicValue) { alert("יש לבחור נושא לשאלה."); return cleanup(); } if (!correctAnswerRadio) { alert("חובה לסמן תשובה נכונה."); return cleanup(); } const correctIndex = parseInt(correctAnswerRadio.value, 10); const answers = []; let invalidAnswer = false; answerInputs.forEach(input => { const value = input.value.trim(); if (!value) invalidAnswer = true; answers.push(value); }); if (invalidAnswer) { alert("כל שדות התשובה חייבים להכיל טקסט."); return cleanup(); } if (answers.length < 2) { alert("חובה לפחות 2 תשובות."); return cleanup(); } if (isNaN(correctIndex) || correctIndex < 0 || correctIndex >= answers.length) { alert("הבחירה בתשובה נכונה אינה תקינה."); return cleanup(); } const questionData = { question: questionText, answers: answers, correct: correctIndex, topic: topicValue, tags: tagsValue.length > 0 ? tagsValue : null, }; try { let saveOperation; if (questionId) { saveOperation = database.ref(`questions/${questionId}`).update(questionData); } else { questionData.createdAt = firebase.database.ServerValue.TIMESTAMP; saveOperation = database.ref("questions").push(questionData); } await saveOperation; console.log("Question saved successfully!"); closeForm(); handleRefresh(refreshQuestionsBtn, loadQuestions); } catch (error) { console.error("Error saving question:", error); alert(`שגיאה בשמירת השאלה: ${error.message}`); } finally { cleanup(); } }
+        async function deleteQuestion(id) { if (!id) return; const qText = allQuestions[id]?.question || `שאלה ${id.substring(id.length - 5)}`; if (!confirm(`האם אתה בטוח שברצונך למחוק את השאלה:\n"${qText}" (${id})?`)) return; console.log("Deleting Question:", id); try { await database.ref(`questions/${id}`).remove(); console.log("Question Deleted:", id); handleRefresh(refreshQuestionsBtn, loadQuestions); } catch (error) { console.error("Delete Question Error:", error); alert(`שגיאה במחיקת השאלה: ${error.message}`); } }
 
         // --- Pagination Listeners ---
-        prevPBtn.addEventListener("click", () => {
-          if (currentQuestionPage > 1) {
-            currentQuestionPage--;
-            renderQuestionPage();
-            qListDiv.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
-        });
-        nextPBtn.addEventListener("click", () => {
-          const totalPages = Math.ceil(
-            filteredQuestionIds.length / questionsPerPage
-          );
-          if (currentQuestionPage < totalPages) {
-            currentQuestionPage++;
-            renderQuestionPage();
-            qListDiv.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
-        });
-        prevUserPBtn.addEventListener("click", () => {
-          if (currentUserPage > 1) {
-            currentUserPage--;
-            filterAndRenderUsers();
-            userListContainer.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-          }
-        });
-        nextUserPBtn.addEventListener("click", () => {
-          const totalFilteredUsers = allUserIds.filter((uid) => {
-            /* Apply filters again - maybe optimize this */ const u =
-              allUsers[uid];
-            if (!u) return false;
-            if (userRoleFilterValue) {
-              const iA = adminUids[uid] === true;
-              if (userRoleFilterValue === "admin" && !iA) return false;
-              if (userRoleFilterValue === "verified" && iA) return false;
-            }
-            if (userSearchValue) {
-              const nM =
-                u.nickname &&
-                u.nickname.toLowerCase().includes(userSearchValue);
-              const uM = uid.toLowerCase().includes(userSearchValue);
-              if (!nM && !uM) return false;
-            }
-            return true;
-          }).length;
-          const totalPages = Math.ceil(totalFilteredUsers / usersPerPage);
-          if (currentUserPage < totalPages) {
-            currentUserPage++;
-            filterAndRenderUsers();
-            userListContainer.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-          }
-        });
+        prevPBtn.addEventListener("click", () => { if (currentQuestionPage > 1) { currentQuestionPage--; renderQuestionPage(); qListDiv.scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
+        nextPBtn.addEventListener("click", () => { const totalPages = Math.ceil(filteredQuestionIds.length / questionsPerPage); if (currentQuestionPage < totalPages) { currentQuestionPage++; renderQuestionPage(); qListDiv.scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
+        prevUserPBtn.addEventListener("click", () => { if (currentUserPage > 1) { currentUserPage--; filterAndRenderUsers(); userListContainer.scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
+        nextUserPBtn.addEventListener("click", () => { const totalFilteredUsers = allUserIds.filter(uid => { const u=allUsers[uid];if(!u)return false;if(userRoleFilterValue){const iA=adminUids[uid]===true;if(userRoleFilterValue==="admin"&&!iA)return false;if(userRoleFilterValue==="verified"&&iA)return false;}if(userSearchValue){const nM=u.nickname&&u.nickname.toLowerCase().includes(userSearchValue);const uM=uid.toLowerCase().includes(userSearchValue);if(!nM&&!uM)return false;}return true;}).length; const totalPages = Math.ceil(totalFilteredUsers / usersPerPage); if (currentUserPage < totalPages) { currentUserPage++; filterAndRenderUsers(); userListContainer.scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
 
         // --- Import Modal Logic ---
         importQuestionsBtn.addEventListener("click", openImportModal);
         closeImportModalBtn.addEventListener("click", closeImportModal);
-        clearImportBtn.addEventListener("click", () => {
-          bulkImportArea.value = "";
-          importFeedback.innerHTML = "";
-          importPreview.innerHTML = "";
-          hideEl(confirmImportBtn);
-          validQuestionsForImport = [];
-        });
+        clearImportBtn.addEventListener("click", () => { bulkImportArea.value = ""; importFeedback.innerHTML = ""; importPreview.innerHTML = ""; hideEl(confirmImportBtn); validQuestionsForImport = []; });
         processImportBtn.addEventListener("click", processImportData);
         confirmImportBtn.addEventListener("click", importValidQuestions);
 
-        function openImportModal() {
-          /* As before */
-          bulkImportArea.value = "";
-          importFeedback.innerHTML = "";
-          importPreview.innerHTML = "";
-          hideEl(confirmImportBtn);
-          validQuestionsForImport = [];
-          showFlexEl(importModal);
-        }
-        function closeImportModal() {
-          /* As before */
-          hideEl(importModal);
-          document.body.style.overflow = "";
-        }
-        function processImportData() {
-          /* As before */
-          const text = bulkImportArea.value;
-          importFeedback.innerHTML = "<p>מעבד נתונים...</p>";
-          importPreview.innerHTML = "";
-          hideEl(confirmImportBtn);
-          validQuestionsForImport = [];
+        function openImportModal() { bulkImportArea.value = ""; importFeedback.innerHTML = ""; importPreview.innerHTML = ""; hideEl(confirmImportBtn); validQuestionsForImport = []; showFlexEl(importModal); }
+        function closeImportModal() { hideEl(importModal); /* document.body.style.overflow = ""; */ }
+        function processImportData() { const text = bulkImportArea.value; importFeedback.innerHTML = "<p>מעבד נתונים...</p>"; importPreview.innerHTML = ""; hideEl(confirmImportBtn); validQuestionsForImport = []; setTimeout(() => { const { validQuestions, errors } = parseBulkQuestions(text); validQuestionsForImport = validQuestions; if (errors.length > 0) { importFeedback.innerHTML = `<h4>שגיאות (${errors.length}):</h4><ul id="import-error-list">${errors.map(err => `<li>${err}</li>`).join("")}</ul>`; } else { importFeedback.innerHTML = '<p style="color: var(--success-color);">✅ לא נמצאו שגיאות בפורמט.</p>'; } if (validQuestions.length > 0) { importPreview.innerHTML = `<h4>תצוגה מקדימה (${validQuestions.length} שאלות תקינות):</h4>`; validQuestions.forEach((q, index) => { const item = document.createElement("div"); item.className = "preview-item"; let ansHtml = q.answers.map((ans, idx) => idx === q.correct ? `<li class="correct"><strong>* ${ans}</strong></li>` : `<li>${ans}</li>`).join(""); item.innerHTML = `<p><strong>שאלה ${index+1}:</strong> ${q.question}</p><ul>${ansHtml}</ul><p class="details"><strong>נושא:</strong> ${topicTranslations[q.topic]||q.topic} | <strong>תגיות:</strong> ${q.tags?q.tags.join(", "):"<em>אין</em>"}</p>`; importPreview.appendChild(item); }); showEl(confirmImportBtn); } else { importPreview.innerHTML = ""; hideEl(confirmImportBtn); if (errors.length === 0 && text.trim().length > 0) importFeedback.innerHTML = "<p>לא נמצאו שאלות תקינות לייבוא בקלט שהוזן.</p>"; else if (errors.length === 0 && text.trim().length === 0) importFeedback.innerHTML = "<p>תיבת הטקסט ריקה.</p>"; } }, 10); }
+        function parseBulkQuestions(text) { const blocks = text.trim().split(/\n\s*\n+/); const validQuestions = []; const errors = []; blocks.forEach((block, blockIndex) => { const lines = block.trim().split('\n').map(line => line.trim()).filter(line => line.length > 0); const blockRef = `בלוק #${blockIndex + 1}`; if (lines.length < 4) { errors.push(`${blockRef}: לא מספיק שורות (מינימום 4: שאלה, 2+ תשובות, נושא).`); return; } const question = lines[0]; let topic = ""; let topicKey = ""; let tags = []; let answers = []; let correctIndex = -1; let topicLineIndex = -1; let tagsLineIndex = -1; for (let i = lines.length - 1; i >= 1; i--) { if (hebrewTopicMap[lines[i]]) { topicLineIndex = i; topic = lines[i]; topicKey = hebrewTopicMap[topic]; break; } } if (topicLineIndex === -1) { errors.push(`${blockRef}: לא נמצא נושא תקין (${knownHebrewTopics.join(", ")}).`); return; } if (topicLineIndex < lines.length - 1) { tagsLineIndex = lines.length - 1; tags = lines[tagsLineIndex].split(',').map(t => t.trim()).filter(Boolean); } let correctFound = false; for (let i = 1; i < topicLineIndex; i++) { let answerText = lines[i]; if (answerText.startsWith('*')) { if (correctFound) { errors.push(`${blockRef}: נמצאה יותר מתשובה אחת מסומנת ב-*.`); return; } correctFound = true; correctIndex = answers.length; answerText = answerText.substring(1).trim(); } if (!answerText && answerText !== "") { errors.push(`${blockRef}: שורת תשובה ${answers.length + 1} ריקה.`); return; } answers.push(answerText); } if (answers.length < 2) { errors.push(`${blockRef}: נדרשות לפחות 2 תשובות.`); return; } if (!correctFound) { errors.push(`${blockRef}: אף תשובה לא סומנה כנכונה (*).`); return; } validQuestions.push({ question: question, answers: answers, correct: correctIndex, topic: topicKey, tags: tags.length > 0 ? tags : null, }); }); return { validQuestions, errors }; }
 
-          setTimeout(() => {
-            // Allow UI update
-            const { validQuestions, errors } = parseBulkQuestions(text);
-            validQuestionsForImport = validQuestions;
-
-            // Display Errors
-            if (errors.length > 0) {
-              importFeedback.innerHTML = `<h4>שגיאות (${
-                errors.length
-              }):</h4><ul id="import-error-list">${errors
-                .map((err) => `<li>${err}</li>`)
-                .join("")}</ul>`;
-            } else {
-              importFeedback.innerHTML =
-                '<p style="color: var(--success-color);">✅ לא נמצאו שגיאות בפורמט.</p>';
-            }
-
-            // Display Preview
-            if (validQuestions.length > 0) {
-              importPreview.innerHTML = `<h4>תצוגה מקדימה (${validQuestions.length} שאלות תקינות):</h4>`;
-              validQuestions.forEach((q, index) => {
-                const item = document.createElement("div");
-                item.className = "preview-item";
-                let ansHtml = q.answers
-                  .map((ans, idx) =>
-                    idx === q.correct
-                      ? `<li class="correct"><strong>* ${ans}</strong></li>`
-                      : `<li>${ans}</li>`
-                  )
-                  .join("");
-                item.innerHTML = `<p><strong>שאלה ${index + 1}:</strong> ${
-                  q.question
-                }</p><ul>${ansHtml}</ul><p class="details"><strong>נושא:</strong> ${
-                  topicTranslations[q.topic] || q.topic
-                } | <strong>תגיות:</strong> ${
-                  q.tags ? q.tags.join(", ") : "<em>אין</em>"
-                }</p>`;
-                importPreview.appendChild(item);
-              });
-              showEl(confirmImportBtn);
-            } else {
-              importPreview.innerHTML = "";
-              hideEl(confirmImportBtn);
-              if (errors.length === 0 && text.trim().length > 0)
-                importFeedback.innerHTML =
-                  "<p>לא נמצאו שאלות תקינות לייבוא בקלט שהוזן.</p>";
-              else if (errors.length === 0 && text.trim().length === 0)
-                importFeedback.innerHTML = "<p>תיבת הטקסט ריקה.</p>";
-            }
-          }, 10);
-        }
-        function parseBulkQuestions(text) {
-          /* As before */
-          const blocks = text.trim().split(/\n\s*\n+/); // Split by one or more empty lines
-          const validQuestions = [];
-          const errors = [];
-
-          blocks.forEach((block, blockIndex) => {
-            const lines = block
-              .trim()
-              .split("\n")
-              .map((line) => line.trim())
-              .filter((line) => line.length > 0);
-            const blockRef = `בלוק #${blockIndex + 1}`;
-            if (lines.length < 4) {
-              errors.push(
-                `${blockRef}: לא מספיק שורות (בדיוק 7: שאלה, 4 תשובות, נושא, תגיות).`
-              );
-              return;
-            }
-            const question = lines[0];
-            let topic = "";
-            let topicKey = "";
-            let tags = [];
-            let answers = [];
-            let correctIndex = -1;
-            const topicLineIndex =
-              lines.length -
-              (lines.length > 4 && lines[lines.length - 1].includes(",")
-                ? 2
-                : 1); // Try to detect if last line is tags
-            const potentialTopicLine = lines[topicLineIndex];
-            if (hebrewTopicMap[potentialTopicLine]) {
-              topic = potentialTopicLine;
-              topicKey = hebrewTopicMap[topic];
-            } else {
-              errors.push(
-                `${blockRef}: נושא לא זוהה או לא תקין בשורה ${
-                  topicLineIndex + 1
-                } ('${potentialTopicLine}'). הנושאים המותרים: ${knownHebrewTopics.join(
-                  ", "
-                )}.`
-              );
-              return;
-            }
-            const tagsLineIndex = lines.length - 1;
-            if (tagsLineIndex > topicLineIndex) {
-              tags = lines[tagsLineIndex]
-                .split(",")
-                .map((t) => t.trim())
-                .filter(Boolean);
-            } else {
-              tags = [];
-            }
-            const answerEndIndex = topicLineIndex;
-            let correctFound = false;
-            for (let i = 1; i < answerEndIndex; i++) {
-              let answerText = lines[i];
-              if (answerText.startsWith("*")) {
-                if (correctFound) {
-                  errors.push(`${blockRef}: נמצאה יותר מתשובה אחת מסומנת ב-*.`);
-                  return;
-                }
-                correctFound = true;
-                correctIndex = answers.length;
-                answerText = answerText.substring(1).trim();
-              }
-              if (!answerText && answerText !== "") {
-                errors.push(
-                  `${blockRef}: שורת תשובה ${answers.length + 1} ריקה.`
-                );
-                return;
-              }
-              answers.push(answerText);
-            }
-            if (answers.length < 2) {
-              errors.push(`${blockRef}: נדרשות לפחות 2 תשובות.`);
-              return;
-            }
-            if (!correctFound) {
-              errors.push(`${blockRef}: אף תשובה לא סומנה כנכונה (*).`);
-              return;
-            }
-            validQuestions.push({
-              question: question,
-              answers: answers,
-              correct: correctIndex,
-              topic: topicKey,
-              tags: tags.length > 0 ? tags : null,
-            });
-          });
-          return { validQuestions, errors };
-        }
-
-        async function importValidQuestions() {
-          if (validQuestionsForImport.length === 0) {
-            alert("אין שאלות תקינות לייבוא.");
-            return;
-          }
-          confirmImportBtn.disabled = true;
-          confirmImportBtn.textContent = "מייבא...";
-          importFeedback.innerHTML += "<p>מתחיל בייבוא...</p>";
-
-          const importPromises = validQuestionsForImport.map((qData) => {
-            // Add createdAt timestamp to each question object before pushing
-            const dataToPush = {
-              ...qData,
-              createdAt: firebase.database.ServerValue.TIMESTAMP,
-            };
-            return database.ref("questions").push(dataToPush);
-          });
-
-          try {
-            const results = await Promise.allSettled(importPromises);
-            const successCount = results.filter(
-              (r) => r.status === "fulfilled"
-            ).length;
-            const failureCount = results.length - successCount;
-            let finalMsg = `<p style="color: var(--success-color);"><strong>ייבוא הושלם!</strong> ${successCount} שאלות נוספו.`;
-            if (failureCount > 0) {
-              finalMsg += ` <span style="color: var(--danger-color);">${failureCount} נכשלו (בדוק קונסול).</span>`;
-              results.forEach((r, idx) => {
-                if (r.status === "rejected")
-                  console.error(
-                    `Import Error Q${idx + 1}:`,
-                    validQuestionsForImport[idx].question,
-                    r.reason
-                  );
-              });
-            }
-            finalMsg += "</p>";
-            importFeedback.innerHTML += finalMsg;
-            validQuestionsForImport = [];
-            hideEl(confirmImportBtn); // Keep preview for review? hideEl(importPreview);
-          } catch (error) {
-            console.error("Bulk import general error:", error);
-            importFeedback.innerHTML += `<p class="error-text">שגיאה כללית בייבוא.</p>`;
-          } finally {
-            confirmImportBtn.disabled = false;
-            confirmImportBtn.textContent = "2. ייבא שאלות תקינות";
-          }
-        }
+        async function importValidQuestions() { if (validQuestionsForImport.length === 0) { alert("אין שאלות תקינות לייבוא."); return; } confirmImportBtn.disabled = true; confirmImportBtn.textContent = "מייבא..."; importFeedback.innerHTML += "<p>מתחיל בייבוא...</p>"; const importPromises = validQuestionsForImport.map(qData => { const dataToPush = { ...qData, createdAt: firebase.database.ServerValue.TIMESTAMP, }; return database.ref("questions").push(dataToPush); }); try { const results = await Promise.allSettled(importPromises); const successCount = results.filter(r => r.status === 'fulfilled').length; const failureCount = results.length - successCount; let finalMsg = `<p style="color: var(--success-color);"><strong>ייבוא הושלם!</strong> ${successCount} שאלות נוספו.`; if (failureCount > 0) { finalMsg += ` <span style="color: var(--danger-color);">${failureCount} נכשלו (בדוק קונסול).</span>`; results.forEach((r, idx) => { if (r.status === 'rejected') console.error(`Import Error Q${idx+1}:`, validQuestionsForImport[idx].question, r.reason); }); } finalMsg += '</p>'; importFeedback.innerHTML += finalMsg; validQuestionsForImport = []; hideEl(confirmImportBtn); handleRefresh(refreshQuestionsBtn, loadQuestions); } catch (error) { console.error("Bulk import general error:", error); importFeedback.innerHTML += `<p class="error-text">שגיאה כללית בייבוא.</p>`; } finally { confirmImportBtn.disabled = false; confirmImportBtn.textContent = "2. ייבא שאלות תקינות"; } }
 
         // --- Collapsible Section Logic ---
-        function saveCollapsibleStates() {
-          /* As before */
-          const states = {};
-          document
-            .querySelectorAll(".collapsible-section")
-            .forEach((section) => {
-              states[section.id] = section.classList.contains("is-open");
-            });
-          try {
-            localStorage.setItem(COLLAPSIBLE_STATE_KEY, JSON.stringify(states));
-          } catch (e) {
-            console.error("Error saving collapsible states:", e);
-          }
-        }
+        function saveCollapsibleStates() { const states = {}; document.querySelectorAll(".collapsible-section").forEach(section => { states[section.id] = section.classList.contains("is-open"); }); try { localStorage.setItem(COLLAPSIBLE_STATE_KEY, JSON.stringify(states)); } catch (e) { console.error("Error saving collapsible states:", e); } }
         function loadCollapsibleStates() {
-          /* As before */
-          let savedStates;
-          try {
-            savedStates = JSON.parse(
-              localStorage.getItem(COLLAPSIBLE_STATE_KEY) || "{}"
-            );
-          } catch (e) {
-            console.error("Error parsing collapsible states:", e);
-            savedStates = {};
-          }
-          document
-            .querySelectorAll(".collapsible-section")
-            .forEach((section) => {
-              const sectionId = section.id;
-              const shouldBeOpen = savedStates[sectionId] === true;
-              setCollapsibleState(section, shouldBeOpen, false); // Set state without saving again
-              // Trigger data load if section is opened and data isn't loaded
-              if (shouldBeOpen) {
-                if (sectionId === "users-section" && allUserIds.length === 0) {
-                  loadUsers();
-                } else if (
-                  sectionId === "questions-section" &&
-                  Object.keys(allQuestions).length === 0 &&
-                  filteredQuestionIds.length === 0
-                ) {
-                  /* loadQuestions is called initially */
-                } else if (
-                  sectionId === "questions-section" &&
-                  Object.keys(allQuestions).length > 0 &&
-                  filteredQuestionIds.length === 0 &&
-                  qListDiv &&
-                  qListDiv.innerHTML.includes("טוען")
-                ) {
-                  filterAndRenderQuestions();
-                } // Render if loaded but not shown
-              }
-            });
-          console.log("Loaded collapse states:", savedStates);
+             let savedStates;
+             try { savedStates = JSON.parse(localStorage.getItem(COLLAPSIBLE_STATE_KEY) || '{}'); }
+             catch (e) { console.error("Error parsing collapsible states:", e); savedStates = {}; }
+
+             const defaultStates = {
+                 "dashboard-overview": true,
+                 "leaderboard-enhanced-section": false,
+                 "users-section": false,
+                 "questions-section": false
+             };
+             const finalStates = {...defaultStates, ...savedStates};
+
+             document.querySelectorAll(".collapsible-section").forEach(section => {
+                 const sectionId = section.id;
+                 const shouldBeOpen = finalStates[sectionId] === true;
+                 setCollapsibleState(section, shouldBeOpen, false); // Set state without saving again
+
+                 if (shouldBeOpen) {
+                     if (sectionId === "users-section" && allUserIds.length === 0) {
+                         handleRefresh(refreshUsersBtn, loadUsers);
+                     } else if (sectionId === "leaderboard-enhanced-section" && leaderboardEnhancedDisplay && leaderboardEnhancedDisplay.innerHTML.includes("טוען")) {
+                          handleRefresh(refreshLeaderboardBtn, loadLeaderboardData);
+                     } else if (sectionId === "questions-section") {
+                          if (qListDiv && qListDiv.children.length === 0 && Object.keys(allQuestions).length > 0) {
+                             filterAndRenderQuestions();
+                          }
+                          // Initial load or refresh handles cases where allQuestions is empty
+                     }
+                 }
+             });
+             console.log("Loaded collapse states:", finalStates);
         }
-        function setCollapsibleState(section, isOpen, saveState = true) {
-          /* As before */
-          if (!section) return;
-          const header = section.querySelector(".card-header-collapsible");
-          const content = section.querySelector(".collapsible-content");
-          const icon = header?.querySelector(".toggle-icon");
-          if (!header || !content || !icon) return;
-          section.classList.toggle("is-open", isOpen);
-          header.setAttribute("aria-expanded", isOpen.toString());
-          content.setAttribute("aria-hidden", (!isOpen).toString());
-          icon.textContent = isOpen ? "−" : "+";
-          if (saveState) saveCollapsibleStates();
-        }
-        function closeAllCollapsibleSections() {
-          /* As before */
-          document
-            .querySelectorAll(".collapsible-section")
-            .forEach((section) => setCollapsibleState(section, false, false));
-          saveCollapsibleStates(); // Save the closed state
-        }
+        function setCollapsibleState(section, isOpen, saveState = true) { if (!section) return; const header = section.querySelector(".card-header-collapsible"); const content = section.querySelector(".collapsible-content"); const icon = header?.querySelector(".toggle-icon"); if (!header || !content || !icon) return; section.classList.toggle("is-open", isOpen); header.setAttribute("aria-expanded", isOpen.toString()); content.setAttribute("aria-hidden", (!isOpen).toString()); icon.textContent = isOpen ? "−" : "+"; if (saveState) saveCollapsibleStates(); }
+        function closeAllCollapsibleSections(save = true) { document.querySelectorAll(".collapsible-section").forEach(section => setCollapsibleState(section, false, false)); if (save) saveCollapsibleStates(); }
+
         if (adminContentContainer) {
-          /* Event listener as before */
-          adminContentContainer.addEventListener("click", (event) => {
-            const header = event.target.closest(".card-header-collapsible");
-            if (!header) return;
-            // Prevent toggle if a button inside the header was clicked
-            if (event.target.closest("button")) {
-              console.log("Button click in header, ignoring toggle.");
-              return;
-            }
+            adminContentContainer.addEventListener("click", (event) => {
+                const header = event.target.closest(".card-header-collapsible");
+                if (!header) return;
+                if (event.target.closest(".header-actions button")) {
+                  console.log("Action button click in header, ignoring toggle.");
+                  return;
+                }
 
-            const section = header.closest(".collapsible-section");
-            if (!section) return;
+                const section = header.closest(".collapsible-section");
+                if (!section) return;
+                const shouldBeOpen = !section.classList.contains("is-open");
+                setCollapsibleState(section, shouldBeOpen, true);
 
-            const shouldBeOpen = !section.classList.contains("is-open");
-            setCollapsibleState(section, shouldBeOpen, true); // Set new state and save
+                if (shouldBeOpen) {
+                    const sectionId = section.id;
+                    if (sectionId === "users-section" && allUserIds.length === 0 && !section.dataset.loading) {
+                        console.log("Users section opened, loading data...");
+                        section.dataset.loading = "true";
+                        handleRefresh(refreshUsersBtn, loadUsers).finally(() => { delete section.dataset.loading; });
+                    } else if (sectionId === "leaderboard-enhanced-section" && leaderboardEnhancedDisplay && leaderboardEnhancedDisplay.children.length === 0 && !leaderboardEnhancedDisplay.innerHTML.includes('טוען') && !leaderboardEnhancedDisplay.innerHTML.includes('שגיאה')) {
+                         console.log("Leaderboard section opened, loading data...");
+                         handleRefresh(refreshLeaderboardBtn, loadLeaderboardData);
+                    } else if (sectionId === "questions-section") {
+                         if (qListDiv && qListDiv.children.length === 0 && Object.keys(allQuestions).length > 0 && !qListDiv.innerHTML.includes('טוען') && !qListDiv.innerHTML.includes('שגיאה')) {
+                             console.log("Questions section opened, rendering data...");
+                             filterAndRenderQuestions();
+                         }
+                         // Initial load or refresh handles cases where allQuestions is empty
+                    }
+                }
+            });
+        } else console.error("Admin container not found for collapsible listener.");
 
-            // Load data if opening and not already loaded/loading
-            if (shouldBeOpen) {
-              if (
-                section.id === "users-section" &&
-                allUserIds.length === 0 &&
-                !section.dataset.loading
-              ) {
-                console.log("Users section opened, loading data...");
-                section.dataset.loading = "true";
-                loadUsers().finally(() => {
-                  delete section.dataset.loading;
-                });
-              } else if (
-                section.id === "questions-section" &&
-                qListDiv &&
-                qListDiv.children.length === 0 &&
-                filteredQuestionIds.length === 0 &&
-                Object.keys(allQuestions).length > 0
-              ) {
-                // If questions loaded but not rendered (e.g., opened for the first time after initial load)
-                console.log("Questions section opened, rendering data...");
-                filterAndRenderQuestions();
-              }
-              // Add other lazy-loading logic here if needed
-            }
-          });
-        } else
-          console.error("Admin container not found for collapsible listener.");
+        // --- Add Refresh Button Listeners ---
+        refreshDashboardBtn.addEventListener('click', (e) => { e.stopPropagation(); handleRefresh(refreshDashboardBtn, loadDashboardData); });
+        refreshLeaderboardBtn.addEventListener('click', (e) => { e.stopPropagation(); handleRefresh(refreshLeaderboardBtn, loadLeaderboardData); });
+        refreshUsersBtn.addEventListener('click', (e) => { e.stopPropagation(); handleRefresh(refreshUsersBtn, loadUsers); });
+        refreshQuestionsBtn.addEventListener('click', (e) => { e.stopPropagation(); handleRefresh(refreshQuestionsBtn, loadQuestions); });
+
 
         console.log("DOM Content Loaded and script initialized.");
       }); // --- END OF DOMContentLoaded ---
